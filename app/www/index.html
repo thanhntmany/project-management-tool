@@ -1,12 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script type="importmap">{"imports":{"www/":"/"}}</script><script type="module" src="/phloe.mjs"></script>
+
+<head>
+    <script type="importmap">{"imports":{"www/":"/"}}</script>
+    <script type="module" src="/phloe.mjs"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phloemjs: Example website</title>
+    <script src="/do-it-later--requestAnimationFrame.js"></script>
+    <style>
+        html,
+        body {
+            width: 100%;
+            margin: 0;
+            position: relative;
+            scroll-behavior: smooth;
+            font-family: Roboto, Noto Sans, Noto Sans JP, Noto Sans KR, Noto Naskh Arabic, Noto Sans Thai, Noto Sans Hebrew, Noto Sans Bengali, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        body {
+            background-color: black;
+            color: white;
+        }
+
+        .task-board {
+            box-sizing: border-box;
+            height: 100%;
+        }
+
+        #nav-factors-bar label {
+            cursor: pointer;
+            user-select: none;
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            -o-user-select: none;
+            border-radius: 3px;
+            padding: 1em .5em;
+            box-sizing: border-box;
+            display: inline-block;
+            padding: 0.25em 0.5em;
+        }
+
+        #nav-factors-bar label:hover {
+            background-color: gray;
+        }
+    </style>
 </head>
+
 <body>
-    Phloemjs: Example website<br>
-    You can use this as start point of your website.
+    <script>
+        const database = Object.assign(new EventTarget(), {
+            tasks: {
+                "1": { name: "Project Charter", assigned: "Leon W", progress: "", duration: 3600000, start: "3/12/18", end: "3/15/18" },
+                "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "", duration: 3600000, start: "3/15/18", end: "3/16/18" },
+                "3": { name: "Research", assigned: "Pete S", progress: "", duration: 3600000, start: "3/15/18", end: "3/21/18" },
+                "4": { name: "Projections", assigned: "Steve L", progress: "", duration: 3600000, start: "3/16/18", end: "3/22/18" },
+                "5": { name: "Stakeholders", assigned: "Allen W", progress: "", duration: 3600000, start: "", end: "" },
+                "6": { name: "Guidelines", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" },
+                "7": { name: "Project Initiation", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" }
+            },
+
+            getTask: function (taskKey) {
+                return this.tasks[taskKey]
+            }
+        })
+    </script>
+    <div>project-management-tool</div>
+    <div>
+        <ul>
+            <li>Calendar view</li>
+            <li>Task list (WBS) + Grantt chart</li>
+            <li>Diagram</li>
+            <li>Kanban</li>
+        </ul>
+    </div>
+    <div id="grantt-view">
+        <div id="nav-factors-bar">
+            <div>
+                <label><input type="checkbox" for-class="mode--show-task-name" name="mode--show-task-name" checked />Task name</label>
+                <label><input type="checkbox" for-class="mode--show-assigned" name="mode--show-assigned" checked />Assigned</label>
+                <label><input type="checkbox" for-class="mode--show-progress" name="mode--show-progress" />Progress</label>
+                <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" />Duration</label>
+                <label><input type="checkbox" for-class="mode--show-start" name="mode--show-start" />Start</label>
+                <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
+            </div>
+            <div>
+                <label><input type="checkbox" for-class="mode--show-grantt-chart" name="mode--show-grantt-chart" checked />Grantt Chart</label> [<input type="datetime-local" />-<input type="datetime-local" />]
+            </div>
+        </div>
+        <style>
+            #grantt-table {
+                width: 100%;
+                display: block;
+                border: 1px solid;
+            }
+
+            #grantt-table progress {
+                width: 4em;
+            }
+
+            #grantt-table input[type="text"] {
+                background-color: rgba(0, 0, 0, 0);
+                color: white;
+                border: none;
+                outline: none;
+            }
+
+            #grantt-table:not(.mode--show-task-name) tr>td:nth-child(2),
+            #grantt-table:not(.mode--show-assigned) tr>td:nth-child(3),
+            #grantt-table:not(.mode--show-progress) tr>td:nth-child(4),
+            #grantt-table:not(.mode--show-duration) tr>td:nth-child(5),
+            #grantt-table:not(.mode--show-start) tr>td:nth-child(6),
+            #grantt-table:not(.mode--show-end) tr>td:nth-child(7),
+            #grantt-table:not(.mode--show-grantt-chart) tr>td:nth-child(8) {
+                display: none;
+            }
+        </style>
+        <table id="grantt-table">
+            <thead>
+                <tr>
+                    <td key="more-btn"></td>
+                    <td key="name">Task name</td>
+                    <td key="assigned">Assigned</td>
+                    <td key="progress">Progress</td>
+                    <td key="duration">Duration</td>
+                    <td key="start">Start</td>
+                    <td key="end">End</td>
+                    <td key="grantt">Grantt Chart</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>≡</td>
+                    <td><input type="text" name="fname"></td>
+                    <td>👤👤</td>
+                    <td><input type="button" value="" /><input type="range" min="0" max="100" step="1" value="90" /></td>
+                    <td><input type="time"></td>
+                    <td><input type="datetime-local"></td>
+                    <td><input type="datetime-local"></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        <script>
+            {
+                const navElm = document.getElementById("nav-factors-bar"),
+                    mainTableElm = document.getElementById("grantt-table"),
+                    main_classList = mainTableElm.classList
+                function _EL() {
+                    main_classList[this.checked ? "add" : "remove"](this.getAttribute("for-class"))
+                }
+                navElm.querySelectorAll('input[type="checkbox"][for-class]').forEach(elm => {
+                    if (elm.checked) main_classList.add(elm.getAttribute("for-class"))
+                    elm.addEventListener("click", _EL)
+                })
+
+                const GranttTableHandler = window.GranttTableHandler = Object.assign(new EventTarget(), {
+                    mainTableElm: mainTableElm,
+                    tableHead: mainTableElm.querySelector("thead"),
+                    tableBody: mainTableElm.querySelector("tbody"),
+
+                    fieldKeys: [],
+                    init: function () {
+                        this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
+                    },
+
+                    granttStartTime: new Date(),
+                    granttEndTime: new Date(),
+
+
+                    "generateRecordTD--more-btn": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerHTML = `<input type="button" value="" />`
+                        return td
+                    },
+
+                    "generateRecordTD--name": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerHTML = `<input type="text" value="${taskData.name}">`
+                        return td
+                    },
+
+                    "generateRecordTD--assigned": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerText = "👤👤"
+                        return td
+                    },
+
+                    "generateRecordTD--progress": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerHTML = `<input type="button" value="" /><input type="range" min="0" max="100" step="1" value="${Math.floor(Math.random() * 100)}" />`
+                        return td
+                    },
+
+                    "generateRecordTD--duration": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerHTML = `<input type="time">`
+                        return td
+                    },
+
+                    "generateRecordTD--start": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerHTML = `<input type="datetime-local">`
+                        return td
+                    },
+
+                    "generateRecordTD--end": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerHTML = `<input type="datetime-local">`
+                        return td
+                    },
+
+                    "generateRecordTD--grantt": function (taskData) {
+                        const td = document.createElement("td")
+                        td.innerText = "< == >"
+                        return td
+                    },
+
+                    generateRecordTR: function (taskKey = "xxxx", taskData = {}) {
+                        const trElm = document.createElement("tr")
+                        trElm.setAttribute("task-key", taskKey)
+
+                        this.fieldKeys.forEach(key => trElm.appendChild(this["generateRecordTD--" + key](taskData)))
+                        return trElm
+                    },
+
+                    addOrUpdate: function (taskKey) {
+                        DIL(this.tableBody, this.tableBody.appendChild, this.generateRecordTR(taskKey, database.getTask(taskKey)))
+                    }
+                })
+
+                GranttTableHandler.init()
+
+                for (taskKey in database.tasks) GranttTableHandler.addOrUpdate(taskKey)
+            }
+        </script>
+    </div>
 </body>
+
 </html>
