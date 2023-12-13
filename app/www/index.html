@@ -52,7 +52,7 @@
 
 <body>
     <script>
-        const database = Object.assign(new EventTarget(), {
+        const DatabaseHandler = Object.assign(new EventTarget(), {
             tasks: {
                 "1": { name: "Project Charter", assigned: "Leon W", progress: "", duration: 3600000, start: "3/12/18", end: "3/15/18" },
                 "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "", duration: 3600000, start: "3/15/18", end: "3/16/18" },
@@ -63,9 +63,33 @@
                 "7": { name: "Project Initiation", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" }
             },
 
-            getTask: function (taskKey) {
-                return this.tasks[taskKey]
+            getTask: function (taskId) {
+                return this.tasks[taskId]
+            },
+
+            updateTask: function (taskId, changes, mtime = (new Date()).getTime()) {
+                const task = this.tasks[taskId]
+                if (mtime <= task._mtime) return
+                task._mtime = mtime
+
+                var attr
+                for (attr in changes)
+                    if (task[attr] === changes[attr]) { delete changes[attr] }
+                    else task[attr] = changes[attr]
+
+                if (Object.keys(changes).length) this.dispatchTaskUpdate(taskId, changes)
+            },
+
+            // Event Handler
+            dispatchTaskUpdate: function (taskId, changes) {
+                this.dispatchEvent(new CustomEvent("task-update", {
+                    detail: {
+                        taskId: taskId,
+                        changes: changes
+                    },
+                }))
             }
+
         })
     </script>
     <div>project-management-tool</div>
@@ -129,20 +153,9 @@
                     <td key="duration">Duration</td>
                     <td key="start">Start</td>
                     <td key="end">End</td>
-                    <td key="grantt">Grantt Chart</td>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>≡</td>
-                    <td><input type="text" name="fname"></td>
-                    <td>👤👤</td>
-                    <td><input type="button" value="" /><input type="range" min="0" max="100" step="1" value="90" /></td>
-                    <td><input type="time"></td>
-                    <td><input type="datetime-local"></td>
-                    <td><input type="datetime-local"></td>
-                    <td></td>
-                </tr>
             </tbody>
         </table>
         <script>
@@ -158,84 +171,125 @@
                     elm.addEventListener("click", _EL)
                 })
 
+                const GranttTbodyCpms = {
+                    "more-btn": {
+                        sample: `<input type="button" value="" />`,
+                        get: function (tag) { },
+                        update: function (tag, changes) { }
+                    },
+                    "name": {
+                        sample: `<input type="text">`,
+                        update: function (tag, changes) { if (changes.hasOwnProperty("name")) DIL(tag, "value", changes.name) },
+                        get: function (tag, out = {}) { out.name = tag.value }
+                    },
+                    "assigned": {
+                        sample: `<div>👤👤</div>`,
+                        update: function (tag, changes) { if (changes.hasOwnProperty("assigned")) DIL(tag, "innerText", changes.assigned) },
+                        get: function (tag, out = {}) { out.assigned = tag.innerText }
+                    },
+                    "progress": {
+                        sample: `<div><input type="button" value="" /><input type="range" min="0" max="100" step="1" value="0" /></div>`,
+                        update: function (tag, changes) { if (changes.hasOwnProperty("progress")) DIL(tag.children[1], "value", changes.progress) },
+                        get: function (tag, out = {}) { out.progress = tag.children[1].value }
+                    },
+                    "duration": {
+                        sample: `<input type="time">`,
+                        update: function (tag, changes) { if (changes.hasOwnProperty("duration")) DIL(tag, "value", changes.duration) },
+                        get: function (tag, out = {}) { out.duration = tag.value }
+                    },
+                    "start": {
+                        sample: `<input type="datetime-local">`,
+                        update: function (tag, changes) { if (changes.hasOwnProperty("start")) DIL(tag, "value", changes.start) },
+                        get: function (tag, out = {}) { out.start = tag.value }
+                    },
+                    "end": {
+                        sample: `<input type="datetime-local">`,
+                        update: function (tag, changes) { if (changes.hasOwnProperty("end")) DIL(tag, "value", changes.end) },
+                        get: function (tag, out = {}) { out.end = tag.value }
+                    }
+                }
+
                 const GranttTableHandler = window.GranttTableHandler = Object.assign(new EventTarget(), {
                     mainTableElm: mainTableElm,
                     tableHead: mainTableElm.querySelector("thead"),
                     tableBody: mainTableElm.querySelector("tbody"),
 
                     fieldKeys: [],
-                    init: function () {
-                        this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
-                    },
+                    taskTrSampleInnerHtml: "",
 
                     granttStartTime: new Date(),
                     granttEndTime: new Date(),
 
-
-                    "generateRecordTD--more-btn": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerHTML = `<input type="button" value="" />`
-                        return td
-                    },
-
-                    "generateRecordTD--name": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerHTML = `<input type="text" value="${taskData.name}">`
-                        return td
-                    },
-
-                    "generateRecordTD--assigned": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerText = "👤👤"
-                        return td
-                    },
-
-                    "generateRecordTD--progress": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerHTML = `<input type="button" value="" /><input type="range" min="0" max="100" step="1" value="${Math.floor(Math.random() * 100)}" />`
-                        return td
-                    },
-
-                    "generateRecordTD--duration": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerHTML = `<input type="time">`
-                        return td
-                    },
-
-                    "generateRecordTD--start": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerHTML = `<input type="datetime-local">`
-                        return td
-                    },
-
-                    "generateRecordTD--end": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerHTML = `<input type="datetime-local">`
-                        return td
-                    },
-
-                    "generateRecordTD--grantt": function (taskData) {
-                        const td = document.createElement("td")
-                        td.innerText = "< == >"
-                        return td
-                    },
-
-                    generateRecordTR: function (taskKey = "xxxx", taskData = {}) {
+                    generateTaskTr: function () {
                         const trElm = document.createElement("tr")
-                        trElm.setAttribute("task-key", taskKey)
-
-                        this.fieldKeys.forEach(key => trElm.appendChild(this["generateRecordTD--" + key](taskData)))
+                        trElm.innerHTML = this.taskTrSampleInnerHtml
                         return trElm
                     },
 
-                    addOrUpdate: function (taskKey) {
-                        DIL(this.tableBody, this.tableBody.appendChild, this.generateRecordTR(taskKey, database.getTask(taskKey)))
+                    addTaskTr: function (taskId, task) {
+                        const elm = this.generateTaskTr()
+                        elm.setAttribute("task-id", taskId)
+                        this.updateTaskTr(elm, task)
+
+                        DIL(this.tableBody, this.tableBody.appendChild, elm)
+                    },
+
+                    updateTaskTr: function (tag, changes) {
+                        const _fieldKeys = this.fieldKeys;
+                        [...tag.children].forEach((td, indx) => GranttTbodyCpms[_fieldKeys[indx]].update(td.firstChild, changes))
+                    },
+
+
+                    addTask: function (taskId, task) {
+                        this.addTaskTr(taskId, task)
+                    },
+
+                    updateTask: function (taskId, changes) {
+                        this.updateTaskTr(this.tableBody.querySelector(`tr[task-id="${taskId}"]`), changes)
+                    },
+
+
+                    // Event Handler
+                    dispatchTaskUpdate: function (taskId, changes) {
+                        this.dispatchEvent(new CustomEvent("task-update", {
+                            detail: {
+                                taskId: taskId,
+                                changes: changes
+                            }
+                        }))
+                    },
+
+                    init: function () {
+                        this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
+                        this.taskTrSampleInnerHtml = this.fieldKeys.map(key => "<td>" + GranttTbodyCpms[key].sample + "</td>").join("")
+
+                        const _this = this
+                        this.tableBody.addEventListener("change", function (e) {
+                            var elm = e.target
+                            const paths = [elm]
+                            while ((elm = elm.parentElement) && elm !== this) paths.push(elm)
+                            paths.reverse()
+
+                            const changes = {}
+                            GranttTbodyCpms[_this.fieldKeys[[...paths[0].children].indexOf(paths[1])]].get(paths[2], changes)
+                            _this.dispatchTaskUpdate(paths[0].getAttribute("task-id"), changes)
+                        })
                     }
+
                 })
 
                 GranttTableHandler.init()
 
-                for (taskKey in database.tasks) GranttTableHandler.addOrUpdate(taskKey)
+                // Bind with DatabaseHandler
+                GranttTableHandler.addEventListener("task-update", function (e) {
+                    DatabaseHandler.updateTask(e.detail.taskId, e.detail.changes, e.timeStamp)
+                })
+
+                DatabaseHandler.addEventListener("task-update", function (e) {
+                    GranttTableHandler.updateTask(e.detail.taskId, e.detail.changes, e.timeStamp)
+                })
+
+                Object.entries(DatabaseHandler.tasks).forEach(([key, task]) => GranttTableHandler.addTask(key, task))
             }
         </script>
     </div>
