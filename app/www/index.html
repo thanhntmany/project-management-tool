@@ -48,6 +48,17 @@
             background-color: gray;
         }
     </style>
+    <script>
+
+        const cpmBuilders = {
+            inputTime: function () {
+                const elm = document.createElement("div")
+                elm.innerText = "2023/12/19 06:35"
+                return elm
+            }
+        }
+
+    </script>
 </head>
 
 <body>
@@ -104,24 +115,16 @@
     <div id="grantt-view">
         <div id="nav-factors-bar">
             <div>
-                <label><input type="checkbox" for-class="mode--show-task-name" name="mode--show-task-name" checked />Task name</label>
+                <label><input type="checkbox" for-class="mode--show-name" name="mode--show-name" checked />Task name</label>
                 <label><input type="checkbox" for-class="mode--show-assigned" name="mode--show-assigned" checked />Assigned</label>
                 <label><input type="checkbox" for-class="mode--show-progress" name="mode--show-progress" />Progress</label>
                 <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" />Duration</label>
                 <label><input type="checkbox" for-class="mode--show-start" name="mode--show-start" />Start</label>
                 <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
-            </div>
-            <div>
-                <label><input type="checkbox" for-class="mode--show-grantt-chart" name="mode--show-grantt-chart" checked />Grantt Chart</label> [<input type="datetime-local" />-<input type="datetime-local" />]
+                <label><input type="checkbox" for-class="mode--show-grantt" name="mode--show-grantt" checked />Grantt Chart</label>
             </div>
         </div>
         <style>
-            #grantt-table {
-                width: 100%;
-                display: block;
-                border: 1px solid;
-            }
-
             #grantt-table progress {
                 width: 4em;
             }
@@ -133,26 +136,39 @@
                 outline: none;
             }
 
-            #grantt-table:not(.mode--show-task-name) tr>td:nth-child(2),
-            #grantt-table:not(.mode--show-assigned) tr>td:nth-child(3),
-            #grantt-table:not(.mode--show-progress) tr>td:nth-child(4),
-            #grantt-table:not(.mode--show-duration) tr>td:nth-child(5),
-            #grantt-table:not(.mode--show-start) tr>td:nth-child(6),
-            #grantt-table:not(.mode--show-end) tr>td:nth-child(7),
-            #grantt-table:not(.mode--show-grantt-chart) tr>td:nth-child(8) {
+            table#grantt-table>thead>*>* {
+                text-align: left;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+
+            table#grantt-table:not(.mode--show-name)>*>*>*:nth-child(2),
+            table#grantt-table:not(.mode--show-assigned)>*>*>*:nth-child(3),
+            table#grantt-table:not(.mode--show-progress)>*>*>*:nth-child(4),
+            table#grantt-table:not(.mode--show-duration)>*>*>*:nth-child(5),
+            table#grantt-table:not(.mode--show-start)>*>*>*:nth-child(6),
+            table#grantt-table:not(.mode--show-end)>*>*>*:nth-child(7),
+            table#grantt-table:not(.mode--show-grantt)>*>*>*:nth-child(8) {
                 display: none;
             }
+
+            #grantt-table>tbody>tr>td:nth-child(8)>* {
+                background-color: blue;
+                transition: margin-left 100ms;
+                transition: width 100ms;
+            }
         </style>
-        <table id="grantt-table">
+        <table id="grantt-table" class="mode--show-name mode--show-assigned mode--show-grantt" style="width: 100%;">
             <thead>
                 <tr>
-                    <td key="more-btn"></td>
-                    <td key="name">Task name</td>
-                    <td key="assigned">Assigned</td>
-                    <td key="progress">Progress</td>
-                    <td key="duration">Duration</td>
-                    <td key="start">Start</td>
-                    <td key="end">End</td>
+                    <th key="more"></th>
+                    <th key="name">Task name</th>
+                    <th key="assigned">Assigned</th>
+                    <th key="progress">Progress</th>
+                    <th key="duration">Duration</th>
+                    <th key="start">Start</th>
+                    <th key="end">End</th>
+                    <th key="grantt">Grantt [<input type="datetime-local" />-<input type="datetime-local" />]</th>
                 </tr>
             </thead>
             <tbody>
@@ -172,82 +188,131 @@
                 })
 
                 const GranttTbodyCpms = {
-                    "more-btn": {
-                        sample: `<input type="button" value="" />`,
+                    "more": {
+                        createElement: function () {
+                            const elm = document.createElement("input")
+                            elm.type = "button"
+                            return elm
+                        },
                         get: function (tag) { },
                         update: function (tag, changes) { }
                     },
                     "name": {
-                        sample: `<input type="text">`,
+                        createElement: function () {
+                            const elm = document.createElement("input")
+                            elm.type = "text"
+                            return elm
+                        },
                         update: function (tag, changes) { if (changes.hasOwnProperty("name")) DIL(tag, "value", changes.name) },
                         get: function (tag, out = {}) { out.name = tag.value }
                     },
                     "assigned": {
-                        sample: `<div>👤👤</div>`,
+                        createElement: function () {
+                            const elm = document.createElement("div")
+                            elm.innerText = "👤👤"
+                            return elm
+                        },
                         update: function (tag, changes) { if (changes.hasOwnProperty("assigned")) DIL(tag, "innerText", changes.assigned) },
                         get: function (tag, out = {}) { out.assigned = tag.innerText }
                     },
                     "progress": {
-                        sample: `<div><input type="button" value="" /><input type="range" min="0" max="100" step="1" value="0" /></div>`,
+                        createElement: function () {
+                            const elm = document.createElement("div"),
+                                input1 = document.createElement("input"),
+                                input2 = document.createElement("input")
+
+                            input1.type = "button"
+                            input2.type = "range"
+                            input2.min = 0
+                            input2.max = 100
+                            input2.step = 1
+                            input2.value = 0
+                            elm.appendChild(input1)
+                            elm.appendChild(input2)
+
+                            return elm
+                        },
                         update: function (tag, changes) { if (changes.hasOwnProperty("progress")) DIL(tag.children[1], "value", changes.progress) },
                         get: function (tag, out = {}) { out.progress = tag.children[1].value }
                     },
                     "duration": {
-                        sample: `<input type="time">`,
+                        createElement: function () {
+                            const elm = document.createElement("input")
+                            elm.type = "time"
+                            return elm
+                        },
                         update: function (tag, changes) { if (changes.hasOwnProperty("duration")) DIL(tag, "value", changes.duration) },
                         get: function (tag, out = {}) { out.duration = tag.value }
                     },
                     "start": {
-                        sample: `<input type="datetime-local">`,
+                        createElement: function () {
+                            const elm = document.createElement("input")
+                            elm.type = "datetime-local"
+                            return elm
+                        },
                         update: function (tag, changes) { if (changes.hasOwnProperty("start")) DIL(tag, "value", changes.start) },
                         get: function (tag, out = {}) { out.start = tag.value }
                     },
                     "end": {
-                        sample: `<input type="datetime-local">`,
+                        createElement: function () {
+                            const elm = document.createElement("input")
+                            elm.type = "datetime-local"
+                            return elm
+                        },
                         update: function (tag, changes) { if (changes.hasOwnProperty("end")) DIL(tag, "value", changes.end) },
+                        get: function (tag, out = {}) { out.end = tag.value }
+                    },
+                    "grantt": {
+                        createElement: function () {
+                            const elm = document.createElement("div")
+                            elm.innerText = "xxx"
+                            return elm
+                        },
+                        update: function (tag, changes) {
+                            // #TODO:
+                            const start = Math.round(Math.random() * 100)
+                            tag.style.marginLeft = start + "%";
+                            tag.style.width = Math.round(Math.random() * (100 - start)) + "%";
+                        },
                         get: function (tag, out = {}) { out.end = tag.value }
                     }
                 }
 
                 const GranttTableHandler = window.GranttTableHandler = Object.assign(new EventTarget(), {
+
+                    // Table
                     mainTableElm: mainTableElm,
                     tableHead: mainTableElm.querySelector("thead"),
                     tableBody: mainTableElm.querySelector("tbody"),
 
                     fieldKeys: [],
-                    taskTrSampleInnerHtml: "",
-
-                    granttStartTime: new Date(),
-                    granttEndTime: new Date(),
 
                     generateTaskTr: function () {
                         const trElm = document.createElement("tr")
-                        trElm.innerHTML = this.taskTrSampleInnerHtml
+                        this.fieldKeys.map(key => {
+                            const elm = document.createElement("td")
+                            elm.appendChild(GranttTbodyCpms[key].createElement())
+                            return elm
+                        }).forEach(trElm.appendChild, trElm)
                         return trElm
                     },
 
-                    addTaskTr: function (taskId, task) {
+                    updateTaskTag: function (tag, changes) {
+                        _fieldKeys = this.fieldKeys;
+                        [...tag.children].forEach((td, indx) => GranttTbodyCpms[_fieldKeys[indx]].update(td.firstChild, changes))
+                    },
+
+                    addTask: function (taskId, task) {
                         const elm = this.generateTaskTr()
                         elm.setAttribute("task-id", taskId)
-                        this.updateTaskTr(elm, task)
+                        this.updateTaskTag(elm, task)
 
                         DIL(this.tableBody, this.tableBody.appendChild, elm)
                     },
 
-                    updateTaskTr: function (tag, changes) {
-                        const _fieldKeys = this.fieldKeys;
-                        [...tag.children].forEach((td, indx) => GranttTbodyCpms[_fieldKeys[indx]].update(td.firstChild, changes))
-                    },
-
-
-                    addTask: function (taskId, task) {
-                        this.addTaskTr(taskId, task)
-                    },
-
                     updateTask: function (taskId, changes) {
-                        this.updateTaskTr(this.tableBody.querySelector(`tr[task-id="${taskId}"]`), changes)
+                        this.updateTaskTag(this.tableBody.querySelector(`tr[task-id="${taskId}"]`), changes)
                     },
-
 
                     // Event Handler
                     dispatchTaskUpdate: function (taskId, changes) {
@@ -261,7 +326,6 @@
 
                     init: function () {
                         this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
-                        this.taskTrSampleInnerHtml = this.fieldKeys.map(key => "<td>" + GranttTbodyCpms[key].sample + "</td>").join("")
 
                         const _this = this
                         this.tableBody.addEventListener("change", function (e) {
@@ -284,11 +348,11 @@
                 GranttTableHandler.addEventListener("task-update", function (e) {
                     DatabaseHandler.updateTask(e.detail.taskId, e.detail.changes, e.timeStamp)
                 })
-
                 DatabaseHandler.addEventListener("task-update", function (e) {
                     GranttTableHandler.updateTask(e.detail.taskId, e.detail.changes, e.timeStamp)
                 })
 
+                // Load data
                 Object.entries(DatabaseHandler.tasks).forEach(([key, task]) => GranttTableHandler.addTask(key, task))
             }
         </script>
