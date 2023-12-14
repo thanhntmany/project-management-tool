@@ -51,11 +51,69 @@
     <script>
 
         const cpmBuilders = {
-            inputTime: function () {
-                const elm = document.createElement("div")
-                elm.innerText = "2023/12/19 06:35"
-                return elm
-            }
+            inputTime: {
+                textRe: /([+-]?\d+(\.\d*)?|\.\d+)\s*((ms)|(s|''|")|(m|')|(h)|(d)|(M)|(Y|y))?/g,
+                timeMsFromText: function (text) {
+                    const re = this.textRe; re.lastIndex = 0
+                    var timeMs = 0, rs; while (rs = re.exec(text)) timeMs += parseFloat(rs[1]) * (rs[4] ? 1 : rs[5] ? 1000 : rs[6] ? 60000 : rs[7] ? 3600000 : rs[8] ? 86400000 : rs[9] ? 2592000000 : rs[10] ? 31104000000 : 1)
+                    return timeMs
+                },
+                textFromTimeMs: function (timeMs) {
+                    var text = [], n = parseFloat(timeMs), b, i, r
+
+                    r = n % 31104000000
+                    i = (n - r) / 31104000000
+                    if (i !== 0) text.push(i + "Y")
+                    n = r
+
+                    r = n % 2592000000
+                    i = (n - r) / 2592000000
+                    if (i !== 0) text.push(i + "M")
+                    n = r
+
+                    r = n % 86400000
+                    i = (n - r) / 86400000
+                    if (i !== 0) text.push(i + "d")
+                    n = r
+
+                    r = n % 3600000
+                    i = (n - r) / 3600000
+                    if (i !== 0) text.push(i + "h")
+                    n = r
+
+                    r = n % 60000
+                    i = (n - r) / 60000
+                    if (i !== 0) text.push(i + "m")
+                    n = r
+
+                    r = n % 1000
+                    i = (n - r) / 1000
+                    if (i !== 0) text.push(i + "s")
+                    n = r
+
+                    i = n
+                    if (i !== 0) text.push(i + "ms")
+
+                    return text.join(" ")
+                },
+                createElement: function () {
+                    const elm = document.createElement("input")
+                    elm.type = "text"
+                    elm.addEventListener("change", this._changeEL)
+                    elm._builder = this
+                    return elm
+                },
+                _changeEL: function (e) {
+                    const elm = e.target,
+                        inputValue = elm.value,
+                        timeMs = this._builder.timeMsFromText(inputValue),
+                        text = this._builder.textFromTimeMs(this.timeMs = timeMs)
+
+                    if (elm.timeMs == timeMs) e.stopPropagation()
+                    elm.timeMs = timeMs
+                    if (elm.value !== text) DIL(elm, "value", text)
+                }
+            },
         }
 
     </script>
@@ -118,7 +176,7 @@
                 <label><input type="checkbox" for-class="mode--show-name" name="mode--show-name" checked />Task name</label>
                 <label><input type="checkbox" for-class="mode--show-assigned" name="mode--show-assigned" checked />Assigned</label>
                 <label><input type="checkbox" for-class="mode--show-progress" name="mode--show-progress" />Progress</label>
-                <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" />Duration</label>
+                <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" checked />Duration</label>
                 <label><input type="checkbox" for-class="mode--show-start" name="mode--show-start" />Start</label>
                 <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
                 <label><input type="checkbox" for-class="mode--show-grantt" name="mode--show-grantt" checked />Grantt Chart</label>
@@ -140,6 +198,7 @@
                 text-align: left;
                 white-space: nowrap;
                 overflow: hidden;
+                width: fit-content;
             }
 
             table#grantt-table:not(.mode--show-name)>*>*>*:nth-child(2),
@@ -152,6 +211,10 @@
                 display: none;
             }
 
+            table#grantt-table>tbody>tr>td>* {
+                width: 100%;
+            }
+
             #grantt-table>tbody>tr>td:nth-child(8)>* {
                 background-color: blue;
                 transition: margin-left 100ms;
@@ -161,11 +224,11 @@
         <table id="grantt-table" class="mode--show-name mode--show-assigned mode--show-grantt" style="width: 100%;">
             <thead>
                 <tr>
-                    <th key="more"></th>
+                    <th key="more"  style="width: 1em;"></th>
                     <th key="name">Task name</th>
                     <th key="assigned">Assigned</th>
                     <th key="progress">Progress</th>
-                    <th key="duration">Duration</th>
+                    <th key="duration" style="width: 5em;">Duration</th>
                     <th key="start">Start</th>
                     <th key="end">End</th>
                     <th key="grantt">Grantt [<input type="datetime-local" />-<input type="datetime-local" />]</th>
@@ -187,33 +250,41 @@
                     elm.addEventListener("click", _EL)
                 })
 
+                const _GranttTbodyCpms_dispatchTaskUpdate = function (elm, changes) {
+                    elm.dispatchEvent(new CustomEvent("task-update", {
+                        bubbles: true,
+                        detail: {
+                            changes: changes
+                        }
+                    }))
+                }
                 const GranttTbodyCpms = {
                     "more": {
                         createElement: function () {
                             const elm = document.createElement("input")
                             elm.type = "button"
                             return elm
-                        },
-                        get: function (tag) { },
-                        update: function (tag, changes) { }
+                        }
                     },
                     "name": {
                         createElement: function () {
                             const elm = document.createElement("input")
                             elm.type = "text"
+                            elm.addEventListener("change", this._EL)
                             return elm
                         },
-                        update: function (tag, changes) { if (changes.hasOwnProperty("name")) DIL(tag, "value", changes.name) },
-                        get: function (tag, out = {}) { out.name = tag.value }
+                        _EL: function (e) {
+                            e.stopPropagation()
+                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { name: e.target.value })
+                        },
+                        update: function (elm, changes) { if (changes.hasOwnProperty("name")) DIL(elm, "value", changes.name) }
                     },
                     "assigned": {
                         createElement: function () {
                             const elm = document.createElement("div")
                             elm.innerText = "👤👤"
                             return elm
-                        },
-                        update: function (tag, changes) { if (changes.hasOwnProperty("assigned")) DIL(tag, "innerText", changes.assigned) },
-                        get: function (tag, out = {}) { out.assigned = tag.innerText }
+                        }
                     },
                     "progress": {
                         createElement: function () {
@@ -230,19 +301,31 @@
                             elm.appendChild(input1)
                             elm.appendChild(input2)
 
+                            input2.addEventListener("change", this._EL)
                             return elm
                         },
-                        update: function (tag, changes) { if (changes.hasOwnProperty("progress")) DIL(tag.children[1], "value", changes.progress) },
-                        get: function (tag, out = {}) { out.progress = tag.children[1].value }
+                        _EL: function (e) {
+                            e.stopPropagation()
+                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { progress: e.target.value })
+                        },
+                        update: function (elm, changes) { if (changes.hasOwnProperty("progress")) DIL(elm.children[1], "value", changes.progress) }
                     },
                     "duration": {
                         createElement: function () {
-                            const elm = document.createElement("input")
-                            elm.type = "time"
+                            const elm = cpmBuilders.inputTime.createElement()
+                            elm.addEventListener("change", this._EL)
                             return elm
                         },
-                        update: function (tag, changes) { if (changes.hasOwnProperty("duration")) DIL(tag, "value", changes.duration) },
-                        get: function (tag, out = {}) { out.duration = tag.value }
+                        _EL: function (e) {
+                            e.stopPropagation()
+                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { duration: e.target.timeMs })
+                        },
+                        update: function (elm, changes) {
+                            if (changes.hasOwnProperty("duration")) {
+                                DIL(elm, "value", changes.duration)
+                                DIL(elm, elm.dispatchEvent, new Event('change', { 'bubbles': true }))
+                            }
+                        }
                     },
                     "start": {
                         createElement: function () {
@@ -250,8 +333,7 @@
                             elm.type = "datetime-local"
                             return elm
                         },
-                        update: function (tag, changes) { if (changes.hasOwnProperty("start")) DIL(tag, "value", changes.start) },
-                        get: function (tag, out = {}) { out.start = tag.value }
+                        update: function (elm, changes) { if (changes.hasOwnProperty("start")) DIL(elm, "value", changes.start) }
                     },
                     "end": {
                         createElement: function () {
@@ -259,8 +341,7 @@
                             elm.type = "datetime-local"
                             return elm
                         },
-                        update: function (tag, changes) { if (changes.hasOwnProperty("end")) DIL(tag, "value", changes.end) },
-                        get: function (tag, out = {}) { out.end = tag.value }
+                        update: function (elm, changes) { if (changes.hasOwnProperty("end")) DIL(elm, "value", changes.end) }
                     },
                     "grantt": {
                         createElement: function () {
@@ -268,13 +349,13 @@
                             elm.innerText = "xxx"
                             return elm
                         },
-                        update: function (tag, changes) {
+                        update: function (elm, changes) {
                             // #TODO:
                             const start = Math.round(Math.random() * 100)
-                            tag.style.marginLeft = start + "%";
-                            tag.style.width = Math.round(Math.random() * (100 - start)) + "%";
-                        },
-                        get: function (tag, out = {}) { out.end = tag.value }
+                            if (changes.hasOwnProperty("name")) DIL(elm, "innerText", changes.name)
+                            if (!elm.style.marginLeft) elm.style.marginLeft = start + "%";
+                            if (!elm.style.width) elm.style.width = Math.round(Math.random() * (100 - start)) + "%";
+                        }
                     }
                 }
 
@@ -297,9 +378,12 @@
                         return trElm
                     },
 
-                    updateTaskTag: function (tag, changes) {
+                    updateTaskTag: function (elm, changes) {
                         _fieldKeys = this.fieldKeys;
-                        [...tag.children].forEach((td, indx) => GranttTbodyCpms[_fieldKeys[indx]].update(td.firstChild, changes))
+                        [...elm.children].forEach((td, indx) => {
+                            const fn = GranttTbodyCpms[_fieldKeys[indx]].update
+                            if (fn) fn(td.firstChild, changes)
+                        })
                     },
 
                     addTask: function (taskId, task) {
@@ -325,19 +409,15 @@
                     },
 
                     init: function () {
+                        const _this = this
+
                         this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
 
-                        const _this = this
-                        this.tableBody.addEventListener("change", function (e) {
-                            var elm = e.target
-                            const paths = [elm]
-                            while ((elm = elm.parentElement) && elm !== this) paths.push(elm)
-                            paths.reverse()
-
-                            const changes = {}
-                            GranttTbodyCpms[_this.fieldKeys[[...paths[0].children].indexOf(paths[1])]].get(paths[2], changes)
-                            _this.dispatchTaskUpdate(paths[0].getAttribute("task-id"), changes)
+                        this.tableBody.addEventListener("task-update", function (e) {
+                            var elm = e.target, pElm; while ((pElm = elm.parentElement) !== this) elm = pElm
+                            _this.dispatchTaskUpdate(elm.getAttribute("task-id"), e.detail.changes)
                         })
+
                     }
 
                 })
