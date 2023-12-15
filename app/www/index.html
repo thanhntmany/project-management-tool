@@ -162,13 +162,13 @@
         window.addEventListener("load", function (e) {
             DatabaseHandler.assign({
                 tasks: {
-                    "1": { name: "Project Charter", assigned: "Leon W", progress: "", plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
-                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "" },
-                    "3": { name: "Research", assigned: "Pete S", progress: "" },
-                    "4": { name: "Projections", assigned: "Steve L", progress: "" },
-                    "5": { name: "Stakeholders", assigned: "Allen W", progress: "" },
-                    "6": { name: "Guidelines", assigned: "Malik M", progress: "" },
-                    "7": { name: "Project Initiation", assigned: "Malik M", progress: "" }
+                    "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
+                    "3": { name: "Research", assigned: "Pete S", progress: Math.round(Math.random() * 100) },
+                    "4": { name: "Projections", assigned: "Steve L", progress: Math.round(Math.random() * 100) },
+                    "5": { name: "Stakeholders", assigned: "Allen W", progress: Math.round(Math.random() * 100) },
+                    "6": { name: "Guidelines", assigned: "Malik M", progress: Math.round(Math.random() * 100) },
+                    "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
                 }
             })
         }, { once: true })
@@ -331,7 +331,7 @@
                     elm.addEventListener("click", _EL)
                 })
 
-                const _GranttTbodyCpms_dispatchTaskChange = function (elm, taskDiff) {
+                const _dispatchTaskChange = function (elm, taskDiff) {
                     elm.dispatchEvent(new CustomEvent("task-change", {
                         bubbles: true,
                         detail: taskDiff
@@ -354,7 +354,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskChange(e.target, { name: e.target.value })
+                            _dispatchTaskChange(e.target, { name: e.target.value })
                         },
                         update: function (elm, changes) { if (changes.hasOwnProperty("name")) DIL(elm, "value", changes.name) }
                     },
@@ -385,7 +385,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskChange(e.target, { progress: e.target.value })
+                            _dispatchTaskChange(e.target, { progress: e.target.value })
                         },
                         update: function (elm, changes) { if (changes.hasOwnProperty("progress")) DIL(elm.children[1], "value", changes.progress) }
                     },
@@ -397,7 +397,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskChange(e.target, { duration: e.target.timeMs })
+                            _dispatchTaskChange(e.target, { duration: e.target.timeMs })
                         },
                         update: function (elm, changes) {
                             if (changes.hasOwnProperty("duration")) {
@@ -430,7 +430,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskChange(e.target, { planDuration: e.target.timeMs })
+                            _dispatchTaskChange(e.target, { planDuration: e.target.timeMs })
                         },
                         update: function (elm, changes) {
                             if (changes.hasOwnProperty("planDuration")) {
@@ -513,11 +513,10 @@
 
                         this.tableBody.addEventListener("task-change", function (e) {
                             var elm = e.target, pElm; while ((pElm = elm.parentElement) !== this) elm = pElm
-                            const taskId = elm.getAttribute("task-id")
                             _this.dispatchEvent(new CustomEvent("change", {
                                 detail: {
                                     tasks: {
-                                        [taskId]: e.detail
+                                        [elm.getAttribute("task-id")]: e.detail
                                     }
                                 }
                             }))
