@@ -331,12 +331,10 @@
                     elm.addEventListener("click", _EL)
                 })
 
-                const _GranttTbodyCpms_dispatchTaskUpdate = function (elm, changes) {
-                    elm.dispatchEvent(new CustomEvent("task-update", {
+                const _GranttTbodyCpms_dispatchTaskChange = function (elm, taskDiff) {
+                    elm.dispatchEvent(new CustomEvent("task-change", {
                         bubbles: true,
-                        detail: {
-                            changes: changes
-                        }
+                        detail: taskDiff
                     }))
                 }
                 const GranttTbodyCpms = {
@@ -356,9 +354,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            console.log("#TODO");
-
-                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { name: e.target.value })
+                            _GranttTbodyCpms_dispatchTaskChange(e.target, { name: e.target.value })
                         },
                         update: function (elm, changes) { if (changes.hasOwnProperty("name")) DIL(elm, "value", changes.name) }
                     },
@@ -389,7 +385,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { progress: e.target.value })
+                            _GranttTbodyCpms_dispatchTaskChange(e.target, { progress: e.target.value })
                         },
                         update: function (elm, changes) { if (changes.hasOwnProperty("progress")) DIL(elm.children[1], "value", changes.progress) }
                     },
@@ -401,7 +397,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { duration: e.target.timeMs })
+                            _GranttTbodyCpms_dispatchTaskChange(e.target, { duration: e.target.timeMs })
                         },
                         update: function (elm, changes) {
                             if (changes.hasOwnProperty("duration")) {
@@ -434,7 +430,7 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
-                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { planDuration: e.target.timeMs })
+                            _GranttTbodyCpms_dispatchTaskChange(e.target, { planDuration: e.target.timeMs })
                         },
                         update: function (elm, changes) {
                             if (changes.hasOwnProperty("planDuration")) {
@@ -514,7 +510,19 @@
                     init: function () {
                         const _this = this
                         this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
-                        
+
+                        this.tableBody.addEventListener("task-change", function (e) {
+                            var elm = e.target, pElm; while ((pElm = elm.parentElement) !== this) elm = pElm
+                            const taskId = elm.getAttribute("task-id")
+                            _this.dispatchEvent(new CustomEvent("change", {
+                                detail: {
+                                    tasks: {
+                                        [taskId]: e.detail
+                                    }
+                                }
+                            }))
+                        })
+
                     }
 
                 })
