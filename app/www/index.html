@@ -139,46 +139,39 @@
         })
         CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
 
+        function isObject(obj) { return obj === Object(obj) }
+        function deepAssign(src, dst, diff = {}) {
+            var k, S, D; for (k in src) {
+                D = dst[k]
+                if (isObject(S = src[k]) && isObject(D)) {
+                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+                }
+                else if (D !== S) diff[k] = dst[k] = S
+            }
+            return Object.keys(diff).length ? diff : null
+        }
 
         const DatabaseHandler = Object.assign(new EventTarget(), {
-            tasks: {
-                "1": { name: "Project Charter", assigned: "Leon W", progress: "", duration: 3600000, start: "3/12/18", end: "3/15/18" },
-                "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "", duration: 3600000, start: "3/15/18", end: "3/16/18" },
-                "3": { name: "Research", assigned: "Pete S", progress: "", duration: 3600000, start: "3/15/18", end: "3/21/18" },
-                "4": { name: "Projections", assigned: "Steve L", progress: "", duration: 3600000, start: "3/16/18", end: "3/22/18" },
-                "5": { name: "Stakeholders", assigned: "Allen W", progress: "", duration: 3600000, start: "", end: "" },
-                "6": { name: "Guidelines", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" },
-                "7": { name: "Project Initiation", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" }
-            },
-
-            getTask: function (taskId) {
-                return this.tasks[taskId]
-            },
-
-            updateTask: function (taskId, changes, mtime = (new Date()).getTime()) {
-                const task = this.tasks[taskId]
-                if (mtime <= task._mtime) return
-                task._mtime = mtime
-
-                var attr
-                for (attr in changes)
-                    if (task[attr] === changes[attr]) { delete changes[attr] }
-                    else task[attr] = changes[attr]
-
-                if (Object.keys(changes).length) this.dispatchTaskUpdate(taskId, changes)
-            },
-
-            // Event Handler
-            dispatchTaskUpdate: function (taskId, changes) {
-                this.dispatchEvent(new CustomEvent("task-update", {
-                    detail: {
-                        taskId: taskId,
-                        changes: changes
-                    },
-                }))
+            data: {},
+            assign: function (src) {
+                const diff = deepAssign(src, this.data)
+                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
             }
-
         })
+
+        window.addEventListener("load", function (e) {
+            DatabaseHandler.assign({
+                tasks: {
+                    "1": { name: "Project Charter", assigned: "Leon W", progress: "", duration: 3600000, start: "3/12/18", end: "3/15/18", plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "", duration: 3600000, start: "3/15/18", end: "3/16/18" },
+                    "3": { name: "Research", assigned: "Pete S", progress: "", duration: 3600000, start: "3/15/18", end: "3/21/18" },
+                    "4": { name: "Projections", assigned: "Steve L", progress: "", duration: 3600000, start: "3/16/18", end: "3/22/18" },
+                    "5": { name: "Stakeholders", assigned: "Allen W", progress: "", duration: 3600000, start: "", end: "" },
+                    "6": { name: "Guidelines", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" },
+                    "7": { name: "Project Initiation", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" }
+                }
+            })
+        }, { once: true })
     </script>
     <div>project-management-tool</div>
     <div>
@@ -280,11 +273,11 @@
             table#grantt-table:not(.mode--show-name)>*>*>*:nth-child(2),
             table#grantt-table:not(.mode--show-assigned)>*>*>*:nth-child(3),
             table#grantt-table:not(.mode--show-progress)>*>*>*:nth-child(4),
-            table#grantt-table:not(.mode--show-duration)>*>*>*:nth-child(5),
-            table#grantt-table:not(.mode--show-start)>*>*>*:nth-child(6),
+            table#grantt-table:not(.mode--show-start)>*>*>*:nth-child(5),
+            table#grantt-table:not(.mode--show-duration)>*>*>*:nth-child(6),
             table#grantt-table:not(.mode--show-end)>*>*>*:nth-child(7),
-            table#grantt-table:not(.mode--show-plan-duration)>*>*>*:nth-child(8),
-            table#grantt-table:not(.mode--show-plan-start)>*>*>*:nth-child(9),
+            table#grantt-table:not(.mode--show-plan-start)>*>*>*:nth-child(8),
+            table#grantt-table:not(.mode--show-plan-duration)>*>*>*:nth-child(9),
             table#grantt-table:not(.mode--show-plan-end)>*>*>*:nth-child(10),
             table#grantt-table:not(.mode--show-grantt)>*>*>*:nth-child(11) {
                 display: none;
@@ -292,6 +285,10 @@
 
             table#grantt-table>tbody>tr>td>* {
                 width: 100%;
+            }
+
+            table#grantt-table input[type="datetime-local" i] {
+                width: fit-content !important;
             }
 
             #grantt-table>tbody>tr>td:nth-child(11)>* {
@@ -308,12 +305,12 @@
                     <th key="name">Task name</th>
                     <th key="assigned">Assigned</th>
                     <th key="progress">Progress</th>
+                    <th key="start" style="width: 0;">Start</th>
                     <th key="duration" style="width: 5em;">Duration</th>
-                    <th key="start">Start</th>
-                    <th key="end">End</th>
+                    <th key="end" style="width: 0;">End</th>
+                    <th key="plan-start" style="width: 0;">Plan Start</th>
                     <th key="plan-duration" style="width: 5em;">Plan Duration</th>
-                    <th key="plan-start">Plan Start</th>
-                    <th key="plan-end">Plan End</th>
+                    <th key="plan-end" style="width: 0;">Plan End</th>
                     <th key="grantt">Grantt</th>
                 </tr>
             </thead>
@@ -469,8 +466,9 @@
 
                     fieldKeys: [],
 
-                    generateTaskTr: function () {
+                    generateTaskTr: function (taskId) {
                         const trElm = document.createElement("tr")
+                        trElm.setAttribute("task-id", taskId)
                         this.fieldKeys.map(key => {
                             const elm = document.createElement("td"), createElement = GranttTbodyCpms[key] && GranttTbodyCpms[key].createElement
                             if (createElement) elm.appendChild(createElement())
@@ -479,7 +477,7 @@
                         return trElm
                     },
 
-                    updateTaskTag: function (elm, changes) {
+                    assignTaskTr: function (elm, changes) {
                         _fieldKeys = this.fieldKeys;
                         [...elm.children].forEach((td, indx) => {
                             const cpm = GranttTbodyCpms[_fieldKeys[indx]], fn = cpm && cpm.update
@@ -487,38 +485,35 @@
                         })
                     },
 
-                    addTask: function (taskId, task) {
-                        const elm = this.generateTaskTr()
-                        elm.setAttribute("task-id", taskId)
-                        this.updateTaskTag(elm, task)
-
-                        DIL(this.tableBody, this.tableBody.appendChild, elm)
+                    getTaskTr: function (taskId) {
+                        return this.tableBody.querySelector(`tr[task-id="${taskId}"]`)
                     },
 
-                    updateTask: function (taskId, changes) {
-                        this.updateTaskTag(this.tableBody.querySelector(`tr[task-id="${taskId}"]`), changes)
+                    assignTask: function (taskId, taskDiff) {
+                        const trElm = this.getTaskTr(taskId)
+                        if (trElm) this.assignTaskTr(trElm, taskDiff)
                     },
 
-                    // Event Handler
-                    dispatchTaskUpdate: function (taskId, changes) {
-                        this.dispatchEvent(new CustomEvent("task-update", {
-                            detail: {
-                                taskId: taskId,
-                                changes: changes
-                            }
-                        }))
+                    assign: function (changes) {
+                        Object.entries(changes.tasks).forEach(function ([taskId, taskDiff]) {
+                            this.assignTask(taskId, taskDiff)
+                        }, this)
+                    },
+
+                    addOrAssignTaskTr: function (taskId, task) {
+                        var trElm = this.getTaskTr(taskId), taskTrExists = trElm
+                        if (!taskTrExists) trElm = this.generateTaskTr(taskId)
+                        this.assignTaskTr(trElm, task)
+                        if (!taskTrExists) DIL(this.tableBody, this.tableBody.appendChild, trElm)
+                    },
+
+                    loadTasks: function (tasks) {
+                        Object.entries(tasks).forEach(function ([taskId, task]) { this.addOrAssignTaskTr(taskId, task) }, this)
                     },
 
                     init: function () {
                         const _this = this
-
                         this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
-
-                        this.tableBody.addEventListener("task-update", function (e) {
-                            var elm = e.target, pElm; while ((pElm = elm.parentElement) !== this) elm = pElm
-                            _this.dispatchTaskUpdate(elm.getAttribute("task-id"), e.detail.changes)
-                        })
-
                     }
 
                 })
@@ -526,15 +521,13 @@
                 GranttTableHandler.init()
 
                 // Bind with DatabaseHandler
-                GranttTableHandler.addEventListener("task-update", function (e) {
-                    DatabaseHandler.updateTask(e.detail.taskId, e.detail.changes, e.timeStamp)
-                })
-                DatabaseHandler.addEventListener("task-update", function (e) {
-                    GranttTableHandler.updateTask(e.detail.taskId, e.detail.changes, e.timeStamp)
-                })
-
+                GranttTableHandler.addEventListener("change", function (e) { DatabaseHandler.assign(e.detail) })
+                DatabaseHandler.addEventListener("change", function (e) { GranttTableHandler.assign(e.detail) })
                 // Load data
-                Object.entries(DatabaseHandler.tasks).forEach(([key, task]) => GranttTableHandler.addTask(key, task))
+                window.addEventListener("load", function () {
+                    GranttTableHandler.loadTasks(DatabaseHandler.data.tasks)
+                }, { once: true })
+
             }
         </script>
     </div>
