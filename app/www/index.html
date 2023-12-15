@@ -162,13 +162,13 @@
         window.addEventListener("load", function (e) {
             DatabaseHandler.assign({
                 tasks: {
-                    "1": { name: "Project Charter", assigned: "Leon W", progress: "", duration: 3600000, start: "3/12/18", end: "3/15/18", plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
-                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "", duration: 3600000, start: "3/15/18", end: "3/16/18" },
-                    "3": { name: "Research", assigned: "Pete S", progress: "", duration: 3600000, start: "3/15/18", end: "3/21/18" },
-                    "4": { name: "Projections", assigned: "Steve L", progress: "", duration: 3600000, start: "3/16/18", end: "3/22/18" },
-                    "5": { name: "Stakeholders", assigned: "Allen W", progress: "", duration: 3600000, start: "", end: "" },
-                    "6": { name: "Guidelines", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" },
-                    "7": { name: "Project Initiation", assigned: "Malik M", progress: "", duration: 3600000, start: "", end: "" }
+                    "1": { name: "Project Charter", assigned: "Leon W", progress: "", plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: "" },
+                    "3": { name: "Research", assigned: "Pete S", progress: "" },
+                    "4": { name: "Projections", assigned: "Steve L", progress: "" },
+                    "5": { name: "Stakeholders", assigned: "Allen W", progress: "" },
+                    "6": { name: "Guidelines", assigned: "Malik M", progress: "" },
+                    "7": { name: "Project Initiation", assigned: "Malik M", progress: "" }
                 }
             })
         }, { once: true })
@@ -285,6 +285,7 @@
 
             table#grantt-table>tbody>tr>td>* {
                 width: 100%;
+                white-space: nowrap;
             }
 
             table#grantt-table input[type="datetime-local" i] {
@@ -304,7 +305,7 @@
                     <th key="more" style="width: 1em;"></th>
                     <th key="name">Task name</th>
                     <th key="assigned">Assigned</th>
-                    <th key="progress">Progress</th>
+                    <th key="progress" style="width: 0;">Progress</th>
                     <th key="start" style="width: 0;">Start</th>
                     <th key="duration" style="width: 5em;">Duration</th>
                     <th key="end" style="width: 0;">End</th>
@@ -355,6 +356,8 @@
                         },
                         _EL: function (e) {
                             e.stopPropagation()
+                            console.log("#TODO");
+
                             _GranttTbodyCpms_dispatchTaskUpdate(e.target, { name: e.target.value })
                         },
                         update: function (elm, changes) { if (changes.hasOwnProperty("name")) DIL(elm, "value", changes.name) }
@@ -448,7 +451,7 @@
                         },
                         update: function (elm, changes) {
                             // #TODO:
-                            console.log("c", changes);
+                            // console.log("c", changes);
                             const start = Math.round(Math.random() * 100)
                             if (changes.hasOwnProperty("name")) DIL(elm, "innerText", changes.name)
                             if (!elm.style.marginLeft) elm.style.marginLeft = start + "%";
@@ -458,20 +461,17 @@
                 }
 
                 const GranttTableHandler = window.GranttTableHandler = Object.assign(new EventTarget(), {
-
-                    // Table
                     mainTableElm: mainTableElm,
                     tableHead: mainTableElm.querySelector("thead"),
                     tableBody: mainTableElm.querySelector("tbody"),
-
                     fieldKeys: [],
 
                     generateTaskTr: function (taskId) {
                         const trElm = document.createElement("tr")
                         trElm.setAttribute("task-id", taskId)
                         this.fieldKeys.map(key => {
-                            const elm = document.createElement("td"), createElement = GranttTbodyCpms[key] && GranttTbodyCpms[key].createElement
-                            if (createElement) elm.appendChild(createElement())
+                            const elm = document.createElement("td"), cpm = GranttTbodyCpms[key]
+                            if (cpm && cpm.createElement) elm.appendChild(cpm.createElement())
                             return elm
                         }).forEach(trElm.appendChild, trElm)
                         return trElm
@@ -514,6 +514,7 @@
                     init: function () {
                         const _this = this
                         this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
+                        
                     }
 
                 })
