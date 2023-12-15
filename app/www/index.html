@@ -187,10 +187,35 @@
                 <label><input type="checkbox" for-class="mode--show-name" name="mode--show-name" checked />Task name</label>
                 <label><input type="checkbox" for-class="mode--show-assigned" name="mode--show-assigned" checked />Assigned</label>
                 <label><input type="checkbox" for-class="mode--show-progress" name="mode--show-progress" />Progress</label>
-                <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" checked />Duration</label>
-                <label><input type="checkbox" for-class="mode--show-start" name="mode--show-start" />Start</label>
-                <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
-                <label><input type="checkbox" for-class="mode--show-grantt" name="mode--show-grantt" checked />Grantt Chart</label>
+            </div>
+            <table>
+                <tr>
+                    <td>Track:</td>
+                    <td>
+                        <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" checked />Duration</label>
+                    </td>
+                    <td>
+                        <label><input type="checkbox" for-class="mode--show-start" name="mode--show-start" />Start</label>
+                    </td>
+                    <td>
+                        <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Plan:</td>
+                    <td>
+                        <label><input type="checkbox" for-class="mode--show-plan-duration" name="mode--show-plan-duration" checked />Duration</label>
+                    </td>
+                    <td>
+                        <label><input type="checkbox" for-class="mode--show-plan-start" name="mode--show-plan-start" />Start</label>
+                    </td>
+                    <td>
+                        <label><input type="checkbox" for-class="mode--show-plan-end" name="mode--show-plan-end" />End</label>
+                    </td>
+                </tr>
+            </table>
+            <div>
+                <label><input type="checkbox" for-class="mode--show-grantt" name="mode--show-grantt" checked />Grantt Chart</label>[<input type="datetime-local" />-<input type="datetime-local" />]
             </div>
             <div>
                 <label> Use timezone: <select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
@@ -250,7 +275,10 @@
             table#grantt-table:not(.mode--show-duration)>*>*>*:nth-child(5),
             table#grantt-table:not(.mode--show-start)>*>*>*:nth-child(6),
             table#grantt-table:not(.mode--show-end)>*>*>*:nth-child(7),
-            table#grantt-table:not(.mode--show-grantt)>*>*>*:nth-child(8) {
+            table#grantt-table:not(.mode--show-plan-duration)>*>*>*:nth-child(8),
+            table#grantt-table:not(.mode--show-plan-start)>*>*>*:nth-child(9),
+            table#grantt-table:not(.mode--show-plan-end)>*>*>*:nth-child(10),
+            table#grantt-table:not(.mode--show-grantt)>*>*>*:nth-child(11) {
                 display: none;
             }
 
@@ -258,7 +286,7 @@
                 width: 100%;
             }
 
-            #grantt-table>tbody>tr>td:nth-child(8)>* {
+            #grantt-table>tbody>tr>td:nth-child(11)>* {
                 background-color: blue;
                 transition: margin-left 100ms;
                 transition: width 100ms;
@@ -274,10 +302,10 @@
                     <th key="duration" style="width: 5em;">Duration</th>
                     <th key="start">Start</th>
                     <th key="end">End</th>
-                    <!-- <th key="duration" style="width: 5em;">Plan Duration</th>
-                    <th key="start">Plan Start</th>
-                    <th key="end">Plan End</th> -->
-                    <th key="grantt">Grantt [<input type="datetime-local" />-<input type="datetime-local" />]</th>
+                    <th key="plan-duration" style="width: 5em;">Plan Duration</th>
+                    <th key="plan-start">Plan Start</th>
+                    <th key="plan-end">Plan End</th>
+                    <th key="grantt">Grantt</th>
                 </tr>
             </thead>
             <tbody>
@@ -389,6 +417,23 @@
                         },
                         update: function (elm, changes) { if (changes.hasOwnProperty("end")) DIL(elm, "value", changes.end) }
                     },
+                    "plan-duration": {
+                        createElement: function () {
+                            const elm = cpmBuilders.inputTime.createElement()
+                            elm.addEventListener("change", this._EL)
+                            return elm
+                        },
+                        _EL: function (e) {
+                            e.stopPropagation()
+                            _GranttTbodyCpms_dispatchTaskUpdate(e.target, { planDuration: e.target.timeMs })
+                        },
+                        update: function (elm, changes) {
+                            if (changes.hasOwnProperty("planDuration")) {
+                                DIL(elm, "value", changes.planDuration)
+                                DIL(elm, elm.dispatchEvent, new Event('change', { 'bubbles': true }))
+                            }
+                        }
+                    },
                     "grantt": {
                         createElement: function () {
                             const elm = document.createElement("div")
@@ -417,8 +462,8 @@
                     generateTaskTr: function () {
                         const trElm = document.createElement("tr")
                         this.fieldKeys.map(key => {
-                            const elm = document.createElement("td")
-                            elm.appendChild(GranttTbodyCpms[key].createElement())
+                            const elm = document.createElement("td"), createElement = GranttTbodyCpms[key] && GranttTbodyCpms[key].createElement
+                            if (createElement) elm.appendChild(createElement())
                             return elm
                         }).forEach(trElm.appendChild, trElm)
                         return trElm
@@ -427,7 +472,7 @@
                     updateTaskTag: function (elm, changes) {
                         _fieldKeys = this.fieldKeys;
                         [...elm.children].forEach((td, indx) => {
-                            const fn = GranttTbodyCpms[_fieldKeys[indx]].update
+                            const cpm = GranttTbodyCpms[_fieldKeys[indx]], fn = cpm && cpm.update
                             if (fn) fn(td.firstChild, changes)
                         })
                     },
