@@ -120,6 +120,14 @@
 </head>
 
 <body>
+    <div id="test-zone" style="padding: 2em;">
+        <div id="test">
+            <span class="time-from">2023-12-29 15:30:20.001</span> [ <span class="time-duration">1Y 2M 3d 5h 4m 3s 12ms</span> ] <span class="time-to">2023-12-29 15:30:20.001</span>
+        </div>
+        <div>
+            <span class="time-from">2023-12-29 15:30</span> [ <span class="time-duration">3d 5h 4m</span> ] <span class="time-to">2023-12-29 15:30</span>
+        </div>
+    </div>
     <script>
         const CORE = Object.assign(new EventTarget(), {
             timezoneOffset: undefined,
@@ -290,6 +298,7 @@
                 background-color: blue;
                 transition: margin-left 100ms;
                 transition: width 100ms;
+                white-space: nowrap;
             }
         </style>
         <table id="grantt-table" class="mode--show-name mode--show-assigned mode--show-grantt" style="width: 100%;">
@@ -442,6 +451,7 @@
                         },
                         update: function (elm, changes) {
                             // #TODO:
+                            console.log("c", changes);
                             const start = Math.round(Math.random() * 100)
                             if (changes.hasOwnProperty("name")) DIL(elm, "innerText", changes.name)
                             if (!elm.style.marginLeft) elm.style.marginLeft = start + "%";
