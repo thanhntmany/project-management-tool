@@ -121,6 +121,17 @@
 
 <body>
     <script>
+        const CORE = Object.assign(new EventTarget(), {
+            timezoneOffset: undefined,
+            setTimezoneOffset: function (offfset) {
+                if (this.timezoneOffset === offfset) return
+                this.timezoneOffset = offfset
+                this.dispatchEvent(new Event("change-timezone-offset"))
+            }
+        })
+        CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
+
+
         const DatabaseHandler = Object.assign(new EventTarget(), {
             tasks: {
                 "1": { name: "Project Charter", assigned: "Leon W", progress: "", duration: 3600000, start: "3/12/18", end: "3/15/18" },
@@ -181,6 +192,38 @@
                 <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
                 <label><input type="checkbox" for-class="mode--show-grantt" name="mode--show-grantt" checked />Grantt Chart</label>
             </div>
+            <div>
+                <label> Use timezone: <select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
+                <script>
+                    {
+                        const elm = document.getElementById("timezone-selector");
+                        ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                            const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
+                            e = document.createElement("option")
+                            e.value = offfset
+                            e.innerText = label
+                            elm.appendChild(e)
+                        })
+
+                        const offfsetElm = document.getElementById("timezone-offfset")
+                        elm.addEventListener("change", function (e) {
+                            offfsetElm.value = this.value
+                            offfsetElm.dispatchEvent(new Event('change'))
+                        })
+                        offfsetElm.addEventListener("change", function (e) {
+                            CORE.setTimezoneOffset(elm.value = this.value)
+                        })
+                        CORE.addEventListener("change-timezone-offset", function (e) {
+                            if (offfsetElm.value === this.timezoneOffset) return
+                            offfsetElm.value = this.timezoneOffset
+                            offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
+                        })
+
+                        offfsetElm.value = CORE.timezoneOffset
+                        offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
+                    }
+                </script>
+            </div>
         </div>
         <style>
             #grantt-table progress {
@@ -224,13 +267,16 @@
         <table id="grantt-table" class="mode--show-name mode--show-assigned mode--show-grantt" style="width: 100%;">
             <thead>
                 <tr>
-                    <th key="more"  style="width: 1em;"></th>
+                    <th key="more" style="width: 1em;"></th>
                     <th key="name">Task name</th>
                     <th key="assigned">Assigned</th>
                     <th key="progress">Progress</th>
                     <th key="duration" style="width: 5em;">Duration</th>
                     <th key="start">Start</th>
                     <th key="end">End</th>
+                    <!-- <th key="duration" style="width: 5em;">Plan Duration</th>
+                    <th key="start">Plan Start</th>
+                    <th key="end">Plan End</th> -->
                     <th key="grantt">Grantt [<input type="datetime-local" />-<input type="datetime-local" />]</th>
                 </tr>
             </thead>
