@@ -185,37 +185,13 @@
     <div id="grantt-view">
         <div id="nav-factors-bar">
             <div>
-                <label><input type="checkbox" for-class="mode--show-name" name="mode--show-name" checked />Task name</label>
                 <label><input type="checkbox" for-class="mode--show-assigned" name="mode--show-assigned" checked />Assigned</label>
+                <label><input type="checkbox" for-class="mode--show-name" name="mode--show-name" checked />Task name</label>
                 <label><input type="checkbox" for-class="mode--show-progress" name="mode--show-progress" />Progress</label>
-            </div>
-            <table>
-                <tr>
-                    <td>Track:</td>
-                    <td>
-                        <label><input type="checkbox" for-class="mode--show-duration" name="mode--show-duration" checked />Duration</label>
-                    </td>
-                    <td>
-                        <label><input type="checkbox" for-class="mode--show-start" name="mode--show-start" />Start</label>
-                    </td>
-                    <td>
-                        <label><input type="checkbox" for-class="mode--show-end" name="mode--show-end" />End</label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Plan:</td>
-                    <td>
-                        <label><input type="checkbox" for-class="mode--show-plan-duration" name="mode--show-plan-duration" checked />Duration</label>
-                    </td>
-                    <td>
-                        <label><input type="checkbox" for-class="mode--show-plan-start" name="mode--show-plan-start" />Start</label>
-                    </td>
-                    <td>
-                        <label><input type="checkbox" for-class="mode--show-plan-end" name="mode--show-plan-end" />End</label>
-                    </td>
-                </tr>
-            </table>
-            <div>
+                <label><input type="checkbox" for-class="mode--show-track" name="mode--show-track" checked />Track</label>
+                <label><input type="checkbox" for-class="mode--show-plan" name="mode--show-plan" checked />Plan</label>
+                <label><input type="checkbox" for-class="mode--show-note" name="mode--show-note" checked />Note</label>
+                <label><input type="checkbox" for-class="mode--show-description" name="mode--show-description" checked />Description</label>
                 <label><input type="checkbox" for-class="mode--show-grantt" name="mode--show-grantt" checked />Grantt Chart</label>[<input type="datetime-local" />-<input type="datetime-local" />]
             </div>
             <div>
@@ -252,10 +228,6 @@
             </div>
         </div>
         <style>
-            #grantt-table progress {
-                width: 4em;
-            }
-
             #grantt-table input[type="text"] {
                 background-color: rgba(0, 0, 0, 0);
                 color: white;
@@ -263,97 +235,236 @@
                 outline: none;
             }
 
-            table#grantt-table>thead>*>* {
-                text-align: left;
-                white-space: nowrap;
-                overflow: hidden;
-                width: fit-content;
+            #grantt-table>thead>tr>th {
+                position: sticky;
+                top: 0;
+                background-color: black;
+                z-index: 1;
+                border: 1px solid white;
             }
 
-            table#grantt-table:not(.mode--show-name)>*>*>*:nth-child(2),
-            table#grantt-table:not(.mode--show-assigned)>*>*>*:nth-child(3),
-            table#grantt-table:not(.mode--show-progress)>*>*>*:nth-child(4),
-            table#grantt-table:not(.mode--show-start)>*>*>*:nth-child(5),
-            table#grantt-table:not(.mode--show-duration)>*>*>*:nth-child(6),
-            table#grantt-table:not(.mode--show-end)>*>*>*:nth-child(7),
-            table#grantt-table:not(.mode--show-plan-start)>*>*>*:nth-child(8),
-            table#grantt-table:not(.mode--show-plan-duration)>*>*>*:nth-child(9),
-            table#grantt-table:not(.mode--show-plan-end)>*>*>*:nth-child(10),
-            table#grantt-table:not(.mode--show-grantt)>*>*>*:nth-child(11) {
+            #grantt-table>tbody>tr>* {
+                padding-top: 2em;
+            }
+
+            #grantt-table:not(.mode--show-name)>tbody .task__name,
+            #grantt-table:not(.mode--show-assigned)>tbody .task__assigned,
+            #grantt-table:not(.mode--show-grantt)>*>*>*:last-child,
+            #grantt-table:not(.mode--show-plan)>tbody>tr .task__plan,
+            #grantt-table:not(.mode--show-track)>tbody>tr .task__track,
+            #grantt-table:not(.mode--show-progress)>tbody>tr .task__progress,
+            #grantt-table:not(.mode--show-plan):not(.mode--show-track):not(.mode--show-progress)>tbody>tr .task__progress-table,
+            #grantt-table:not(.mode--show-note)>tbody>tr .task__note,
+            #grantt-table:not(.mode--show-description)>tbody>tr .task__description {
                 display: none;
             }
 
-            table#grantt-table>tbody>tr>td>* {
+            #grantt-table>*>*>*:last-child {
+                border-left: 1px solid white;
+                border-right: 1px solid white;
+            }
+
+            .tasks-sample {
+                display: none !important;
+            }
+
+            #grantt-main-table {
                 width: 100%;
-                white-space: nowrap;
             }
 
-            table#grantt-table input[type="datetime-local" i] {
-                width: fit-content !important;
+            #grantt-main-table>tbody>tr>td>table {
+                width: 100%;
             }
 
-            #grantt-table>tbody>tr>td:nth-child(11)>* {
-                background-color: blue;
-                transition: margin-left 100ms;
-                transition: width 100ms;
-                white-space: nowrap;
+            table#grantt-main-table,
+            #grantt-main-table table {
+                border-collapse: collapse;
+            }
+
+            table#grantt-table>tbody>tr>td:last-child {
+                height: 1px;
+            }
+
+            table#grantt-table>tbody>tr>td:last-child>div {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            .task-grantt__plan-bar {
+                position: relative;
+                border: 1px solid white;
+                height: 1em;
+            }
+
+            .task-grantt__track-bar {
+                position: relative;
+                background-color: darkblue;
+                height: 3em;
+            }
+
+            .task__progress-table {
+                font-size: 0.75em;
+                margin: 0.5em 1em;
             }
         </style>
-        <table id="grantt-table" class="mode--show-name mode--show-assigned mode--show-grantt" style="width: 100%;">
-            <thead>
-                <tr>
-                    <th key="more" style="width: 1em;"></th>
-                    <th key="name" style="width: 0;">Task name</th>
-                    <th key="assigned" style="width: 0;">Assigned</th>
-                    <th key="progress" style="width: 0;">Progress</th>
-                    <th key="start" style="width: 0;">Start</th>
-                    <th key="duration" style="width: 5em;">Duration</th>
-                    <th key="end" style="width: 0;">End</th>
-                    <th key="plan-start" style="width: 0;">Plan Start</th>
-                    <th key="plan-duration" style="width: 5em;">Plan Duration</th>
-                    <th key="plan-end" style="width: 0;">Plan End</th>
-                    <th key="grantt">Grantt</th>
-                </tr>
-            </thead>
-            <tbody class="tasks">
-            </tbody>
-            <tbody class="summary">
-                <tr>
-                    <th></th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                    <th>aa</th>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                    <td>aa</td>
-                </tr>
-            </tbody>
-        </table>
+        <div style="height: 500px;overflow: auto;">
+            <table id="grantt-table" class="mode--show-name mode--show-assigned mode--show-grantt" style="width: 100%;border-spacing: 0;">
+                <thead>
+                    <tr>
+                        <th key="more" style="width: 1em;"></th>
+                        <th key="name" style="width: 600px;">Tasks</th>
+                        <th key="grantt">Grantt</th>
+                    </tr>
+                </thead>
+                <style>
+                </style>
+                <tbody class="tasks-sample">
+                    <tr>
+                        <td>
+                            <input type="button">
+                        </td>
+                        <td>
+                            <span class="task__assigned">👤👤+</span>
+                            <input class="task__name" type="text" value="{{name}}">
+                            <table class="task__progress-table">
+                                <tbody>
+                                    <tr class="task__progress">
+                                        <td>Progress</td>
+                                        <td colspan="3"><input type="range" min="0" max="100" step="1" style="width: 100%;"></td>
+                                    </tr>
+                                    <tr class="task__track">
+                                        <td>Track</td>
+                                        <td><input type="datetime-local"></td>
+                                        <td><input type="datetime-local"></td>
+                                        <td><input type="text"></td>
+                                    </tr>
+                                    <tr class="task__plan">
+                                        <td>Plan</td>
+                                        <td><input type="datetime-local"></td>
+                                        <td><input type="datetime-local"></td>
+                                        <td><input type="text"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="task__note" contenteditable="true">Note</div>
+                            <div class="task__description" contenteditable="true">description</div>
+                        </td>
+                        <td>
+                            <div>
+                                <div class="task-grantt__track-bar" style="margin-left: 30%;width: 35%;">xx</div>
+                                <div class="task-grantt__plan-bar" style="margin-left: 30%;width: 35%;">xx</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody class="tasks" style="height: 300px;">
+                </tbody>
+                <script>
+                    {
+                        const mainElm = document.currentScript.parentElement.querySelector(".tasks"),
+                            sampleElm = document.currentScript.parentElement.querySelector(".tasks-sample").firstElementChild
+                        mainElm._handler = {
+                            generateTask: function (taskId) {
+                                const elm = sampleElm.cloneNode(true)
+                                elm.setAttribute("task-id", taskId)
+                                return elm
+                            },
+
+                            assign: function (elm, taskDiff) {
+                                const taskId = elm.getAttribute("task-id")
+
+                                if (taskDiff.hasOwnProperty("name")) {
+                                    const tag = elm.querySelector(".task__name")
+                                    DIL(tag, "value", taskDiff.name)
+
+                                    const barElm = elm.querySelector(".task-grantt__track-bar")
+                                    DIL(barElm, "innerText", taskDiff.name)
+                                }
+
+                                if (taskDiff.hasOwnProperty("assigned")) {
+                                    const tag = elm.querySelector(".task__assigned")
+                                    DIL(tag, "innerText", taskDiff.assigned + "+")
+                                }
+
+                                if (taskDiff.hasOwnProperty("progress")) {
+                                    const tag = elm.querySelector(".task__progress").children[1].firstElementChild
+                                    DIL(tag, "value", taskDiff.progress)
+                                }
+
+                                if (taskDiff.hasOwnProperty("plan")) {
+                                    const phase = taskDiff.plan,
+                                        from = phase.from || DatabaseHandler.data.tasks[taskId].plan.from,
+                                        to = phase.to || DatabaseHandler.data.tasks[taskId].plan.to,
+                                        phaseElm = elm.querySelector(".task__plan"),
+                                        barElm = elm.querySelector(".task-grantt__plan-bar")
+                                    DIL(phaseElm.children[1].firstElementChild, "value", from)
+                                    DIL(phaseElm.children[2].firstElementChild, "value", to)
+                                    DIL(phaseElm.children[3].firstElementChild, "value", to - from)
+
+                                    const start = Math.round(Math.random() * 100)
+                                    DIL(barElm.style, "marginLeft", start + "%")
+                                    DIL(barElm.style, "width", Math.round(Math.random() * (100 - start)) + "%")
+                                }
+
+                                if (taskDiff.hasOwnProperty("track")) {
+                                    const phase = taskDiff.track,
+                                        from = phase.from || DatabaseHandler.data.tasks[taskId].track.from,
+                                        to = phase.to || DatabaseHandler.data.tasks[taskId].track.to,
+                                        phaseElm = elm.querySelector(".task__track"),
+                                        barElm = elm.querySelector(".task-grantt__track-bar")
+                                    DIL(phaseElm.children[1].firstElementChild, "value", from)
+                                    DIL(phaseElm.children[2].firstElementChild, "value", to)
+                                    DIL(phaseElm.children[3].firstElementChild, "value", to - from)
+
+                                    const start = Math.round(Math.random() * 100)
+                                    DIL(barElm.style, "marginLeft", start + "%")
+                                    DIL(barElm.style, "width", Math.round(Math.random() * (100 - start)) + "%")
+                                }
+                            },
+
+                            getTask: function (taskId) {
+                                return mainElm.querySelector(`[task-id="${taskId}"]`)
+                            },
+
+                            addOrAssignTask: function (taskId, task) {
+                                var elm = this.getTask(taskId), taskTrExists = elm
+                                if (!taskTrExists) elm = this.generateTask(taskId)
+                                this.assign(elm, task)
+                                if (!taskTrExists) DIL(mainElm, mainElm.appendChild, elm)
+                            },
+
+                            loadTasks: function (tasks) {
+                                Object.entries(tasks).forEach(function ([taskId, task]) { this.addOrAssignTask(taskId, task) }, this)
+                            }
+                        }
+                    }
+                </script>
+                <tbody id="summary">
+                    <tr>
+                        <th></th>
+                        <th>Category</th>
+                        <th>Chart</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Finance</td>
+                        <td>--- === ---</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Finance</td>
+                        <td>--- === ---</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <script>
             {
                 const navElm = document.getElementById("nav-factors-bar"),
-                    mainTableElm = document.getElementById("grantt-table"),
-                    main_classList = mainTableElm.classList
-                function _EL() {
-                    main_classList[this.checked ? "add" : "remove"](this.getAttribute("for-class"))
-                }
+                    granttTableElm = document.getElementById("grantt-table"),
+                    main_classList = granttTableElm.classList
+                function _EL() { main_classList[this.checked ? "add" : "remove"](this.getAttribute("for-class")) }
                 navElm.querySelectorAll('input[type="checkbox"][for-class]').forEach(elm => {
                     if (elm.checked) main_classList.add(elm.getAttribute("for-class"))
                     elm.addEventListener("click", _EL)
@@ -365,190 +476,23 @@
                         detail: taskDiff
                     }))
                 }
-                const GranttTbodyCpms = {
-                    "more": {
-                        createElement: function () {
-                            const elm = document.createElement("input")
-                            elm.type = "button"
-                            return elm
-                        }
-                    },
-                    "name": {
-                        createElement: function () {
-                            const elm = document.createElement("input")
-                            elm.type = "text"
-                            elm.addEventListener("change", this._EL)
-                            return elm
-                        },
-                        _EL: function (e) {
-                            e.stopPropagation()
-                            _dispatchTaskChange(e.target, { name: e.target.value })
-                        },
-                        update: function (elm, changes) { if (changes.hasOwnProperty("name")) DIL(elm, "value", changes.name) }
-                    },
-                    "assigned": {
-                        createElement: function () {
-                            const elm = document.createElement("div")
-                            elm.innerText = "👤👤"
-                            return elm
-                        }
-                    },
-                    "progress": {
-                        createElement: function () {
-                            const elm = document.createElement("div"),
-                                input1 = document.createElement("input"),
-                                input2 = document.createElement("input")
-
-                            input1.type = "button"
-                            input2.type = "range"
-                            input2.min = 0
-                            input2.max = 100
-                            input2.step = 1
-                            input2.value = 0
-                            elm.appendChild(input1)
-                            elm.appendChild(input2)
-
-                            input2.addEventListener("change", this._EL)
-                            return elm
-                        },
-                        _EL: function (e) {
-                            e.stopPropagation()
-                            _dispatchTaskChange(e.target, { progress: e.target.value })
-                        },
-                        update: function (elm, changes) { if (changes.hasOwnProperty("progress")) DIL(elm.children[1], "value", changes.progress) }
-                    },
-                    "duration": {
-                        createElement: function () {
-                            const elm = cpmBuilders.inputTime.createElement()
-                            elm.addEventListener("change", this._EL)
-                            return elm
-                        },
-                        _EL: function (e) {
-                            e.stopPropagation()
-                            _dispatchTaskChange(e.target, { duration: e.target.timeMs })
-                        },
-                        update: function (elm, changes) {
-                            if (changes.hasOwnProperty("duration")) {
-                                DIL(elm, "value", changes.duration)
-                                DIL(elm, elm.dispatchEvent, new Event('change', { 'bubbles': true }))
-                            }
-                        }
-                    },
-                    "start": {
-                        createElement: function () {
-                            const elm = document.createElement("input")
-                            elm.type = "datetime-local"
-                            return elm
-                        },
-                        update: function (elm, changes) { if (changes.hasOwnProperty("start")) DIL(elm, "value", changes.start) }
-                    },
-                    "end": {
-                        createElement: function () {
-                            const elm = document.createElement("input")
-                            elm.type = "datetime-local"
-                            return elm
-                        },
-                        update: function (elm, changes) { if (changes.hasOwnProperty("end")) DIL(elm, "value", changes.end) }
-                    },
-                    "plan-duration": {
-                        createElement: function () {
-                            const elm = cpmBuilders.inputTime.createElement()
-                            elm.addEventListener("change", this._EL)
-                            return elm
-                        },
-                        _EL: function (e) {
-                            e.stopPropagation()
-                            _dispatchTaskChange(e.target, { planDuration: e.target.timeMs })
-                        },
-                        update: function (elm, changes) {
-                            if (changes.hasOwnProperty("planDuration")) {
-                                DIL(elm, "value", changes.planDuration)
-                                DIL(elm, elm.dispatchEvent, new Event('change', { 'bubbles': true }))
-                            }
-                        }
-                    },
-                    "grantt": {
-                        createElement: function () {
-                            const elm = document.createElement("div")
-                            elm.innerText = "xxx"
-                            return elm
-                        },
-                        update: function (elm, changes) {
-                            // #TODO:
-                            // console.log("c", changes);
-                            const start = Math.round(Math.random() * 100)
-                            if (changes.hasOwnProperty("name")) DIL(elm, "innerText", changes.name)
-                            if (!elm.style.marginLeft) elm.style.marginLeft = start + "%";
-                            if (!elm.style.width) elm.style.width = Math.round(Math.random() * (100 - start)) + "%";
-                        }
-                    }
-                }
 
                 const GranttTableHandler = window.GranttTableHandler = Object.assign(new EventTarget(), {
-                    mainTableElm: mainTableElm,
-                    tableHead: mainTableElm.querySelector("thead"),
-                    tableBody: mainTableElm.querySelector("tbody.tasks"),
-                    fieldKeys: [],
-
-                    generateTaskTr: function (taskId) {
-                        const trElm = document.createElement("tr")
-                        trElm.setAttribute("task-id", taskId)
-                        this.fieldKeys.map(key => {
-                            const elm = document.createElement("td"), cpm = GranttTbodyCpms[key]
-                            if (cpm && cpm.createElement) elm.appendChild(cpm.createElement())
-                            return elm
-                        }).forEach(trElm.appendChild, trElm)
-                        return trElm
-                    },
-
-                    assignTaskTr: function (elm, changes) {
-                        _fieldKeys = this.fieldKeys;
-                        [...elm.children].forEach((td, indx) => {
-                            const cpm = GranttTbodyCpms[_fieldKeys[indx]], fn = cpm && cpm.update
-                            if (fn) fn(td.firstChild, changes)
-                        })
-                    },
-
-                    getTaskTr: function (taskId) {
-                        return this.tableBody.querySelector(`tr[task-id="${taskId}"]`)
-                    },
-
-                    assignTask: function (taskId, taskDiff) {
-                        const trElm = this.getTaskTr(taskId)
-                        if (trElm) this.assignTaskTr(trElm, taskDiff)
-                    },
-
-                    assign: function (changes) {
-                        Object.entries(changes.tasks).forEach(function ([taskId, taskDiff]) {
-                            this.assignTask(taskId, taskDiff)
-                        }, this)
-                    },
-
-                    addOrAssignTaskTr: function (taskId, task) {
-                        var trElm = this.getTaskTr(taskId), taskTrExists = trElm
-                        if (!taskTrExists) trElm = this.generateTaskTr(taskId)
-                        this.assignTaskTr(trElm, task)
-                        if (!taskTrExists) DIL(this.tableBody, this.tableBody.appendChild, trElm)
-                    },
-
-                    loadTasks: function (tasks) {
-                        Object.entries(tasks).forEach(function ([taskId, task]) { this.addOrAssignTaskTr(taskId, task) }, this)
-                    },
+                    tasksHandler: granttTableElm.querySelector(".tasks")._handler,
 
                     init: function () {
                         const _this = this
-                        this.fieldKeys = [...this.tableHead.children[0].children].map(elm => (elm.getAttribute && elm.getAttribute("key")) || undefined)
 
-                        this.tableBody.addEventListener("task-change", function (e) {
-                            var elm = e.target, pElm; while ((pElm = elm.parentElement) !== this) elm = pElm
-                            _this.dispatchEvent(new CustomEvent("change", {
-                                detail: {
-                                    tasks: {
-                                        [elm.getAttribute("task-id")]: e.detail
-                                    }
-                                }
-                            }))
-                        })
+                        // this.tableBody.addEventListener("task-change", function (e) {
+                        //     var elm = e.target, pElm; while ((pElm = elm.parentElement) !== this) elm = pElm
+                        //     _this.dispatchEvent(new CustomEvent("change", {
+                        //         detail: {
+                        //             tasks: {
+                        //                 [elm.getAttribute("task-id")]: e.detail
+                        //             }
+                        //         }
+                        //     }))
+                        // })
 
                     }
 
@@ -557,11 +501,11 @@
                 GranttTableHandler.init()
 
                 // Bind with DatabaseHandler
-                GranttTableHandler.addEventListener("change", function (e) { DatabaseHandler.assign(e.detail) })
-                DatabaseHandler.addEventListener("change", function (e) { GranttTableHandler.assign(e.detail) })
+                // GranttTableHandler.addEventListener("change", function (e) { DatabaseHandler.assign(e.detail) })
+                // DatabaseHandler.addEventListener("change", function (e) { GranttTableHandler.assign(e.detail) })
                 // Load data
                 window.addEventListener("load", function () {
-                    GranttTableHandler.loadTasks(DatabaseHandler.data.tasks)
+                    GranttTableHandler.tasksHandler.loadTasks(DatabaseHandler.data.tasks)
                 }, { once: true })
 
             }
