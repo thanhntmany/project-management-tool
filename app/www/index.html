@@ -303,8 +303,8 @@
             <thead>
                 <tr>
                     <th key="more" style="width: 1em;"></th>
-                    <th key="name">Task name</th>
-                    <th key="assigned">Assigned</th>
+                    <th key="name" style="width: 0;">Task name</th>
+                    <th key="assigned" style="width: 0;">Assigned</th>
                     <th key="progress" style="width: 0;">Progress</th>
                     <th key="start" style="width: 0;">Start</th>
                     <th key="duration" style="width: 5em;">Duration</th>
@@ -315,7 +315,35 @@
                     <th key="grantt">Grantt</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="tasks">
+            </tbody>
+            <tbody class="summary">
+                <tr>
+                    <th></th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                    <th>aa</th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                    <td>aa</td>
+                </tr>
             </tbody>
         </table>
         <script>
@@ -459,7 +487,7 @@
                 const GranttTableHandler = window.GranttTableHandler = Object.assign(new EventTarget(), {
                     mainTableElm: mainTableElm,
                     tableHead: mainTableElm.querySelector("thead"),
-                    tableBody: mainTableElm.querySelector("tbody"),
+                    tableBody: mainTableElm.querySelector("tbody.tasks"),
                     fieldKeys: [],
 
                     generateTaskTr: function (taskId) {
