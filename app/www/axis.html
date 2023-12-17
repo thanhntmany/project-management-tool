@@ -205,6 +205,7 @@
             }
 
             #big-chart>table.main-table {
+                table-layout: fixed;
                 border-collapse: collapse;
                 width: 100%;
             }
@@ -217,9 +218,15 @@
 
             #big-chart>table.main-table>*>*>th:last-child,
             #big-chart>table.main-table>*>*>td:last-child {
+                overflow: auto;
                 border: 0;
                 padding-left: 0;
                 padding-right: 0;
+            }
+
+            #big-chart>table.main-table>*>*>th:last-child::-webkit-scrollbar,
+            #big-chart>table.main-table>*>*>td:last-child::-webkit-scrollbar {
+                display: none;
             }
 
             #big-chart .col-resizer,
@@ -267,11 +274,15 @@
                 width: fit-content;
                 margin: auto;
             }
+
+            .test {
+                background-color: blue;
+            }
         </style>
         <table class="main-table">
             <thead>
                 <tr>
-                    <th style="width: 1px;"></th>
+                    <th style="width: 2em;"></th>
                     <th>
                         <div class="col-resizer">
                             <div>‖</div>
@@ -279,8 +290,10 @@
                         <div>Factor</div>
                     </th>
                     <th>
-                        <div>Chart (Time Axis)</div>
-                        <div>{=========================}</div>
+                        <div>
+                            <div>Chart (Time Axis)</div>
+                            <div>{=========================}</div>
+                        </div>
                     </th>
                 </tr>
             </thead>
@@ -293,7 +306,9 @@
                         </div>
                     </td>
                     <td>abc</td>
-                    <td> chart <div> abc </div>
+                    <td>
+                        <div> chart <div> abc </div>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -306,7 +321,9 @@
                         </div>
                     </td>
                     <td>abc</td>
-                    <td> chart <div> abc </div>
+                    <td>
+                        <div> chart <div> abc </div>
+                        </div>
                     </td>
                 </tr>
                 <tr style="height: 147.594px;">
@@ -317,10 +334,22 @@
                         </div>
                     </td>
                     <td>abc</td>
-                    <td> chart <div> abc </div>
+                    <td id="test">
+                        <div> chart <div> abc </div>
+                            <div class="test" style="width: 1000px;height: 800px;">test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc </div>
+                        </div>
                     </td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr>
+                    <td>#</td>
+                    <td></td>
+                    <td>
+                        <div></div>
+                    </td>
+                </tr>
+            </tfoot>
             <script>
                 {
                     const mainTableElm = document.currentScript.parentElement, lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
@@ -328,7 +357,7 @@
 
                     function colResize_mousemoveEL(event) {
                         const rs = window.getComputedStyle(activeTh).width.match(lengthValueRe), n = parseFloat(rs[1])
-                        activeTh.style.width = (n + event.movementX) + rs[2]
+                        activeTh.style.width = (n + event.movementX) + "px"
                     }
                     function colResize_mouseupEL(event) {
                         activeTh = undefined
@@ -337,7 +366,7 @@
 
                     function rowResize_mousemoveEL(event) {
                         const rs = window.getComputedStyle(activeTh).height.match(lengthValueRe), n = parseFloat(rs[1])
-                        activeTh.style.height = (n + event.movementY) + rs[2]
+                        activeTh.style.height = (n + event.movementY) + "px"
                     }
                     function rowResize_mouseupEL(event) {
                         activeTh = undefined
@@ -365,6 +394,24 @@
                             elm = elm.parentElement
                         }
                     })
+
+
+                    const L2Elm_tagNames = ["THEAD", "TBODY", "TFOOT"]
+
+                    mainTableElm.setTimeAxisWidth = function (width) {
+                        var l1Elm, trElm
+                        for (l1Elm of this.children)
+                            if (L2Elm_tagNames.includes(l1Elm.tagName))
+                                for (trElm of l1Elm.children)
+                                    trElm.lastElementChild.firstElementChild.style.width = width + "px"
+                    }
+
+                    mainTableElm.setTimeAxisWidth(1500)
+
+                    mainTableElm.addEventListener("scroll", (event) => {
+                        console.log(event.target.scrollTop);
+                        console.log(event.target.scrollLeft);
+                    }, true)
                 }
             </script>
         </table>
