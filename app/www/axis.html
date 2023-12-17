@@ -216,11 +216,11 @@
                 border: 1px solid white;
             }
 
-            #big-chart>table.main-table>*>*>* {
+            #big-chart>table.main-table>*>*>td {
                 height: inherit;
             }
 
-            #big-chart>table.main-table>*>*>*>div {
+            #big-chart>table.main-table>*>*>td>div {
                 position: relative;
                 display: block;
                 width: 100%;
@@ -288,7 +288,7 @@
         </style>
         <table class="main-table">
             <thead>
-                <tr style="height: 2em;">
+                <tr>
                     <th style="width: 2em;"></th>
                     <th>
                         <div class="col-resizer">
@@ -308,12 +308,12 @@
             </thead>
             <tbody>
                 <tr style="height: 147.594px;">
-                    <td>
+                    <th>
                         <div>#</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
-                    </td>
+                    </th>
                     <td>abc</td>
                     <td>
                         <div>
@@ -325,12 +325,12 @@
             </tbody>
             <tbody>
                 <tr>
-                    <td>
+                    <th>
                         <div>1</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
-                    </td>
+                    </th>
                     <td>abc</td>
                     <td>
                         <div>
@@ -340,12 +340,12 @@
                     </td>
                 </tr>
                 <tr style="height: 147.594px;">
-                    <td>
+                    <th>
                         <div>2</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
-                    </td>
+                    </th>
                     <td>abc</td>
                     <td id="test">
                         <div>
@@ -358,7 +358,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td>#</td>
+                    <th>#</th>
                     <td></td>
                     <td>
                         <div>
@@ -367,68 +367,79 @@
                     </td>
                 </tr>
             </tfoot>
-            <script>
-                {
-                    const mainTableElm = document.currentScript.parentElement, lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
-                    var activeTh
+        </table>
+        <script>
+            {
+                const mainTableElm = document.currentScript.parentElement.querySelector(".main-table"), lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+                var activeTh
 
-                    function colResize_mousemoveEL(event) {
-                        activeTh.style.width = (parseFloat((activeTh.style.width || window.getComputedStyle(activeTh).width).match(lengthValueRe)[1]) + event.movementX) + "px"
-                    }
-                    function colResize_mouseupEL(event) {
-                        activeTh = undefined
-                        window.removeEventListener("mousemove", colResize_mousemoveEL)
-                    }
+                function colResize_mousemoveEL(event) {
+                    activeTh.style.width = (parseFloat((activeTh.style.width || window.getComputedStyle(activeTh).width).match(lengthValueRe)[1]) + event.movementX) + "px"
+                }
+                function colResize_mouseupEL(event) {
+                    activeTh = undefined
+                    window.removeEventListener("mousemove", colResize_mousemoveEL)
+                }
 
-                    function rowResize_mousemoveEL(event) {
-                        activeTh.style.height = (parseFloat((activeTh.style.height || window.getComputedStyle(activeTh).height).match(lengthValueRe)[1]) + event.movementY) + "px"
-                    }
-                    function rowResize_mouseupEL(event) {
-                        activeTh = undefined
-                        window.removeEventListener("mousemove", rowResize_mousemoveEL)
-                    }
+                function rowResize_mousemoveEL(event) {
+                    activeTh.style.height = (parseFloat((activeTh.style.height || window.getComputedStyle(activeTh).height).match(lengthValueRe)[1]) + event.movementY) + "px"
+                }
+                function rowResize_mouseupEL(event) {
+                    activeTh = undefined
+                    window.removeEventListener("mousemove", rowResize_mousemoveEL)
+                }
 
-                    mainTableElm.addEventListener("mousedown", function mousedownEL(event) {
-                        if (activeTh) return
-                        var elm = event.target, cls
-                        while (elm !== this) {
-                            if ((cls = elm.classList).contains("col-resizer")) {
-                                event.stopPropagation()
-                                activeTh = elm.parentElement
-                                window.addEventListener("mousemove", colResize_mousemoveEL)
-                                window.addEventListener("mouseup", colResize_mouseupEL, { once: true })
-                                return
-                            }
-                            else if (cls.contains("row-resizer")) {
-                                event.stopPropagation()
-                                activeTh = elm.parentElement.parentElement
-                                window.addEventListener("mousemove", rowResize_mousemoveEL)
-                                window.addEventListener("mouseup", rowResize_mouseupEL, { once: true })
-                                return
-                            }
-                            elm = elm.parentElement
+                mainTableElm.addEventListener("mousedown", function mousedownEL(event) {
+                    if (activeTh) return
+                    var elm = event.target, cls
+                    while (elm !== this) {
+                        if ((cls = elm.classList).contains("col-resizer")) {
+                            event.stopPropagation()
+                            activeTh = elm.parentElement
+                            window.addEventListener("mousemove", colResize_mousemoveEL)
+                            window.addEventListener("mouseup", colResize_mouseupEL, { once: true })
+                            return
                         }
+                        else if (cls.contains("row-resizer")) {
+                            event.stopPropagation()
+                            activeTh = elm.parentElement.parentElement
+                            window.addEventListener("mousemove", rowResize_mousemoveEL)
+                            window.addEventListener("mouseup", rowResize_mouseupEL, { once: true })
+                            return
+                        }
+                        elm = elm.parentElement
+                    }
+                })
+
+
+                mainTableElm.forEachAxisCell = function (callbackfn) {
+                    var l1Elm, trElm, tdElm
+                    for (l1Elm of this.children)
+                        for (trElm of l1Elm.children) {
+                            tdElm = trElm.lastElementChild
+                            if (tdElm.tagName === "TD") callbackfn(tdElm)
+                        }
+                }
+
+                mainTableElm.setTimeAxisWidth = function (width) {
+                    const w = width + "px"
+                    mainTableElm.forEachAxisCell(function (cell) {
+                        DIL(cell.firstElementChild.firstElementChild.style, "width", w)
+                    })
+                }
+
+                mainTableElm.setTimeAxisWidth(1500)
+
+                mainTableElm.addEventListener("scroll", (event) => {
+                    event.stopPropagation()
+                    const scrollLeft = event.target.scrollLeft
+                    mainTableElm.forEachAxisCell(function (cell) {
+                        DIL(cell.firstElementChild, "scrollLeft", scrollLeft)
                     })
 
-
-                    const L2Elm_tagNames = ["THEAD", "TBODY", "TFOOT"]
-
-                    mainTableElm.setTimeAxisWidth = function (width) {
-                        var l1Elm, trElm
-                        for (l1Elm of this.children)
-                            if (L2Elm_tagNames.includes(l1Elm.tagName))
-                                for (trElm of l1Elm.children)
-                                    trElm.lastElementChild.firstElementChild.firstElementChild.style.width = width + "px"
-                    }
-
-                    mainTableElm.setTimeAxisWidth(1500)
-
-                    mainTableElm.addEventListener("scroll", (event) => {
-                        console.log(event.target.scrollTop + " ~ " + event.target.scrollLeft);
-                    }, true)
-                }
-            </script>
-        </table>
+                }, true)
+            }
+        </script>
     </div>
 </body>
 
