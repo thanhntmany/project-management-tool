@@ -200,6 +200,10 @@
     <div>Big chart tool</div>
     <div id="big-chart">
         <style>
+            #big-chart {
+                padding: 1em .5em;
+            }
+
             #big-chart>table.main-table {
                 border-collapse: collapse;
                 width: 100%;
@@ -207,12 +211,15 @@
 
             #big-chart>table.main-table>*>*>th,
             #big-chart>table.main-table>*>*>td {
+                vertical-align: top;
                 border: 1px solid white;
             }
 
             #big-chart>table.main-table>*>*>th:last-child,
             #big-chart>table.main-table>*>*>td:last-child {
                 border: 0;
+                padding-left: 0;
+                padding-right: 0;
             }
 
             #big-chart .col-resizer,
@@ -271,13 +278,16 @@
                         </div>
                         <div>Factor</div>
                     </th>
-                    <th>Chart (Time Axis)</th>
+                    <th>
+                        <div>Chart (Time Axis)</div>
+                        <div>{=========================}</div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 <tr style="height: 147.594px;">
                     <td>
-                        <div>1</div>
+                        <div>#</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
@@ -337,8 +347,7 @@
                     mainTableElm.addEventListener("mousedown", function mousedownEL(event) {
                         if (activeTh) return
                         var elm = event.target, cls
-                        if (elm === this) return
-                        while ((elm = elm.parentElement) !== this) {
+                        while (elm !== this) {
                             if ((cls = elm.classList).contains("col-resizer")) {
                                 event.stopPropagation()
                                 activeTh = elm.parentElement
@@ -353,6 +362,7 @@
                                 window.addEventListener("mouseup", rowResize_mouseupEL, { once: true })
                                 return
                             }
+                            elm = elm.parentElement
                         }
                     })
                 }
