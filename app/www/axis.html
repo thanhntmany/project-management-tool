@@ -218,8 +218,8 @@
 
             #big-chart>table.main-table>*>*>th:last-child,
             #big-chart>table.main-table>*>*>td:last-child {
-                border-top: 0;
-                border-bottom: 0;
+                border-top-color: transparent;
+                border-bottom-color: transparent;
             }
 
             #big-chart>table.main-table>*>*>td {
@@ -300,25 +300,30 @@
                         <div class="col-resizer">
                             <div>‖</div>
                         </div>
-                        <div>Factor</div>
+                        <div>Detail</div>
                     </th>
                     <th>
-                        <div>Chart (Time Axis)</div>
+                        <div>Time-based</div>
                     </th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <th>
-                        <div>#</div>
+                        <div placeholder-key="key">#</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
                     </th>
-                    <td>abc</td>
                     <td>
                         <div>
-                            <div> chart <div> abc </div>
+                            <div placeholder-key="detail"> {{detail}} </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <div>
+                                <div>chart abc</div>
                             </div>
                         </div>
                     </td>
