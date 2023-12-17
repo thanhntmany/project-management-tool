@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script type="importmap">{"imports":{"www/":"/"}}</script>
+    <script type="module" src="/phloe.mjs"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phloemjs: Example website</title>
+    <script src="/do-it-later--requestAnimationFrame.js"></script>
+    <style>
+        html,
+        body {
+            width: 100%;
+            margin: 0;
+            position: relative;
+            scroll-behavior: smooth;
+            font-family: Roboto, Noto Sans, Noto Sans JP, Noto Sans KR, Noto Naskh Arabic, Noto Sans Thai, Noto Sans Hebrew, Noto Sans Bengali, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        body {
+            background-color: black;
+            color: white;
+        }
+
+        .task-board {
+            box-sizing: border-box;
+            height: 100%;
+        }
+
+        #nav-factors-bar label {
+            cursor: pointer;
+            user-select: none;
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            -o-user-select: none;
+            border-radius: 3px;
+            padding: 1em .5em;
+            box-sizing: border-box;
+            display: inline-block;
+            padding: 0.25em 0.5em;
+        }
+
+        #nav-factors-bar label:hover {
+            background-color: gray;
+        }
+    </style>
+    <script>
+
+        const cpmBuilders = {
+            inputTime: {
+                textRe: /([+-]?\d+(\.\d*)?|\.\d+)\s*((ms)|(s|''|")|(m|')|(h)|(d)|(M)|(Y|y))?/g,
+                timeMsFromText: function (text) {
+                    const re = this.textRe; re.lastIndex = 0
+                    var timeMs = 0, rs; while (rs = re.exec(text)) timeMs += parseFloat(rs[1]) * (rs[4] ? 1 : rs[5] ? 1000 : rs[6] ? 60000 : rs[7] ? 3600000 : rs[8] ? 86400000 : rs[9] ? 2592000000 : rs[10] ? 31104000000 : 1)
+                    return timeMs
+                },
+                textFromTimeMs: function (timeMs) {
+                    var text = [], n = parseFloat(timeMs), b, i, r
+
+                    r = n % 31104000000
+                    i = (n - r) / 31104000000
+                    if (i !== 0) text.push(i + "Y")
+                    n = r
+
+                    r = n % 2592000000
+                    i = (n - r) / 2592000000
+                    if (i !== 0) text.push(i + "M")
+                    n = r
+
+                    r = n % 86400000
+                    i = (n - r) / 86400000
+                    if (i !== 0) text.push(i + "d")
+                    n = r
+
+                    r = n % 3600000
+                    i = (n - r) / 3600000
+                    if (i !== 0) text.push(i + "h")
+                    n = r
+
+                    r = n % 60000
+                    i = (n - r) / 60000
+                    if (i !== 0) text.push(i + "m")
+                    n = r
+
+                    r = n % 1000
+                    i = (n - r) / 1000
+                    if (i !== 0) text.push(i + "s")
+                    n = r
+
+                    i = n
+                    if (i !== 0) text.push(i + "ms")
+
+                    return text.join(" ")
+                },
+                createElement: function () {
+                    const elm = document.createElement("input")
+                    elm.type = "text"
+                    elm.addEventListener("change", this._changeEL)
+                    elm._builder = this
+                    return elm
+                },
+                _changeEL: function (e) {
+                    const elm = e.target,
+                        inputValue = elm.value,
+                        timeMs = this._builder.timeMsFromText(inputValue),
+                        text = this._builder.textFromTimeMs(this.timeMs = timeMs)
+
+                    if (elm.timeMs == timeMs) e.stopPropagation()
+                    elm.timeMs = timeMs
+                    if (elm.value !== text) DIL(elm, "value", text)
+                }
+            },
+        }
+
+    </script>
+</head>
+
+<body>
+    <script>
+        const CORE = Object.assign(new EventTarget(), {
+            timezoneOffset: undefined,
+            setTimezoneOffset: function (offfset) {
+                if (this.timezoneOffset === offfset) return
+                this.timezoneOffset = offfset
+                this.dispatchEvent(new Event("change-timezone-offset"))
+            }
+        })
+        CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
+
+        function isObject(obj) { return obj === Object(obj) }
+        function deepAssign(src, dst, diff = {}) {
+            var k, S, D; for (k in src) {
+                D = dst[k]
+                if (isObject(S = src[k]) && isObject(D)) {
+                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+                }
+                else if (D !== S) diff[k] = dst[k] = S
+            }
+            return Object.keys(diff).length ? diff : null
+        }
+
+        const DatabaseHandler = Object.assign(new EventTarget(), {
+            data: {},
+            assign: function (src) {
+                const diff = deepAssign(src, this.data)
+                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+            }
+        })
+
+        window.addEventListener("load", function (e) {
+            DatabaseHandler.assign({
+                tasks: {
+                    "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
+                    "3": { name: "Research", assigned: "Pete S", progress: Math.round(Math.random() * 100) },
+                    "4": { name: "Projections", assigned: "Steve L", progress: Math.round(Math.random() * 100) },
+                    "5": { name: "Stakeholders", assigned: "Allen W", progress: Math.round(Math.random() * 100) },
+                    "6": { name: "Guidelines", assigned: "Malik M", progress: Math.round(Math.random() * 100) },
+                    "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
+                }
+            })
+        }, { once: true })
+    </script>
+    <div>
+        <label> Use timezone: <select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
+        <script>
+            {
+                const elm = document.getElementById("timezone-selector");
+                ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                    const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
+                    e = document.createElement("option")
+                    e.value = offfset
+                    e.innerText = label
+                    elm.appendChild(e)
+                })
+
+                const offfsetElm = document.getElementById("timezone-offfset")
+                elm.addEventListener("change", function (e) {
+                    offfsetElm.value = this.value
+                    offfsetElm.dispatchEvent(new Event('change'))
+                })
+                offfsetElm.addEventListener("change", function (e) {
+                    CORE.setTimezoneOffset(elm.value = this.value)
+                })
+                CORE.addEventListener("change-timezone-offset", function (e) {
+                    if (offfsetElm.value === this.timezoneOffset) return
+                    offfsetElm.value = this.timezoneOffset
+                    offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
+                })
+
+                offfsetElm.value = CORE.timezoneOffset
+                offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
+            }
+        </script>
+    </div>
+    <div>Big chart tool</div>
+    <div id="big-chart">
+        <style>
+            #big-chart>table.main-table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            #big-chart>table.main-table>*>*>th,
+            #big-chart>table.main-table>*>*>td {
+                border: 1px solid white;
+            }
+
+            #big-chart>table.main-table>*>*>th:last-child,
+            #big-chart>table.main-table>*>*>td:last-child {
+                border: 0;
+            }
+
+            #big-chart .col-resizer,
+            #big-chart .row-resizer {
+                -webkit-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            #big-chart>table.main-table>thead>tr>th {
+                height: 1px;
+            }
+
+            #big-chart>table.main-table>thead>tr>th>.col-resizer {
+                cursor: col-resize;
+                position: relative;
+                float: right;
+                display: block;
+                width: 2em;
+                height: 100%;
+            }
+
+            #big-chart>table.main-table>thead>tr>th>.col-resizer>div {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            #big-chart>table.main-table>*>tr>*:first-child {
+                position: relative;
+                min-width: 2em;
+            }
+
+            #big-chart>table.main-table>*>tr>*:first-child>.row-resizer {
+                cursor: row-resize;
+                position: absolute;
+                display: block;
+                bottom: 0;
+                width: 100%;
+                margin: auto;
+            }
+
+            #big-chart>table.main-table>*>tr>*:first-child>.row-resizer>div {
+                width: fit-content;
+                margin: auto;
+            }
+        </style>
+        <table class="main-table">
+            <thead>
+                <tr>
+                    <th style="width: 1px;"></th>
+                    <th>
+                        <div class="col-resizer">
+                            <div>‖</div>
+                        </div>
+                        <div>Factor</div>
+                    </th>
+                    <th>Chart (Time Axis)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="height: 147.594px;">
+                    <td>
+                        <div>1</div>
+                        <div class="row-resizer">
+                            <div>═</div>
+                        </div>
+                    </td>
+                    <td>abc</td>
+                    <td> chart <div> abc </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr style="height: 147.594px;">
+                    <td>
+                        <div>1</div>
+                        <div class="row-resizer">
+                            <div>═</div>
+                        </div>
+                    </td>
+                    <td>abc</td>
+                    <td> chart <div> abc </div>
+                    </td>
+                </tr>
+                <tr style="height: 147.594px;">
+                    <td>
+                        <div>2</div>
+                        <div class="row-resizer">
+                            <div>═</div>
+                        </div>
+                    </td>
+                    <td>abc</td>
+                    <td> chart <div> abc </div>
+                    </td>
+                </tr>
+            </tbody>
+            <script>
+                {
+                    const mainTableElm = document.currentScript.parentElement, lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+                    var activeTh;
+
+                    function colResize_mousemoveEL(event) {
+                        const rs = window.getComputedStyle(activeTh).width.match(lengthValueRe), n = parseFloat(rs[1])
+                        activeTh.style.width = (n + event.movementX) + rs[2]
+                    }
+                    function colResize_mouseupEL(event) {
+                        activeTh = undefined
+                        window.removeEventListener("mousemove", colResize_mousemoveEL)
+                    }
+
+                    function rowResize_mousemoveEL(event) {
+                        const rs = window.getComputedStyle(activeTh).height.match(lengthValueRe), n = parseFloat(rs[1])
+                        activeTh.style.height = (n + event.movementY) + rs[2]
+                    }
+                    function rowResize_mouseupEL(event) {
+                        activeTh = undefined
+                        window.removeEventListener("mousemove", rowResize_mousemoveEL)
+                    }
+
+                    mainTableElm.addEventListener("mousedown", function mousedownEL(event) {
+                        if (activeTh) return
+                        var elm = event.target, cls
+                        if (elm === this) return
+                        while ((elm = elm.parentElement) !== this) {
+                            if ((cls = elm.classList).contains("col-resizer")) {
+                                event.stopPropagation()
+                                activeTh = elm.parentElement
+                                window.addEventListener("mousemove", colResize_mousemoveEL)
+                                window.addEventListener("mouseup", colResize_mouseupEL, { once: true })
+                                return
+                            }
+                            else if (cls.contains("row-resizer")) {
+                                event.stopPropagation()
+                                activeTh = elm.parentElement.parentElement
+                                window.addEventListener("mousemove", rowResize_mousemoveEL)
+                                window.addEventListener("mouseup", rowResize_mouseupEL, { once: true })
+                                return
+                            }
+                        }
+                    })
+                }
+            </script>
+        </table>
+    </div>
+</body>
+
+</html>
