@@ -216,16 +216,22 @@
                 border: 1px solid white;
             }
 
-            #big-chart>table.main-table>*>*>th:last-child,
-            #big-chart>table.main-table>*>*>td:last-child {
+            #big-chart>table.main-table>*>*>* {
+                height: inherit;
+            }
+
+            #big-chart>table.main-table>*>*>*>div {
+                position: relative;
+                display: block;
+                width: 100%;
+                height: inherit;
                 overflow: auto;
                 border: 0;
                 padding-left: 0;
                 padding-right: 0;
             }
 
-            #big-chart>table.main-table>*>*>th:last-child::-webkit-scrollbar,
-            #big-chart>table.main-table>*>*>td:last-child::-webkit-scrollbar {
+            #big-chart>table.main-table>*>*>*>div::-webkit-scrollbar {
                 display: none;
             }
 
@@ -262,9 +268,10 @@
             }
 
             #big-chart>table.main-table>*>tr>*:first-child>.row-resizer {
-                cursor: row-resize;
                 position: absolute;
                 display: block;
+                cursor: row-resize;
+                height: fit-content;
                 bottom: 0;
                 width: 100%;
                 margin: auto;
@@ -281,7 +288,7 @@
         </style>
         <table class="main-table">
             <thead>
-                <tr>
+                <tr style="height: 2em;">
                     <th style="width: 2em;"></th>
                     <th>
                         <div class="col-resizer">
@@ -291,8 +298,10 @@
                     </th>
                     <th>
                         <div>
-                            <div>Chart (Time Axis)</div>
-                            <div>{=========================}</div>
+                            <div>
+                                <div>Chart (Time Axis)</div>
+                                <div>{=========================}</div>
+                            </div>
                         </div>
                     </th>
                 </tr>
@@ -307,13 +316,15 @@
                     </td>
                     <td>abc</td>
                     <td>
-                        <div> chart <div> abc </div>
+                        <div>
+                            <div> chart <div> abc </div>
+                            </div>
                         </div>
                     </td>
                 </tr>
             </tbody>
             <tbody>
-                <tr style="height: 147.594px;">
+                <tr>
                     <td>
                         <div>1</div>
                         <div class="row-resizer">
@@ -322,7 +333,9 @@
                     </td>
                     <td>abc</td>
                     <td>
-                        <div> chart <div> abc </div>
+                        <div>
+                            <div> chart <div> abc </div>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -335,8 +348,10 @@
                     </td>
                     <td>abc</td>
                     <td id="test">
-                        <div> chart <div> abc </div>
-                            <div class="test" style="width: 1000px;height: 800px;">test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc </div>
+                        <div>
+                            <div> chart <div> abc </div>
+                                <div class="test" style="width: 1000px;height: 800px;">test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc </div>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -346,18 +361,19 @@
                     <td>#</td>
                     <td></td>
                     <td>
-                        <div></div>
+                        <div>
+                            <div></div>
+                        </div>
                     </td>
                 </tr>
             </tfoot>
             <script>
                 {
                     const mainTableElm = document.currentScript.parentElement, lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
-                    var activeTh;
+                    var activeTh
 
                     function colResize_mousemoveEL(event) {
-                        const rs = window.getComputedStyle(activeTh).width.match(lengthValueRe), n = parseFloat(rs[1])
-                        activeTh.style.width = (n + event.movementX) + "px"
+                        activeTh.style.width = (parseFloat((activeTh.style.width || window.getComputedStyle(activeTh).width).match(lengthValueRe)[1]) + event.movementX) + "px"
                     }
                     function colResize_mouseupEL(event) {
                         activeTh = undefined
@@ -365,8 +381,7 @@
                     }
 
                     function rowResize_mousemoveEL(event) {
-                        const rs = window.getComputedStyle(activeTh).height.match(lengthValueRe), n = parseFloat(rs[1])
-                        activeTh.style.height = (n + event.movementY) + "px"
+                        activeTh.style.height = (parseFloat((activeTh.style.height || window.getComputedStyle(activeTh).height).match(lengthValueRe)[1]) + event.movementY) + "px"
                     }
                     function rowResize_mouseupEL(event) {
                         activeTh = undefined
@@ -403,14 +418,13 @@
                         for (l1Elm of this.children)
                             if (L2Elm_tagNames.includes(l1Elm.tagName))
                                 for (trElm of l1Elm.children)
-                                    trElm.lastElementChild.firstElementChild.style.width = width + "px"
+                                    trElm.lastElementChild.firstElementChild.firstElementChild.style.width = width + "px"
                     }
 
                     mainTableElm.setTimeAxisWidth(1500)
 
                     mainTableElm.addEventListener("scroll", (event) => {
-                        console.log(event.target.scrollTop);
-                        console.log(event.target.scrollLeft);
+                        console.log(event.target.scrollTop + " ~ " + event.target.scrollLeft);
                     }, true)
                 }
             </script>
