@@ -216,6 +216,12 @@
                 border: 1px solid white;
             }
 
+            #big-chart>table.main-table>*>*>th:last-child,
+            #big-chart>table.main-table>*>*>td:last-child {
+                border-top: 0;
+                border-bottom: 0;
+            }
+
             #big-chart>table.main-table>*>*>td {
                 height: inherit;
             }
@@ -231,7 +237,7 @@
                 padding-right: 0;
             }
 
-            #big-chart>table.main-table>*>*>*>div::-webkit-scrollbar {
+            #big-chart>table.main-table>:not(tfoot)>*>*>div::-webkit-scrollbar {
                 display: none;
             }
 
@@ -297,17 +303,12 @@
                         <div>Factor</div>
                     </th>
                     <th>
-                        <div>
-                            <div>
-                                <div>Chart (Time Axis)</div>
-                                <div>{=========================}</div>
-                            </div>
-                        </div>
+                        <div>Chart (Time Axis)</div>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr style="height: 147.594px;">
+                <tr>
                     <th>
                         <div>#</div>
                         <div class="row-resizer">
@@ -324,17 +325,24 @@
                 </tr>
             </tbody>
             <tbody>
-                <tr>
+                <tr style="height: 147.594px;">
                     <th>
                         <div>1</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
                     </th>
-                    <td>abc</td>
                     <td>
                         <div>
                             <div> chart <div> abc </div>
+                                <div class="test" style="width: 1000px;height: fit-content;">test abc<br> test abc<br> test abc<br> test abc<br> test abc<br> test abc<br> test abc<br> test abc<br> test abc test abc test abc test abc test abc test abc test abc test abc </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <div> chart <div> abc </div>
+                                <div class="test" style="width: 1000px;height: 800px;">test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc </div>
                             </div>
                         </div>
                     </td>
@@ -347,7 +355,7 @@
                         </div>
                     </th>
                     <td>abc</td>
-                    <td id="test">
+                    <td>
                         <div>
                             <div> chart <div> abc </div>
                                 <div class="test" style="width: 1000px;height: 800px;">test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc test abc </div>
@@ -362,7 +370,7 @@
                     <td></td>
                     <td>
                         <div>
-                            <div></div>
+                            <div>time Axis</div>
                         </div>
                     </td>
                 </tr>
@@ -412,13 +420,10 @@
                 })
 
 
+                const SyncScrollCellsSelector = "#big-chart>table.main-table>*>*>td",
+                    AxisCellsSelector = "#big-chart>table.main-table>*>*>td:last-child"
                 mainTableElm.forEachAxisCell = function (callbackfn) {
-                    var l1Elm, trElm, tdElm
-                    for (l1Elm of this.children)
-                        for (trElm of l1Elm.children) {
-                            tdElm = trElm.lastElementChild
-                            if (tdElm.tagName === "TD") callbackfn(tdElm)
-                        }
+                    var elm; for (elm of mainTableElm.querySelectorAll(AxisCellsSelector)) callbackfn(elm)
                 }
 
                 mainTableElm.setTimeAxisWidth = function (width) {
@@ -428,16 +433,23 @@
                     })
                 }
 
-                mainTableElm.setTimeAxisWidth(1500)
-
                 mainTableElm.addEventListener("scroll", (event) => {
+                    const elm = event.target, cell = elm.parentElement
+                    if (!cell.matches(SyncScrollCellsSelector)) return
+
                     event.stopPropagation()
-                    const scrollLeft = event.target.scrollLeft
-                    mainTableElm.forEachAxisCell(function (cell) {
-                        DIL(cell.firstElementChild, "scrollLeft", scrollLeft)
+                    const scrollTop = elm.scrollTop, scrollLeft = elm.scrollLeft
+
+                    var c; for (c of cell.parentElement.querySelectorAll(SyncScrollCellsSelector))
+                        if (c.firstElementChild) DIL(c.firstElementChild, "scrollTop", scrollTop)
+
+                    if (elm.parentElement.matches(AxisCellsSelector)) mainTableElm.forEachAxisCell(function (c) {
+                        if (c.firstElementChild) DIL(c.firstElementChild, "scrollLeft", scrollLeft)
                     })
 
                 }, true)
+
+                mainTableElm.setTimeAxisWidth(1500)
             }
         </script>
     </div>
