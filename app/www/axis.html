@@ -210,15 +210,20 @@
                 width: 100%;
             }
 
+            /* #big-chart>table.main-table>tbody.sample {
+                display: none;
+            } */
             #big-chart>table.main-table>*>*>th,
             #big-chart>table.main-table>*>*>td {
-                vertical-align: top;
                 border: 1px solid white;
+                padding: 0;
+                vertical-align: top;
             }
 
             #big-chart>table.main-table>*>*>th:last-child,
             #big-chart>table.main-table>*>*>td:last-child {
                 border-top-color: transparent;
+                border-right-color: transparent;
                 border-bottom-color: transparent;
             }
 
@@ -307,24 +312,22 @@
                     </th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="sample">
                 <tr>
                     <th>
-                        <div placeholder-key="key">#</div>
+                        <div>#</div>
                         <div class="row-resizer">
                             <div>═</div>
                         </div>
                     </th>
                     <td>
                         <div>
-                            <div placeholder-key="detail"> {{detail}} </div>
+                            <div placeholder-key="detail">{{detail}}</div>
                         </div>
                     </td>
                     <td>
                         <div>
-                            <div>
-                                <div>chart abc</div>
-                            </div>
+                            <div placeholder-key="chart">chart abc</div>
                         </div>
                     </td>
                 </tr>
@@ -438,22 +441,31 @@
                     })
                 }
 
+                var _scrollLeft_value = 0
+                const _scrollLeft_fn = function (c) {
+                    // this --> scrollLeft
+                    if (c.firstElementChild) DIL(c.firstElementChild, "scrollLeft", _scrollLeft_value)
+                }
                 mainTableElm.addEventListener("scroll", (event) => {
                     const elm = event.target, cell = elm.parentElement
                     if (!cell.matches(SyncScrollCellsSelector)) return
 
                     event.stopPropagation()
-                    const scrollTop = elm.scrollTop, scrollLeft = elm.scrollLeft
-
+                    const scrollTop = elm.scrollTop
                     var c; for (c of cell.parentElement.querySelectorAll(SyncScrollCellsSelector))
                         if (c.firstElementChild) DIL(c.firstElementChild, "scrollTop", scrollTop)
-
-                    if (elm.parentElement.matches(AxisCellsSelector)) mainTableElm.forEachAxisCell(function (c) {
-                        if (c.firstElementChild) DIL(c.firstElementChild, "scrollLeft", scrollLeft)
-                    })
-
+                    if (elm.parentElement.matches(AxisCellsSelector)) {
+                        _scrollLeft_value = elm.scrollLeft
+                        mainTableElm.forEachAxisCell(_scrollLeft_fn)
+                    }
                 }, true)
 
+                const trSample = mainTableElm.querySelector("tbody.sample").firstElementChild.cloneNode(true)
+                mainTableElm.generateTr = function () {
+                    return trSample.cloneNode(true)
+                }
+
+                window.mainTableElm = mainTableElm
                 mainTableElm.setTimeAxisWidth(1500)
             }
         </script>
