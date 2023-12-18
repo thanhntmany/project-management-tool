@@ -399,44 +399,56 @@
                         <div id="time-axis-container" class="show-se">
                             <div>
                                 <div class="time-anchors">
-                                    <div style="margin-left: 3em;">
-                                        <div>1</div>
-                                        <div>2</div>
-                                        <div>3</div>
-                                        <div>4</div>
-                                        <div>5</div>
+                                    <div>
+                                        <div style="margin-left: 3em;">
+                                            <div>1</div>
+                                            <div>2</div>
+                                            <div>3</div>
+                                            <div>4</div>
+                                            <div>5</div>
+                                        </div>
                                     </div>
-                                    <div style="margin-left: 4em;">
-                                        <div>1</div>
-                                        <div>2</div>
-                                        <div>3</div>
-                                        <div>4</div>
-                                        <div>5</div>
+                                    <div>
+                                        <div style="margin-left: 4em;">
+                                            <div>1</div>
+                                            <div>2</div>
+                                            <div>3</div>
+                                            <div>4</div>
+                                            <div>5</div>
+                                        </div>
                                     </div>
-                                    <div style="margin-left: 5em;">
-                                        <div>1</div>
-                                        <div>2</div>
-                                        <div>3</div>
-                                        <div>4</div>
-                                        <div>5</div>
+                                    <div>
+                                        <div style="margin-left: 5em;">
+                                            <div>1</div>
+                                            <div>2</div>
+                                            <div>3</div>
+                                            <div>4</div>
+                                            <div>5</div>
+                                        </div>
                                     </div>
-                                    <div style="margin-left: 6em;">
-                                        <div>1</div>
-                                        <div>2</div>
-                                        <div>3</div>
-                                        <div>4</div>
-                                        <div>5</div>
+                                    <div>
+                                        <div style="margin-left: 6em;">
+                                            <div>1</div>
+                                            <div>2</div>
+                                            <div>3</div>
+                                            <div>4</div>
+                                            <div>5</div>
+                                        </div>
                                     </div>
-                                    <div style="margin-left: 7em;">
-                                        <div>1</div>
-                                        <div>2</div>
-                                        <div>3</div>
-                                        <div>4</div>
-                                        <div>5</div>
+                                    <div>
+                                        <div style="margin-left: 7em;">
+                                            <div>1</div>
+                                            <div>2</div>
+                                            <div>3</div>
+                                            <div>4</div>
+                                            <div>5</div>
+                                        </div>
                                     </div>
-                                    <div style="margin-left: 8em;">
-                                        <div>2023</div>
-                                        <div>2024</div>
+                                    <div>
+                                        <div style="margin-left: 8em;">
+                                            <div>2023</div>
+                                            <div>2024</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -468,41 +480,43 @@
                                     position: absolute;
                                 }
 
-                                .time-anchors>* {
+                                .time-anchors>*,
+                                .time-anchors>*>* {
                                     position: absolute;
                                     display: block;
                                     width: max-content;
                                 }
 
-                                .time-anchors>*>* {
+                                .time-anchors>*>*>* {
                                     position: relative;
                                     display: inline-block;
                                     border-left: 1px solid white;
                                     padding-left: 2px;
                                     margin-left: inherit;
+                                    transition: margin-left var(--transition);
                                 }
 
-                                .time-anchors>*:nth-child(1)>* {
+                                .time-anchors>*:nth-child(1)>*>* {
                                     padding-top: calc(var(--h)*0);
                                 }
 
-                                .time-anchors>*:nth-child(2)>* {
+                                .time-anchors>*:nth-child(2)>*>* {
                                     padding-top: calc(var(--h)*1);
                                 }
 
-                                .time-anchors>*:nth-child(3)>* {
+                                .time-anchors>*:nth-child(3)>*>* {
                                     padding-top: calc(var(--h)*2);
                                 }
 
-                                .time-anchors>*:nth-child(4)>* {
+                                .time-anchors>*:nth-child(4)>*>* {
                                     padding-top: calc(var(--h)*3);
                                 }
 
-                                .time-anchors>*:nth-child(5)>* {
+                                .time-anchors>*:nth-child(5)>*>* {
                                     padding-top: calc(var(--h)*4);
                                 }
 
-                                .time-anchors>*:nth-child(6)>* {
+                                .time-anchors>*:nth-child(6)>*>* {
                                     padding-top: calc(var(--h)*5);
                                 }
 
