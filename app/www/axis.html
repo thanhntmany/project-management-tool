@@ -400,54 +400,33 @@
                             <div>
                                 <div class="time-anchors">
                                     <div>
-                                        <div style="margin-left: 3em;">
-                                            <div>1</div>
-                                            <div>2</div>
-                                            <div>3</div>
-                                            <div>4</div>
-                                            <div>5</div>
+                                        <div style="width: 32em;">
+                                            <span>2023</span><span>2024</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="margin-left: 4em;">
-                                            <div>1</div>
-                                            <div>2</div>
-                                            <div>3</div>
-                                            <div>4</div>
-                                            <div>5</div>
+                                        <div style="width: 16em;">
+                                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="margin-left: 5em;">
-                                            <div>1</div>
-                                            <div>2</div>
-                                            <div>3</div>
-                                            <div>4</div>
-                                            <div>5</div>
+                                        <div style="width: 8em;">
+                                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="margin-left: 6em;">
-                                            <div>1</div>
-                                            <div>2</div>
-                                            <div>3</div>
-                                            <div>4</div>
-                                            <div>5</div>
+                                        <div style="width: 4em;">
+                                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="margin-left: 7em;">
-                                            <div>1</div>
-                                            <div>2</div>
-                                            <div>3</div>
-                                            <div>4</div>
-                                            <div>5</div>
+                                        <div style="width: 2em;">
+                                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="margin-left: 8em;">
-                                            <div>2023</div>
-                                            <div>2024</div>
+                                        <div style="width: 1em;">
+                                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                                         </div>
                                     </div>
                                 </div>
@@ -484,43 +463,43 @@
                                 .time-anchors>*>* {
                                     position: absolute;
                                     display: block;
-                                    width: max-content;
+                                    overflow: visible;
+                                    white-space: nowrap;
                                 }
 
                                 .time-anchors>*>*>* {
                                     position: relative;
                                     display: inline-block;
+                                    box-sizing: border-box;
+                                    margin-left: 0;
+                                    margin-right: 0;
                                     border-left: 1px solid white;
                                     padding-left: 2px;
-                                    margin-left: inherit;
-                                    transition: margin-left var(--transition);
-                                }
-
-                                .time-anchors>*>*>*:first-child {
-                                    margin-left: 0 !important;
-                                }
-
-                                .time-anchors>*:nth-child(1)>*>* {
-                                    padding-top: calc(var(--h)*0);
-                                }
-
-                                .time-anchors>*:nth-child(2)>*>* {
-                                    padding-top: calc(var(--h)*1);
-                                }
-
-                                .time-anchors>*:nth-child(3)>*>* {
-                                    padding-top: calc(var(--h)*2);
-                                }
-
-                                .time-anchors>*:nth-child(4)>*>* {
-                                    padding-top: calc(var(--h)*3);
-                                }
-
-                                .time-anchors>*:nth-child(5)>*>* {
-                                    padding-top: calc(var(--h)*4);
+                                    width: inherit;
+                                    transition: width var(--transition);
                                 }
 
                                 .time-anchors>*:nth-child(6)>*>* {
+                                    padding-top: calc(var(--h)*0);
+                                }
+
+                                .time-anchors>*:nth-child(5)>*>* {
+                                    padding-top: calc(var(--h)*1);
+                                }
+
+                                .time-anchors>*:nth-child(4)>*>* {
+                                    padding-top: calc(var(--h)*2);
+                                }
+
+                                .time-anchors>*:nth-child(3)>*>* {
+                                    padding-top: calc(var(--h)*3);
+                                }
+
+                                .time-anchors>*:nth-child(2)>*>* {
+                                    padding-top: calc(var(--h)*4);
+                                }
+
+                                .time-anchors>*:nth-child(1)>*>* {
                                     padding-top: calc(var(--h)*5);
                                 }
 
@@ -562,7 +541,6 @@
                                         console.log(this.style.width);
                                     })
                                     console.log(timeAxisElm);
-
                                 }
                             </script>
                         </div>
@@ -591,7 +569,7 @@
                     window.removeEventListener("mousemove", rowResize_mousemoveEL)
                 }
 
-                mainTableElm.addEventListener("mousedown", function mousedownEL(event) {
+                function mousedownEL(event) {
                     if (activeTh) return
                     var elm = event.target, cls
                     while (elm !== this) {
@@ -611,7 +589,8 @@
                         }
                         elm = elm.parentElement
                     }
-                })
+                }
+                mainTableElm.addEventListener("mousedown", mousedownEL)
 
 
                 const SyncScrollCellsSelector = "#big-chart>table.main-table>*>*>td",
