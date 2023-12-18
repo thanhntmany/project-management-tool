@@ -167,111 +167,111 @@
     </script>
     <div>Big chart tool</div>
     <div id="big-chart">
-        <style>
-            #big-chart {
-                padding: 1em .5em;
-            }
-
-            #big-chart>table.main-table {
-                table-layout: fixed;
-                border-collapse: collapse;
-                width: 100%;
-            }
-
-            #big-chart>table.main-table>tbody.sample {
-                display: none;
-            }
-
-            #big-chart>table.main-table>*>*>th,
-            #big-chart>table.main-table>*>*>td {
-                border: 1px solid white;
-                padding: 0;
-                vertical-align: top;
-            }
-
-            #big-chart>table.main-table>*>*>th:last-child,
-            #big-chart>table.main-table>*>*>td:last-child {
-                border-top-color: transparent;
-                border-right-color: transparent;
-                border-bottom-color: transparent;
-            }
-
-            #big-chart>table.main-table>*>*>td:last-child>*:first-child>*:first-child {
-                overflow: hidden;
-            }
-
-            #big-chart>table.main-table>*>*>td {
-                height: inherit;
-            }
-
-            #big-chart>table.main-table>*>*>td>div {
-                position: relative;
-                display: block;
-                box-sizing: border-box;
-                width: 100%;
-                height: inherit;
-                overflow: auto;
-                border: 0;
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-            #big-chart>table.main-table>:not(tfoot)>*>*>div::-webkit-scrollbar {
-                display: none;
-            }
-
-            #big-chart .col-resizer,
-            #big-chart .row-resizer {
-                -webkit-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
-
-            #big-chart>table.main-table>thead>tr>th {
-                height: 1px;
-            }
-
-            #big-chart>table.main-table>thead>tr>th>.col-resizer {
-                cursor: col-resize;
-                position: relative;
-                float: right;
-                display: block;
-                width: 2em;
-                height: 100%;
-            }
-
-            #big-chart>table.main-table>thead>tr>th>.col-resizer>div {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-
-            #big-chart>table.main-table>*>tr>*:first-child {
-                position: relative;
-                min-width: 2em;
-            }
-
-            #big-chart>table.main-table>*>tr>*:first-child>.row-resizer {
-                position: absolute;
-                display: block;
-                cursor: row-resize;
-                height: fit-content;
-                bottom: 0;
-                width: 100%;
-                margin: auto;
-            }
-
-            #big-chart>table.main-table>*>tr>*:first-child>.row-resizer>div {
-                width: fit-content;
-                margin: auto;
-            }
-
-            .test {
-                background-color: blue;
-            }
-        </style>
         <table class="main-table">
+            <style>
+                #big-chart {
+                    padding: 1em .5em;
+                }
+
+                #big-chart>table.main-table {
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+
+                #big-chart>table.main-table>tbody.sample {
+                    display: none;
+                }
+
+                #big-chart>table.main-table>*>*>th,
+                #big-chart>table.main-table>*>*>td {
+                    border: 1px solid white;
+                    padding: 0;
+                    vertical-align: top;
+                }
+
+                #big-chart>table.main-table>*>*>th:last-child,
+                #big-chart>table.main-table>*>*>td:last-child {
+                    border-top-color: transparent;
+                    border-right-color: transparent;
+                    border-bottom-color: transparent;
+                }
+
+                #big-chart>table.main-table>*>*>td:last-child>*:first-child>*:first-child {
+                    overflow: hidden;
+                }
+
+                #big-chart>table.main-table>*>*>td {
+                    height: inherit;
+                }
+
+                #big-chart>table.main-table>*>*>td>div {
+                    position: relative;
+                    display: block;
+                    box-sizing: border-box;
+                    width: 100%;
+                    height: inherit;
+                    overflow: auto;
+                    border: 0;
+                    padding-left: 0;
+                    padding-right: 0;
+                }
+
+                #big-chart>table.main-table>:not(tfoot)>*>*>div::-webkit-scrollbar {
+                    display: none;
+                }
+
+                #big-chart .col-resizer,
+                #big-chart .row-resizer {
+                    -webkit-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                }
+
+                #big-chart>table.main-table>thead>tr>th {
+                    height: 1px;
+                }
+
+                #big-chart>table.main-table>thead>tr>th>.col-resizer {
+                    cursor: col-resize;
+                    position: relative;
+                    float: right;
+                    display: block;
+                    width: 2em;
+                    height: 100%;
+                }
+
+                #big-chart>table.main-table>thead>tr>th>.col-resizer>div {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
+
+                #big-chart>table.main-table>*>tr>*:first-child {
+                    position: relative;
+                    min-width: 2em;
+                }
+
+                #big-chart>table.main-table>*>tr>*:first-child>.row-resizer {
+                    position: absolute;
+                    display: block;
+                    cursor: row-resize;
+                    height: fit-content;
+                    bottom: 0;
+                    width: 100%;
+                    margin: auto;
+                }
+
+                #big-chart>table.main-table>*>tr>*:first-child>.row-resizer>div {
+                    width: fit-content;
+                    margin: auto;
+                }
+
+                .test {
+                    background-color: blue;
+                }
+            </style>
             <thead>
                 <tr>
                     <th style="width: 2em;"></th>
@@ -306,6 +306,99 @@
                     </td>
                 </tr>
             </tbody>
+            <script>
+                {
+                    const mainTableElm = document.currentScript.parentElement, lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+                    var activeTh
+
+                    function colResize_mousemoveEL(event) {
+                        activeTh.style.width = (parseFloat((activeTh.style.width || window.getComputedStyle(activeTh).getPropertyValue("width")).match(lengthValueRe)[1]) + event.movementX) + "px"
+                    }
+                    function colResize_mouseupEL(event) {
+                        activeTh = undefined
+                        window.removeEventListener("mousemove", colResize_mousemoveEL)
+                    }
+
+                    function rowResize_mousemoveEL(event) {
+                        activeTh.style.height = (parseFloat((activeTh.style.height || window.getComputedStyle(activeTh).getPropertyValue("height")).match(lengthValueRe)[1]) + event.movementY) + "px"
+                    }
+                    function rowResize_mouseupEL(event) {
+                        activeTh = undefined
+                        window.removeEventListener("mousemove", rowResize_mousemoveEL)
+                    }
+
+                    function mousedownEL(event) {
+                        if (activeTh) return
+                        var elm = event.target, cls
+                        while (elm !== this) {
+                            if ((cls = elm.classList).contains("col-resizer")) {
+                                event.stopPropagation()
+                                activeTh = elm.parentElement
+                                window.addEventListener("mousemove", colResize_mousemoveEL)
+                                window.addEventListener("mouseup", colResize_mouseupEL, { once: true })
+                                return
+                            }
+                            else if (cls.contains("row-resizer")) {
+                                event.stopPropagation()
+                                activeTh = elm.parentElement.parentElement
+                                window.addEventListener("mousemove", rowResize_mousemoveEL)
+                                window.addEventListener("mouseup", rowResize_mouseupEL, { once: true })
+                                return
+                            }
+                            elm = elm.parentElement
+                        }
+                    }
+                    mainTableElm.addEventListener("mousedown", mousedownEL)
+
+
+                    const SyncScrollCellsSelector = "#big-chart>table.main-table>*>*>td",
+                        AxisCellsSelector = "#big-chart>table.main-table>*>*>td:last-child"
+                    mainTableElm.forEachAxisCell = function (callbackfn) {
+                        var elm; for (elm of mainTableElm.querySelectorAll(AxisCellsSelector)) callbackfn(elm)
+                    }
+
+                    var _scrollLeft_value = 0
+                    const _scrollLeft_fn = function (c) {// this --> scrollLeft
+                        if (c.firstElementChild) DIL(c.firstElementChild, "scrollLeft", _scrollLeft_value)
+                    }
+                    mainTableElm.addEventListener("scroll", (event) => {
+                        const elm = event.target, cell = elm.parentElement
+                        if (!cell.matches(SyncScrollCellsSelector)) return
+
+                        event.stopPropagation()
+                        const scrollTop = elm.scrollTop
+                        var c; for (c of cell.parentElement.querySelectorAll(SyncScrollCellsSelector))
+                            if (c.firstElementChild) DIL(c.firstElementChild, "scrollTop", scrollTop)
+                        if (elm.parentElement.matches(AxisCellsSelector)) {
+                            _scrollLeft_value = elm.scrollLeft
+                            mainTableElm.forEachAxisCell(_scrollLeft_fn)
+                        }
+                    }, true)
+
+                    const trSample = mainTableElm.querySelector("tbody.sample").firstElementChild.cloneNode(true)
+                    mainTableElm.generateTr = function () {
+                        return trSample.cloneNode(true)
+                    }
+
+                    mainTableElm.setTimeAxisWidth = function (width) {
+                        const w = width + "px"
+                        mainTableElm.forEachAxisCell(function (cell) {
+                            DIL(cell.firstElementChild.firstElementChild.style, "width", w)
+                        })
+                    }
+
+
+                    mainTableElm.timeHandler = Object.assign(new EventTarget(), {
+                        from: 0,
+                        to: 0,
+                        timezoneOffset: 420,
+                        width: 500,
+                    })
+
+                    window.mainTableElm = mainTableElm
+                    mainTableElm.setTimeAxisWidth(800)
+                }
+            </script>
             <tbody>
                 <tr style="height: 643.594px;">
                     <th>
@@ -525,10 +618,26 @@
                             <script>
                                 {
                                     const timeAxisElm = document.currentScript.parentElement
-                                    timeAxisElm.addEventListener("resize", function (event) {
-                                        console.log(this.style.width);
-                                    })
-                                    console.log(timeAxisElm);
+
+                                    const lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+
+                                    timeAxisElm.refresh = function () {
+                                        const timeNow = Date.now(),
+                                            timeStart = timeNow - 2592000000,
+                                            timeEnd = timeNow + 2592000000,
+                                            timeDuration = timeEnd - timeStart,
+                                            width = parseFloat((this.firstElementChild.style.width || window.getComputedStyle(this.firstElementChild).getPropertyValue("width")).match(lengthValueRe)[1]);
+
+                                        console.log("width", width);
+                                        console.log("timeDuration", timeDuration);
+                                    }
+
+                                    {//ResizeObserver
+                                        (new ResizeObserver((entries) => {
+                                            for (const entry of entries)
+                                                if (entry.target.parentElement === timeAxisElm) entry.target.parentElement.refresh()
+                                        })).observe(timeAxisElm.firstElementChild)
+                                    }
                                 }
                             </script>
                         </div>
@@ -536,99 +645,6 @@
                 </tr>
             </tfoot>
         </table>
-        <script>
-            {
-                const mainTableElm = document.currentScript.parentElement.querySelector(".main-table"), lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
-                var activeTh
-
-                function colResize_mousemoveEL(event) {
-                    activeTh.style.width = (parseFloat((activeTh.style.width || window.getComputedStyle(activeTh).width).match(lengthValueRe)[1]) + event.movementX) + "px"
-                }
-                function colResize_mouseupEL(event) {
-                    activeTh = undefined
-                    window.removeEventListener("mousemove", colResize_mousemoveEL)
-                }
-
-                function rowResize_mousemoveEL(event) {
-                    activeTh.style.height = (parseFloat((activeTh.style.height || window.getComputedStyle(activeTh).height).match(lengthValueRe)[1]) + event.movementY) + "px"
-                }
-                function rowResize_mouseupEL(event) {
-                    activeTh = undefined
-                    window.removeEventListener("mousemove", rowResize_mousemoveEL)
-                }
-
-                function mousedownEL(event) {
-                    if (activeTh) return
-                    var elm = event.target, cls
-                    while (elm !== this) {
-                        if ((cls = elm.classList).contains("col-resizer")) {
-                            event.stopPropagation()
-                            activeTh = elm.parentElement
-                            window.addEventListener("mousemove", colResize_mousemoveEL)
-                            window.addEventListener("mouseup", colResize_mouseupEL, { once: true })
-                            return
-                        }
-                        else if (cls.contains("row-resizer")) {
-                            event.stopPropagation()
-                            activeTh = elm.parentElement.parentElement
-                            window.addEventListener("mousemove", rowResize_mousemoveEL)
-                            window.addEventListener("mouseup", rowResize_mouseupEL, { once: true })
-                            return
-                        }
-                        elm = elm.parentElement
-                    }
-                }
-                mainTableElm.addEventListener("mousedown", mousedownEL)
-
-
-                const SyncScrollCellsSelector = "#big-chart>table.main-table>*>*>td",
-                    AxisCellsSelector = "#big-chart>table.main-table>*>*>td:last-child"
-                mainTableElm.forEachAxisCell = function (callbackfn) {
-                    var elm; for (elm of mainTableElm.querySelectorAll(AxisCellsSelector)) callbackfn(elm)
-                }
-
-                var _scrollLeft_value = 0
-                const _scrollLeft_fn = function (c) {// this --> scrollLeft
-                    if (c.firstElementChild) DIL(c.firstElementChild, "scrollLeft", _scrollLeft_value)
-                }
-                mainTableElm.addEventListener("scroll", (event) => {
-                    const elm = event.target, cell = elm.parentElement
-                    if (!cell.matches(SyncScrollCellsSelector)) return
-
-                    event.stopPropagation()
-                    const scrollTop = elm.scrollTop
-                    var c; for (c of cell.parentElement.querySelectorAll(SyncScrollCellsSelector))
-                        if (c.firstElementChild) DIL(c.firstElementChild, "scrollTop", scrollTop)
-                    if (elm.parentElement.matches(AxisCellsSelector)) {
-                        _scrollLeft_value = elm.scrollLeft
-                        mainTableElm.forEachAxisCell(_scrollLeft_fn)
-                    }
-                }, true)
-
-                const trSample = mainTableElm.querySelector("tbody.sample").firstElementChild.cloneNode(true)
-                mainTableElm.generateTr = function () {
-                    return trSample.cloneNode(true)
-                }
-
-                mainTableElm.setTimeAxisWidth = function (width) {
-                    const w = width + "px"
-                    mainTableElm.forEachAxisCell(function (cell) {
-                        DIL(cell.firstElementChild.firstElementChild.style, "width", w)
-                    })
-                }
-
-
-                mainTableElm.timeHandler = Object.assign(new EventTarget(), {
-                    from: 0,
-                    to: 0,
-                    timezoneOffset: 420,
-                    width: 500,
-                })
-
-                window.mainTableElm = mainTableElm
-                mainTableElm.setTimeAxisWidth(1500)
-            }
-        </script>
     </div>
 </body>
 
