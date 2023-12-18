@@ -399,44 +399,44 @@
                         <div id="time-axis-container" class="show-se">
                             <div>
                                 <div class="time-anchors">
-                                    <div>
-                                        <div style="margin-left: 4em;">1</div>
-                                        <div style="margin-left: 4em;">2</div>
-                                        <div style="margin-left: 4em;">3</div>
-                                        <div style="margin-left: 4em;">4</div>
-                                        <div style="margin-left: 4em;">5</div>
+                                    <div style="margin-left: 3em;">
+                                        <div>1</div>
+                                        <div>2</div>
+                                        <div>3</div>
+                                        <div>4</div>
+                                        <div>5</div>
                                     </div>
-                                    <div>
-                                        <!-- <span style="margin-left: 1em;">1</span>
-                                        <span style="margin-left: 3em;">2</span>
-                                        <span style="margin-left: 5em;">3</span>
-                                        <span style="margin-left: 7em;">4</span>
-                                        <span style="margin-left: 9em;">5</span> -->
+                                    <div style="margin-left: 4em;">
+                                        <div>1</div>
+                                        <div>2</div>
+                                        <div>3</div>
+                                        <div>4</div>
+                                        <div>5</div>
                                     </div>
-                                    <div>
-                                        <!-- <span style="margin-left: 1em;">1</span>
-                                        <span style="margin-left: 4em;">2</span>
-                                        <span style="margin-left: 7em;">3</span>
-                                        <span style="margin-left: 10em;">4</span>
-                                        <span style="margin-left: 13em;">5</span> -->
+                                    <div style="margin-left: 5em;">
+                                        <div>1</div>
+                                        <div>2</div>
+                                        <div>3</div>
+                                        <div>4</div>
+                                        <div>5</div>
                                     </div>
-                                    <div>
-                                        <!-- <span style="margin-left: 1em;">1</span>
-                                        <span style="margin-left: 5em;">2</span>
-                                        <span style="margin-left: 9em;">3</span>
-                                        <span style="margin-left: 13em;">4</span>
-                                        <span style="margin-left: 17em;">5</span> -->
+                                    <div style="margin-left: 6em;">
+                                        <div>1</div>
+                                        <div>2</div>
+                                        <div>3</div>
+                                        <div>4</div>
+                                        <div>5</div>
                                     </div>
-                                    <div>
-                                        <!-- <span style="margin-left: 1em;">1</span>
-                                        <span style="margin-left: 6em;">2</span>
-                                        <span style="margin-left: 11em;">3</span>
-                                        <span style="margin-left: 16em;">4</span>
-                                        <span style="margin-left: 21em;">5</span> -->
+                                    <div style="margin-left: 7em;">
+                                        <div>1</div>
+                                        <div>2</div>
+                                        <div>3</div>
+                                        <div>4</div>
+                                        <div>5</div>
                                     </div>
-                                    <div>
-                                        <!-- <span style="margin-left: 1em;">2023</span>
-                                        <span style="margin-left: 7em;">2024</span> -->
+                                    <div style="margin-left: 8em;">
+                                        <div>2023</div>
+                                        <div>2024</div>
                                     </div>
                                 </div>
                             </div>
@@ -449,7 +449,8 @@
                             </div>
                             <style>
                                 #time-axis-container {
-                                    --h: 1em
+                                    --h: 1em;
+                                    --transition: 100ms
                                 }
 
                                 #time-axis-container td,
@@ -478,6 +479,7 @@
                                     display: inline-block;
                                     border-left: 1px solid white;
                                     padding-left: 2px;
+                                    margin-left: inherit;
                                 }
 
                                 .time-anchors>*:nth-child(1)>* {
@@ -505,7 +507,7 @@
                                 }
 
                                 #time-axis-container .time-anchors {
-                                    transition: margin-top 100ms;
+                                    transition: margin-top var(--transition);
                                 }
 
                                 /* #time-axis-container.show-se {} */
