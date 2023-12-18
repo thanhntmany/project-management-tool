@@ -424,7 +424,7 @@
                                         <span style="margin-left: 1em;">1</span>
                                         <span style="margin-left: 5em;">2</span>
                                         <span style="margin-left: 9em;">3</span>
-                                        <span style="margin-left: 130em;">4</span>
+                                        <span style="margin-left: 13em;">4</span>
                                         <span style="margin-left: 17em;">5</span>
                                     </div>
                                     <div>
@@ -448,6 +448,10 @@
                                 <div>2023</div>
                             </div>
                             <style>
+                                #time-axis-container {
+                                    --h: 1em
+                                }
+
                                 #time-axis-container td,
                                 #time-axis-container th {
                                     margin: 0;
@@ -470,51 +474,54 @@
                                 }
 
                                 .time-anchors>*:nth-child(1)>* {
-                                    padding-top: 0em;
+                                    padding-top: calc(var(--h)*0);
                                 }
 
                                 .time-anchors>*:nth-child(2)>* {
-                                    padding-top: 1em;
+                                    padding-top: calc(var(--h)*1);
                                 }
 
                                 .time-anchors>*:nth-child(3)>* {
-                                    padding-top: 2em;
+                                    padding-top: calc(var(--h)*2);
                                 }
 
                                 .time-anchors>*:nth-child(4)>* {
-                                    padding-top: 3em;
+                                    padding-top: calc(var(--h)*3);
                                 }
 
                                 .time-anchors>*:nth-child(5)>* {
-                                    padding-top: 4em;
+                                    padding-top: calc(var(--h)*4);
                                 }
 
                                 .time-anchors>*:nth-child(6)>* {
-                                    padding-top: 5em;
+                                    padding-top: calc(var(--h)*5);
+                                }
+
+                                #time-axis-container .time-anchors {
+                                    transition: margin-top 100ms;
                                 }
 
                                 /* #time-axis-container.show-se {} */
-                                #time-axis-container.show-mi .time-anchors>*:nth-child(1),
-                                #time-axis-container.show-ho .time-anchors>*:nth-child(1),
-                                #time-axis-container.show-ho .time-anchors>*:nth-child(2),
-                                #time-axis-container.show-da .time-anchors>*:nth-child(1),
-                                #time-axis-container.show-da .time-anchors>*:nth-child(2),
-                                #time-axis-container.show-da .time-anchors>*:nth-child(3),
-                                #time-axis-container.show-mo .time-anchors>*:nth-child(1),
-                                #time-axis-container.show-mo .time-anchors>*:nth-child(2),
-                                #time-axis-container.show-mo .time-anchors>*:nth-child(3),
-                                #time-axis-container.show-mo .time-anchors>*:nth-child(4),
-                                #time-axis-container.show-ye .time-anchors>*:nth-child(1),
-                                #time-axis-container.show-ye .time-anchors>*:nth-child(2),
-                                #time-axis-container.show-ye .time-anchors>*:nth-child(3),
-                                #time-axis-container.show-ye .time-anchors>*:nth-child(4),
-                                #time-axis-container.show-ye .time-anchors>*:nth-child(5) {
-                                    display: none;
+                                #time-axis-container.show-mi .time-anchors {
+                                    margin-top: calc(var(--h)*-1);
                                 }
 
-                                /* #time-axis-container>*:first-child>* {
-                                    position: absolute;
-                                } */
+                                #time-axis-container.show-ho .time-anchors {
+                                    margin-top: calc(var(--h)*-2);
+                                }
+
+                                #time-axis-container.show-da .time-anchors {
+                                    margin-top: calc(var(--h)*-3);
+                                }
+
+                                #time-axis-container.show-mo .time-anchors {
+                                    margin-top: calc(var(--h)*-4);
+                                }
+
+                                #time-axis-container.show-ye .time-anchors {
+                                    margin-top: calc(var(--h)*-5);
+                                }
+
                                 #time-axis-container>*:nth-child(2) {
                                     position: sticky;
                                     left: 0;
