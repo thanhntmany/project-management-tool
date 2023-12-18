@@ -165,6 +165,37 @@
             })
         }, { once: true })
     </script>
+    <div>
+        <label>Timezone:<select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
+        <script>
+            {
+                console.log(document.currentScript.parentElement);
+                const elm = document.getElementById("timezone-selector");
+                ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                    const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
+                    e = document.createElement("option")
+                    e.value = offfset
+                    e.innerText = label
+                    elm.appendChild(e)
+                })
+
+                const offfsetElm = document.getElementById("timezone-offfset")
+                elm.addEventListener("change", function (e) {
+                    offfsetElm.value = this.value
+                    offfsetElm.dispatchEvent(new Event('change'))
+                })
+                offfsetElm.addEventListener("change", function (e) {
+                    CORE.setTimezoneOffset(elm.value = this.value)
+                })
+                CORE.addEventListener("change-timezone-offset", function (e) {
+                    if (offfsetElm.value === this.timezoneOffset) return
+                    offfsetElm.value = this.timezoneOffset
+                })
+
+                offfsetElm.value = CORE.timezoneOffset
+            }
+        </script>
+    </div>
     <div>Big chart tool</div>
     <div id="big-chart">
         <table class="main-table">
@@ -198,6 +229,7 @@
                 }
 
                 #big-chart>table.main-table>*>*>td:last-child>*:first-child>*:first-child {
+                    width: 100%;
                     overflow: hidden;
                 }
 
@@ -444,36 +476,6 @@
                     <th></th>
                     <td>
                         <div style="padding: 1em .5em;white-space: nowrap;">
-                            <label>Timezone:<select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
-                            <script>
-                                {
-                                    const elm = document.getElementById("timezone-selector");
-                                    ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
-                                        const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
-                                        e = document.createElement("option")
-                                        e.value = offfset
-                                        e.innerText = label
-                                        elm.appendChild(e)
-                                    })
-
-                                    const offfsetElm = document.getElementById("timezone-offfset")
-                                    elm.addEventListener("change", function (e) {
-                                        offfsetElm.value = this.value
-                                        offfsetElm.dispatchEvent(new Event('change'))
-                                    })
-                                    offfsetElm.addEventListener("change", function (e) {
-                                        CORE.setTimezoneOffset(elm.value = this.value)
-                                    })
-                                    CORE.addEventListener("change-timezone-offset", function (e) {
-                                        if (offfsetElm.value === this.timezoneOffset) return
-                                        offfsetElm.value = this.timezoneOffset
-                                        offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
-                                    })
-
-                                    offfsetElm.value = CORE.timezoneOffset
-                                    offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
-                                }
-                            </script>
                             <table>
                                 <tbody>
                                     <tr>
