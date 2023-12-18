@@ -400,43 +400,43 @@
                             <div>
                                 <div class="time-anchors">
                                     <div>
-                                        <span style="margin-left: 1em;">1</span>
-                                        <span style="margin-left: 2em;">2</span>
-                                        <span style="margin-left: 3em;">3</span>
-                                        <span style="margin-left: 4em;">4</span>
-                                        <span style="margin-left: 5em;">5</span>
+                                        <div style="margin-left: 4em;">1</div>
+                                        <div style="margin-left: 4em;">2</div>
+                                        <div style="margin-left: 4em;">3</div>
+                                        <div style="margin-left: 4em;">4</div>
+                                        <div style="margin-left: 4em;">5</div>
                                     </div>
                                     <div>
-                                        <span style="margin-left: 1em;">1</span>
+                                        <!-- <span style="margin-left: 1em;">1</span>
                                         <span style="margin-left: 3em;">2</span>
                                         <span style="margin-left: 5em;">3</span>
                                         <span style="margin-left: 7em;">4</span>
-                                        <span style="margin-left: 9em;">5</span>
+                                        <span style="margin-left: 9em;">5</span> -->
                                     </div>
                                     <div>
-                                        <span style="margin-left: 1em;">1</span>
+                                        <!-- <span style="margin-left: 1em;">1</span>
                                         <span style="margin-left: 4em;">2</span>
                                         <span style="margin-left: 7em;">3</span>
                                         <span style="margin-left: 10em;">4</span>
-                                        <span style="margin-left: 13em;">5</span>
+                                        <span style="margin-left: 13em;">5</span> -->
                                     </div>
                                     <div>
-                                        <span style="margin-left: 1em;">1</span>
+                                        <!-- <span style="margin-left: 1em;">1</span>
                                         <span style="margin-left: 5em;">2</span>
                                         <span style="margin-left: 9em;">3</span>
                                         <span style="margin-left: 13em;">4</span>
-                                        <span style="margin-left: 17em;">5</span>
+                                        <span style="margin-left: 17em;">5</span> -->
                                     </div>
                                     <div>
-                                        <span style="margin-left: 1em;">1</span>
+                                        <!-- <span style="margin-left: 1em;">1</span>
                                         <span style="margin-left: 6em;">2</span>
                                         <span style="margin-left: 11em;">3</span>
                                         <span style="margin-left: 16em;">4</span>
-                                        <span style="margin-left: 21em;">5</span>
+                                        <span style="margin-left: 21em;">5</span> -->
                                     </div>
                                     <div>
-                                        <span style="margin-left: 1em;">2023</span>
-                                        <span style="margin-left: 7em;">2024</span>
+                                        <!-- <span style="margin-left: 1em;">2023</span>
+                                        <span style="margin-left: 7em;">2024</span> -->
                                     </div>
                                 </div>
                             </div>
@@ -467,8 +467,15 @@
                                     position: absolute;
                                 }
 
-                                .time-anchors>*>* {
+                                .time-anchors>* {
                                     position: absolute;
+                                    display: block;
+                                    width: max-content;
+                                }
+
+                                .time-anchors>*>* {
+                                    position: relative;
+                                    display: inline-block;
                                     border-left: 1px solid white;
                                     padding-left: 2px;
                                 }
