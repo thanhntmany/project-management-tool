@@ -165,38 +165,6 @@
             })
         }, { once: true })
     </script>
-    <div>
-        <label> Use timezone: <select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
-        <script>
-            {
-                const elm = document.getElementById("timezone-selector");
-                ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
-                    const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
-                    e = document.createElement("option")
-                    e.value = offfset
-                    e.innerText = label
-                    elm.appendChild(e)
-                })
-
-                const offfsetElm = document.getElementById("timezone-offfset")
-                elm.addEventListener("change", function (e) {
-                    offfsetElm.value = this.value
-                    offfsetElm.dispatchEvent(new Event('change'))
-                })
-                offfsetElm.addEventListener("change", function (e) {
-                    CORE.setTimezoneOffset(elm.value = this.value)
-                })
-                CORE.addEventListener("change-timezone-offset", function (e) {
-                    if (offfsetElm.value === this.timezoneOffset) return
-                    offfsetElm.value = this.timezoneOffset
-                    offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
-                })
-
-                offfsetElm.value = CORE.timezoneOffset
-                offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
-            }
-        </script>
-    </div>
     <div>Big chart tool</div>
     <div id="big-chart">
         <style>
@@ -210,9 +178,10 @@
                 width: 100%;
             }
 
-            /* #big-chart>table.main-table>tbody.sample {
+            #big-chart>table.main-table>tbody.sample {
                 display: none;
-            } */
+            }
+
             #big-chart>table.main-table>*>*>th,
             #big-chart>table.main-table>*>*>td {
                 border: 1px solid white;
@@ -227,6 +196,10 @@
                 border-bottom-color: transparent;
             }
 
+            #big-chart>table.main-table>*>*>td:last-child>*:first-child>*:first-child {
+                overflow: hidden;
+            }
+
             #big-chart>table.main-table>*>*>td {
                 height: inherit;
             }
@@ -234,6 +207,7 @@
             #big-chart>table.main-table>*>*>td>div {
                 position: relative;
                 display: block;
+                box-sizing: border-box;
                 width: 100%;
                 height: inherit;
                 overflow: auto;
@@ -301,7 +275,7 @@
             <thead>
                 <tr>
                     <th style="width: 2em;"></th>
-                    <th>
+                    <th style="width: 324px;">
                         <div class="col-resizer">
                             <div>‖</div>
                         </div>
@@ -333,7 +307,7 @@
                 </tr>
             </tbody>
             <tbody>
-                <tr style="height: 147.594px;">
+                <tr style="height: 643.594px;">
                     <th>
                         <div>1</div>
                         <div class="row-resizer">
@@ -355,7 +329,7 @@
                         </div>
                     </td>
                 </tr>
-                <tr style="height: 147.594px;">
+                <tr style="height: 99.594px;">
                     <th>
                         <div>2</div>
                         <div class="row-resizer">
@@ -373,12 +347,78 @@
                 </tr>
             </tbody>
             <tfoot>
-                <tr>
-                    <th>#</th>
-                    <td></td>
+                <tr style="height: 9em;">
+                    <th></th>
                     <td>
+                        <div style="padding: 1em .5em;white-space: nowrap;">
+                            <label>Timezone:<select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
+                            <script>
+                                {
+                                    const elm = document.getElementById("timezone-selector");
+                                    ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                                        const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
+                                        e = document.createElement("option")
+                                        e.value = offfset
+                                        e.innerText = label
+                                        elm.appendChild(e)
+                                    })
+
+                                    const offfsetElm = document.getElementById("timezone-offfset")
+                                    elm.addEventListener("change", function (e) {
+                                        offfsetElm.value = this.value
+                                        offfsetElm.dispatchEvent(new Event('change'))
+                                    })
+                                    offfsetElm.addEventListener("change", function (e) {
+                                        CORE.setTimezoneOffset(elm.value = this.value)
+                                    })
+                                    CORE.addEventListener("change-timezone-offset", function (e) {
+                                        if (offfsetElm.value === this.timezoneOffset) return
+                                        offfsetElm.value = this.timezoneOffset
+                                        offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
+                                    })
+
+                                    offfsetElm.value = CORE.timezoneOffset
+                                    offfsetElm.dispatchEvent(new Event('change', { 'bubbles': true }))
+                                }
+                            </script>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>From</td>
+                                        <td><input type="datetime-local"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>To</td>
+                                        <td><input type="datetime-local"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td style="border-top-color: white;">
                         <div>
-                            <div>time Axis</div>
+                            <div style="border-top: 1px solid white;">
+                                <!-- <hr> -->
+                                <div>
+                                </div>
+                                <div style="width: fit-content;position: sticky;">
+                                    <div>06</div>
+                                    <div>09</div>
+                                    <div>18</div>
+                                    <div>12</div>
+                                    <div>2023</div>
+                                </div>
+                                <script>
+                                    {
+                                        const timeAxisElm = document.currentScript.parentElement
+                                        timeAxisElm.addEventListener("resize", function (event) {
+                                            console.log(this.style.width);
+                                        })
+                                        console.log(timeAxisElm);
+
+                                    }
+                                </script>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -434,16 +474,8 @@
                     var elm; for (elm of mainTableElm.querySelectorAll(AxisCellsSelector)) callbackfn(elm)
                 }
 
-                mainTableElm.setTimeAxisWidth = function (width) {
-                    const w = width + "px"
-                    mainTableElm.forEachAxisCell(function (cell) {
-                        DIL(cell.firstElementChild.firstElementChild.style, "width", w)
-                    })
-                }
-
                 var _scrollLeft_value = 0
-                const _scrollLeft_fn = function (c) {
-                    // this --> scrollLeft
+                const _scrollLeft_fn = function (c) {// this --> scrollLeft
                     if (c.firstElementChild) DIL(c.firstElementChild, "scrollLeft", _scrollLeft_value)
                 }
                 mainTableElm.addEventListener("scroll", (event) => {
@@ -463,6 +495,13 @@
                 const trSample = mainTableElm.querySelector("tbody.sample").firstElementChild.cloneNode(true)
                 mainTableElm.generateTr = function () {
                     return trSample.cloneNode(true)
+                }
+
+                mainTableElm.setTimeAxisWidth = function (width) {
+                    const w = width + "px"
+                    mainTableElm.forEachAxisCell(function (cell) {
+                        DIL(cell.firstElementChild.firstElementChild.style, "width", w)
+                    })
                 }
 
                 window.mainTableElm = mainTableElm
