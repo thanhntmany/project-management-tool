@@ -26,10 +26,12 @@
                     }
 
                     table#time-based>*>* {
+                        position: relative;
                         vertical-align: top;
                     }
 
                     table#time-based>*>*>* {
+                        position: relative;
                         height: inherit;
                         margin: 0;
                         border: 0;
@@ -37,6 +39,7 @@
                     }
 
                     table#time-based>*>*>*>div {
+                        position: relative;
                         max-width: 100%;
                         max-height: 100%;
                         width: 100%;
@@ -45,7 +48,9 @@
                         background-color: darkslategray;
                     }
 
-                    .col-resizer {
+                    /* resizers */
+                    .col-resizer,
+                    .row-resizer {
                         -webkit-user-select: none;
                         -ms-user-select: none;
                         user-select: none;
@@ -60,6 +65,25 @@
                         padding-right: 2px;
                         width: fit-content;
                         height: 100%;
+                    }
+
+                    table#time-based>*>*>*:first-child {
+                        width: 1em;
+                    }
+
+                    table#time-based .row-resizer {
+                        position: absolute;
+                        display: block;
+                        cursor: row-resize;
+                        height: fit-content;
+                        bottom: 0;
+                        width: 100%;
+                        margin: auto;
+                    }
+
+                    table#time-based .row-resizer>div {
+                        width: fit-content;
+                        margin: auto;
                     }
                 </style>
                 <script>
@@ -98,6 +122,9 @@
                             }, true)
                         }
 
+                        {
+
+                        }
                         // window.mTa = elm
                     }
                 </script>
@@ -114,17 +141,29 @@
                             </div>
                         </th>
                         <th>
-                            <div>2</div>
+                            <div>
+                                <div class="col-resizer">
+                                    <div>‖</div>
+                                </div> 2
+                            </div>
                         </th>
                         <th>
-                            <div>3</div>
+                            <div>
+                                <div class="col-resizer">
+                                    <div>‖</div>
+                                </div> 3
+                            </div>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <th>
-                            <div>1</div>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>&nbsp;
+                            </div>
                         </th>
                         <td>
                             <div>xxxxx</div>
@@ -138,7 +177,11 @@
                     </tr>
                     <tr style="height: 28em;">
                         <th>
-                            <div>1</div>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>1
+                            </div>
                         </th>
                         <td>
                             <div>
@@ -154,7 +197,11 @@
                     </tr>
                     <tr>
                         <th>
-                            <div>1</div>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>2
+                            </div>
                         </th>
                         <td>
                             <div>xxxxx</div>
