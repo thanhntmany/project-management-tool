@@ -89,8 +89,7 @@
                 <script>
                     {
                         const TimeBasedTableElm = document.currentScript.parentElement,
-                            ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`],
-                            lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+                            ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
                         TimeBasedTableElm.setColWidth = function (idx, w) {
                             ColQuery[1] = idx
                             var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
@@ -99,7 +98,8 @@
                         {
                             var _th, _idx
                             function _mousemoveEL(event) {
-                                TimeBasedTableElm.setColWidth(_idx, parseFloat((_th.firstElementChild.style.width || window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).match(lengthValueRe)[1]) + event.movementX)
+                                const sh = _th.firstElementChild.style.width
+                                TimeBasedTableElm.setColWidth(_idx, parseFloat((sh.endsWith("px") ? sh : window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).slice(0, -2)) + event.movementX)
                             }
                             function _mouseupEL(event) {
                                 _th = undefined
@@ -110,12 +110,8 @@
                                 if (!tElm.classList.contains("col-resizer")) tElm = tElm.parentElement
                                 if (tElm.classList.contains("col-resizer")) {
                                     event.stopPropagation()
-                                    const th = tElm.parentElement.parentElement
-                                    var i = 1, el; for (el of th.parentElement.children) if (el !== th) { ++i } else break
-                                    console.log(i);
-
-                                    _idx = i
-                                    _th = th
+                                    _th = tElm.parentElement.parentElement
+                                    _idx = 1; var el; for (el of _th.parentElement.children) if (el !== _th) { ++_idx } else break
                                     window.addEventListener("mousemove", _mousemoveEL)
                                     window.addEventListener("mouseup", _mouseupEL, { once: true })
                                 }
@@ -123,7 +119,25 @@
                         }
 
                         {
-
+                            var _th, _idx
+                            function _mousemoveEL(event) {
+                                const sh = _th.style.height || ""
+                                _th.style.height = (parseFloat((sh.endsWith("px") ? sh : window.getComputedStyle(_th).getPropertyValue("height")).slice(0, -2)) + event.movementY) + "px"
+                            }
+                            function _mouseupEL(event) {
+                                _th = undefined
+                                window.removeEventListener("mousemove", _mousemoveEL)
+                            }
+                            TimeBasedTableElm.addEventListener("mousedown", function (event) {
+                                var elm = event.target, tElm = elm
+                                if (!tElm.classList.contains("row-resizer")) tElm = tElm.parentElement
+                                if (tElm.classList.contains("row-resizer")) {
+                                    event.stopPropagation()
+                                    _th = tElm.parentElement.parentElement.parentElement
+                                    window.addEventListener("mousemove", _mousemoveEL)
+                                    window.addEventListener("mouseup", _mouseupEL, { once: true })
+                                }
+                            }, true)
                         }
                         // window.mTa = elm
                     }
