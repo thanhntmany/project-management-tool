@@ -27,14 +27,13 @@
 
                     table#time-based>*>* {
                         vertical-align: top;
-                        height: 2em;
                     }
 
                     table#time-based>*>*>* {
                         height: inherit;
                         margin: 0;
                         border: 0;
-                        padding: 0;
+                        /* padding: 0; */
                     }
 
                     table#time-based>*>*>*>div {
@@ -45,20 +44,61 @@
                         overflow: auto;
                         background-color: darkslategray;
                     }
+
+                    .col-resizer {
+                        -webkit-user-select: none;
+                        -ms-user-select: none;
+                        user-select: none;
+                    }
+
+                    table#time-based .col-resizer {
+                        cursor: col-resize;
+                        position: relative;
+                        float: right;
+                        display: block;
+                        padding-left: .5em;
+                        padding-right: 2px;
+                        width: fit-content;
+                        height: 100%;
+                    }
                 </style>
                 <script>
                     {
-                        const elm = document.currentScript.parentElement,
-                            ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
-                        elm.setColWidth = function (idx, w) {
+                        const TimeBasedTableElm = document.currentScript.parentElement,
+                            ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`],
+                            lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+                        TimeBasedTableElm.setColWidth = function (idx, w) {
                             ColQuery[1] = idx
-                            var e; for (e of this.querySelectorAll(ColQuery.join(""))) {
-                                DIL(e.style, e.style.setProperty, "width", w + "px")
-                                // document.body.style.setProperty("width")
-                            }
+                            var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
                         }
 
-                        window.mTa = elm
+                        {
+                            var _th, _idx
+                            function _mousemoveEL(event) {
+                                TimeBasedTableElm.setColWidth(_idx, parseFloat((_th.firstElementChild.style.width || window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).match(lengthValueRe)[1]) + event.movementX)
+                            }
+                            function _mouseupEL(event) {
+                                _th = undefined
+                                window.removeEventListener("mousemove", _mousemoveEL)
+                            }
+                            TimeBasedTableElm.addEventListener("mousedown", function (event) {
+                                var elm = event.target, tElm = elm
+                                if (!tElm.classList.contains("col-resizer")) tElm = tElm.parentElement
+                                if (tElm.classList.contains("col-resizer")) {
+                                    event.stopPropagation()
+                                    const th = tElm.parentElement.parentElement
+                                    var i = 1, el; for (el of th.parentElement.children) if (el !== th) { ++i } else break
+                                    console.log(i);
+
+                                    _idx = i
+                                    _th = th
+                                    window.addEventListener("mousemove", _mousemoveEL)
+                                    window.addEventListener("mouseup", _mouseupEL, { once: true })
+                                }
+                            }, true)
+                        }
+
+                        // window.mTa = elm
                     }
                 </script>
                 <thead>
@@ -67,7 +107,11 @@
                             <div>#</div>
                         </th>
                         <th>
-                            <div>1</div>
+                            <div>
+                                <div class="col-resizer">
+                                    <div>‖</div>
+                                </div> 1
+                            </div>
                         </th>
                         <th>
                             <div>2</div>
