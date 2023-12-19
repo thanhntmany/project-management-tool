@@ -25,6 +25,10 @@
         </style>
         <table id="time-based-table">
             <style>
+                #time-based-table>*>*>*:nth-child(3) {
+                    width: 50px;
+                }
+
                 #time-based-table {
                     table-layout: fixed;
                     border-collapse: collapse;
@@ -34,6 +38,7 @@
                 #time-based-table>*>tr>th,
                 #time-based-table>*>tr>td {
                     vertical-align: top;
+                    border: 1px solid black;
                 }
 
                 #time-based-table .width-resizer,
@@ -48,12 +53,15 @@
                     position: relative;
                     float: right;
                     display: block;
-                    width: 2em;
+                    padding-left: .5em;
+                    padding-right: 2px;
+                    width: fit-content;
                     height: 100%;
                 }
 
-                #time-based-table>*>*>th:first-child {
+                #time-based-table>tbody>*>th:first-child {
                     position: relative;
+                    padding-bottom: 1em;
                 }
 
                 #time-based-table .height-resizer {
@@ -69,6 +77,21 @@
                 #time-based-table .height-resizer>div {
                     width: fit-content;
                     margin: auto;
+                }
+
+                #time-based-table .sync-scroll-width {
+                    position: relative;
+                    display: block;
+                    box-sizing: border-box;
+                    width: 100%;
+                    height: 100%;
+                    overflow: auto;
+                }
+
+                #time-based-table .sync-scroll-width>div {
+                    position: relative;
+                    background-color: blue;
+                    width: 500px;
                 }
             </style>
             <script>
@@ -126,13 +149,17 @@
             <thead>
                 <tr>
                     <th>Ops</th>
-                    <th>Details<div class="width-resizer">
+                    <th>
+                        <div class="width-resizer">
                             <div>‖</div>
                         </div>
+                        <div>Details </div>
                     </th>
-                    <th>Time-based<div class="width-resizer">
+                    <th>
+                        <div class="width-resizer">
                             <div>‖</div>
                         </div>
+                        <div>Time-based </div>
                     </th>
                 </tr>
             </thead>
@@ -144,7 +171,26 @@
                         </div> #
                     </th>
                     <td>xxx</td>
-                    <td>graph</td>
+                    <td>
+                        <div class="sync-scroll-width">
+                            <div>
+                                <div>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <!-- <tr>
+                    <th>
+                        <div class="height-resizer">
+                            <div>═</div>
+                        </div> #
+                    </th>
+                    <td>xxx</td>
+                    <td>
+                        <div class="sync-scroll-width">
+                            <div>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+                        </div>
+                    </td>
                 </tr>
                 <tr>
                     <th>
@@ -153,17 +199,11 @@
                         </div> #
                     </th>
                     <td>xxx</td>
-                    <td>graph</td>
-                </tr>
-                <tr>
-                    <th>
-                        <div class="height-resizer">
-                            <div>═</div>
-                        </div> #
-                    </th>
-                    <td>xxx</td>
-                    <td>time axis</td>
-                </tr>
+                    <td>time axis <div class="sync-scroll-width">
+                            <div>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+                        </div>
+                    </td>
+                </tr> -->
             </tbody>
         </table>
     </div>
