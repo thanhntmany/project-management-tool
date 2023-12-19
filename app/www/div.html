@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Div way</title>
+    <script src="/do-it-later--requestAnimationFrame.js"></script>
     <style>
         body {
             background-color: black;
@@ -21,30 +22,51 @@
                 <style>
                     table#time-based {
                         table-layout: fixed;
+                        border-collapse: collapse;
                     }
 
                     table#time-based>*>* {
                         vertical-align: top;
+                        height: 2em;
                     }
 
                     table#time-based>*>*>* {
                         height: inherit;
+                        margin: 0;
+                        border: 0;
+                        padding: 0;
                     }
 
                     table#time-based>*>*>*>div {
-                        max-height: 100%;
                         max-width: 100%;
+                        max-height: 100%;
                         width: 100%;
                         height: inherit;
-                        background-color: aquamarine;
+                        overflow: auto;
+                        background-color: darkslategray;
                     }
                 </style>
+                <script>
+                    {
+                        const elm = document.currentScript.parentElement,
+                            ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
+                        elm.setColWidth = function (idx, w) {
+                            ColQuery[1] = idx
+                            var e; for (e of this.querySelectorAll(ColQuery.join(""))) {
+                                DIL(e.style, e.style.setProperty, "width", w + "px")
+                                // document.body.style.setProperty("width")
+                            }
+                        }
+
+                        window.mTa = elm
+                    }
+                </script>
                 <thead>
                     <tr>
                         <th>
                             <div>#</div>
                         </th>
-                        <th style="width: 28em;">
+                        <th>
                             <div>1</div>
                         </th>
                         <th>
@@ -75,7 +97,9 @@
                             <div>1</div>
                         </th>
                         <td>
-                            <div>xxxxx</div>
+                            <div>
+                                <div style="width: 500px;background-color: brown;"> OKKKKKK </div>
+                            </div>
                         </td>
                         <td>
                             <div>xxxxx</div>
