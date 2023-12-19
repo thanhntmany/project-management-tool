@@ -7,6 +7,10 @@
     <title>Div way</title>
     <script src="/do-it-later--requestAnimationFrame.js"></script>
     <style>
+        html {
+            font-size: 14px;
+        }
+
         body {
             background-color: black;
             color: white;
@@ -105,6 +109,7 @@
                     table#time-based>*>* {
                         position: relative;
                         vertical-align: top;
+                        height: 2em;
                     }
 
                     table#time-based>*>*>* {
@@ -216,6 +221,8 @@
                                 }
                             }, true)
                         }
+
+                        window.addEventListener("load", () => TimeBasedTableElm.setColWidth(1, 20))
                         // window.mTa = elm
                     }
                 </script>
@@ -228,14 +235,14 @@
                             <div>
                                 <div class="col-resizer">
                                     <div>‖</div>
-                                </div> 1
+                                </div> Details
                             </div>
                         </th>
                         <th>
                             <div>
                                 <div class="col-resizer">
                                     <div>‖</div>
-                                </div> 2
+                                </div> Time-based charts
                             </div>
                         </th>
                     </tr>
@@ -286,6 +293,56 @@
                         </td>
                         <td>
                             <div>xxxxx</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>📈
+                            </div>
+                        </th>
+                        <td>
+                            <div>
+                                <input type="range" min="0" max="100" setp="1" value="50" style="margin: 0;width: 100%;">
+                                <div>year</div>
+                                <div>month</div>
+                                <div>day</div>
+                                <div>hour</div>
+                                <div>minute</div>
+                                <div>second</div>
+                                <script>
+                                    {
+                                        const fontSizeUnit = window.getComputedStyle(document.currentScript.parentElement.parentElement.parentElement.lastElementChild).getPropertyValue("font-size"),
+                                            rangeInput = document.currentScript.parentElement.querySelector("input")
+
+                                        console.log(fontSizeUnit);
+
+                                        const base = 60 * 60 * 24 * 30 * 12,
+                                            u = Math.pow(base, 1 / rangeInput.max)
+
+                                        rangeInput.addEventListener("change", function (event) {
+
+                                            console.log(base/Math.pow(u, this.value));
+                                            // return true
+                                        })
+
+                                        console.log(u);
+
+                                    }
+                                </script>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>year</div>
+                                <div>month</div>
+                                <div>day</div>
+                                <div>hour</div>
+                                <div>minute</div>
+                                <div>second</div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
