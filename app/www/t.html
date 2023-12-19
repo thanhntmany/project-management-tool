@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanhntmany</title>
+    <script src="/do-it-later--requestAnimationFrame.js"></script>
+</head>
+
+<body>
+    <div>Options...</div>
+    <div id="time-based-view">
+        <style>
+            #time-based-view {
+                table-layout: fixed;
+            }
+
+            #big-chart .col-resizer,
+            #big-chart .row-resizer {
+                -webkit-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+        </style>
+        <table id="time-based-table">
+            <style>
+                #time-based-table {
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                    vertical-align: top;
+                }
+
+                #time-based-table>*>tr>th,
+                #time-based-table>*>tr>td {
+                    vertical-align: top;
+                }
+
+                #time-based-table .width-resizer,
+                #time-based-table .height-resizer {
+                    -webkit-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                }
+
+                #time-based-table .width-resizer {
+                    cursor: col-resize;
+                    position: relative;
+                    float: right;
+                    display: block;
+                    width: 2em;
+                    height: 100%;
+                }
+
+                #time-based-table>*>*>th:first-child {
+                    position: relative;
+                }
+
+                #time-based-table .height-resizer {
+                    position: absolute;
+                    display: block;
+                    cursor: row-resize;
+                    height: fit-content;
+                    bottom: 0;
+                    width: 100%;
+                    margin: auto;
+                }
+
+                #time-based-table .height-resizer>div {
+                    width: fit-content;
+                    margin: auto;
+                }
+            </style>
+            <script>
+                {
+                    const TimeBasedTableElm = document.currentScript.parentElement,
+                        lengthValueRe = /([+-]?[\d.]+)([\s\S]*)/
+                    console.log(TimeBasedTableElm);
+
+                    var activeTh
+
+                    function widthResize_mousemoveEL(event) {
+                        activeTh.style.width = (parseFloat((activeTh.style.width || window.getComputedStyle(activeTh).getPropertyValue("width")).match(lengthValueRe)[1]) + event.movementX) + "px"
+                    }
+                    function widthResize_mouseupEL(event) {
+                        activeTh = undefined
+                        window.removeEventListener("mousemove", widthResize_mousemoveEL)
+                    }
+                    function widthResize_mousedown(th) {
+                        activeTh = th
+                        window.addEventListener("mousemove", widthResize_mousemoveEL)
+                        window.addEventListener("mouseup", widthResize_mouseupEL, { once: true })
+                    }
+
+                    function heightResize_mousemoveEL(event) {
+                        activeTh.style.height = (parseFloat((activeTh.style.height || window.getComputedStyle(activeTh).getPropertyValue("height")).match(lengthValueRe)[1]) + event.movementY) + "px"
+                    }
+                    function heightResize_mouseupEL(event) {
+                        activeTh = undefined
+                        window.removeEventListener("mousemove", heightResize_mousemoveEL)
+                    }
+                    function heightResize_mousedown(th) {
+                        activeTh = th
+                        window.addEventListener("mousemove", heightResize_mousemoveEL)
+                        window.addEventListener("mouseup", heightResize_mouseupEL, { once: true })
+                    }
+
+                    TimeBasedTableElm.addEventListener("mousedown", function (event) {
+                        var elm = event.target, tElm = elm
+                        if (!tElm.classList.contains("width-resizer")) tElm = tElm.parentElement
+                        if (tElm.classList.contains("width-resizer")) {
+                            event.stopPropagation()
+                            widthResize_mousedown(tElm.parentElement)
+                        }
+
+                        tElm = elm
+                        if (!tElm.classList.contains("height-resizer")) tElm = tElm.parentElement
+                        if (tElm.classList.contains("height-resizer")) {
+                            event.stopPropagation()
+                            heightResize_mousedown(tElm.parentElement)
+                        }
+                    }, true)
+
+                }
+            </script>
+            <thead>
+                <tr>
+                    <th>Ops</th>
+                    <th>Details<div class="width-resizer">
+                            <div>‖</div>
+                        </div>
+                    </th>
+                    <th>Time-based<div class="width-resizer">
+                            <div>‖</div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>
+                        <div class="height-resizer">
+                            <div>═</div>
+                        </div> #
+                    </th>
+                    <td>xxx</td>
+                    <td>graph</td>
+                </tr>
+                <tr>
+                    <th>
+                        <div class="height-resizer">
+                            <div>═</div>
+                        </div> #
+                    </th>
+                    <td>xxx</td>
+                    <td>graph</td>
+                </tr>
+                <tr>
+                    <th>
+                        <div class="height-resizer">
+                            <div>═</div>
+                        </div> #
+                    </th>
+                    <td>xxx</td>
+                    <td>time axis</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

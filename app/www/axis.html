@@ -314,6 +314,9 @@
                         <div>Detail</div>
                     </th>
                     <th>
+                        <div class="col-resizer">
+                            <div>‖</div>
+                        </div>
                         <div>Time-based</div>
                     </th>
                 </tr>
@@ -412,23 +415,23 @@
                         return trSample.cloneNode(true)
                     }
 
-                    mainTableElm.setTimeAxisWidth = function (width) {
-                        const w = width + "px"
-                        mainTableElm.forEachAxisCell(function (cell) {
-                            DIL(cell.firstElementChild.firstElementChild.style, "width", w)
-                        })
-                    }
+                    // mainTableElm.setTimeAxisWidth = function (width) {
+                    //     const w = width + "px"
+                    //     mainTableElm.forEachAxisCell(function (cell) {
+                    //         DIL(cell.firstElementChild.firstElementChild.style, "width", w)
+                    //     })
+                    // }
 
 
-                    mainTableElm.timeHandler = Object.assign(new EventTarget(), {
-                        from: 0,
-                        to: 0,
-                        timezoneOffset: 420,
-                        width: 500,
-                    })
+                    // mainTableElm.timeHandler = Object.assign(new EventTarget(), {
+                    //     from: 0,
+                    //     to: 0,
+                    //     timezoneOffset: 420,
+                    //     width: 500,
+                    // })
 
-                    window.mainTableElm = mainTableElm
-                    mainTableElm.setTimeAxisWidth(800)
+                    // window.mainTableElm = mainTableElm
+                    // mainTableElm.setTimeAxisWidth(800)
                 }
             </script>
             <tbody>
@@ -472,10 +475,11 @@
                 </tr>
             </tbody>
             <tfoot>
-                <tr style="height: 10em;">
+                <tr style="height: 9em;">
                     <th></th>
                     <td>
                         <div style="padding: 1em .5em;white-space: nowrap;">
+                            <input type="range" style="width: 100%;" min="0" max="100" value="50">
                             <table>
                                 <tbody>
                                     <tr>
