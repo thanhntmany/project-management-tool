@@ -15,6 +15,83 @@
 </head>
 
 <body>
+    <script>
+        const CORE = Object.assign(new EventTarget(), {
+            timezoneOffset: undefined,
+            setTimezoneOffset: function (offfset) {
+                if (this.timezoneOffset === offfset) return
+                this.timezoneOffset = offfset
+                this.dispatchEvent(new Event("change-timezone-offset"))
+            }
+        })
+        CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
+
+        function isObject(obj) { return obj === Object(obj) }
+        function deepAssign(src, dst, diff = {}) {
+            var k, S, D; for (k in src) {
+                D = dst[k]
+                if (isObject(S = src[k]) && isObject(D)) {
+                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+                }
+                else if (D !== S) diff[k] = dst[k] = S
+            }
+            return Object.keys(diff).length ? diff : null
+        }
+
+        const DatabaseHandler = Object.assign(new EventTarget(), {
+            data: {},
+            assign: function (src) {
+                const diff = deepAssign(src, this.data)
+                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+            }
+        })
+
+        window.addEventListener("load", function (e) {
+            DatabaseHandler.assign({
+                tasks: {
+                    "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
+                    "3": { name: "Research", assigned: "Pete S", progress: Math.round(Math.random() * 100) },
+                    "4": { name: "Projections", assigned: "Steve L", progress: Math.round(Math.random() * 100) },
+                    "5": { name: "Stakeholders", assigned: "Allen W", progress: Math.round(Math.random() * 100) },
+                    "6": { name: "Guidelines", assigned: "Malik M", progress: Math.round(Math.random() * 100) },
+                    "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
+                }
+            })
+        }, { once: true })
+    </script>
+    <div>
+        <div>
+            <label>Timezone:<select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
+            <script>
+                {
+                    const elm = document.getElementById("timezone-selector");
+                    ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                        const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
+                        e = document.createElement("option")
+                        e.value = offfset
+                        e.innerText = label
+                        elm.appendChild(e)
+                    })
+
+                    const offfsetElm = document.getElementById("timezone-offfset")
+                    elm.addEventListener("change", function (e) {
+                        offfsetElm.value = this.value
+                        offfsetElm.dispatchEvent(new Event('change'))
+                    })
+                    offfsetElm.addEventListener("change", function (e) {
+                        CORE.setTimezoneOffset(elm.value = this.value)
+                    })
+                    CORE.addEventListener("change-timezone-offset", function (e) {
+                        if (offfsetElm.value === this.timezoneOffset) return
+                        offfsetElm.value = this.timezoneOffset
+                    })
+
+                    offfsetElm.value = CORE.timezoneOffset
+                }
+            </script>
+        </div>
+    </div>
     <div id="tome-based-view">
         <div> time based view </div>
         <div>
@@ -161,13 +238,6 @@
                                 </div> 2
                             </div>
                         </th>
-                        <th>
-                            <div>
-                                <div class="col-resizer">
-                                    <div>‖</div>
-                                </div> 3
-                            </div>
-                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -179,9 +249,6 @@
                                 </div>&nbsp;
                             </div>
                         </th>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
                         <td>
                             <div>xxxxx</div>
                         </td>
@@ -205,9 +272,6 @@
                         <td>
                             <div>xxxxx</div>
                         </td>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
                     </tr>
                     <tr>
                         <th>
@@ -217,9 +281,6 @@
                                 </div>2
                             </div>
                         </th>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
                         <td>
                             <div>xxxxx</div>
                         </td>
