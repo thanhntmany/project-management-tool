@@ -173,7 +173,7 @@
                     {
                         const TimeBasedTableElm = document.currentScript.parentElement,
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
-                                from: Date.now() - 1000 * 60 * 60 * 24 * 30,
+                                from: Date.now(),
                                 duration: 2 * 1000 * 60 * 60 * 24 * 30,
 
                                 colIdx: 3,
@@ -188,7 +188,7 @@
                                     if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
                                 },
 
-                                getXOfTimepoint: function (timepoint) {
+                                xOfTimepoint: function (timepoint) {
                                     return this.width * (timepoint - this.from) / this.duration
                                 }
                             })
@@ -214,10 +214,19 @@
                                     td.firstElementChild.scrollTop = scrollTop
                         }, true)
 
-                        // sync width
                         function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
+                        function _dispatchTimeBasedChange(elm) { // this --> timeHandler
+                            elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this }))
+                        }
                         timeHandler.addEventListener("change", function (event) {
-                            const width = event.detail.width; if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
+                            const diff = event.detail,
+                                width = diff.width;
+                            // sync width
+                            if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
+
+                            // sync time-based-change
+                            if ("duration" in diff || "unitWidth" in diff || "width" in diff)
+                                this.synchronizedElms.forEach(_dispatchTimeBasedChange, this)
                         })
 
                         {// column resizing
@@ -284,7 +293,7 @@
                                 colIdx: colIdx,
                                 scrollLeft: 0,
                                 width: 1900,
-                                unitWidth: parseFloat(window.getComputedStyle(synchronizedElms[synchronizedElms.length - 1]).fontSize.slice(0, -2))
+                                unitWidth: parseFloat(window.getComputedStyle(synchronizedElms[synchronizedElms.length - 1]).fontSize.slice(0, -2)) * 2
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
@@ -366,7 +375,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr style="height: 73px;">
+                    <tr style="height: 200px;">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -474,7 +483,7 @@
                         </td>
                         <td>
                             <div>
-                                <div>
+                                <div id="time-based-axis">
                                     <div>year</div>
                                     <div>month</div>
                                     <div>day</div>
@@ -482,7 +491,62 @@
                                     <div>minute</div>
                                     <div>second</div>
                                 </div>
+                                <script>
+                                    {
+                                        document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
+                                            const timeHandler = event.detail, now = Date.now()
+                                            const children = this.children;
+
+                                            {
+                                                var oneYearFromNow = new Date(), w = timeHandler.xOfTimepoint(oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1));
+                                                if (w > timeHandler.width) w = timeHandler.width
+                                                children[0].style.width = w + "px"
+                                            }
+
+                                            {
+                                                var cur = new Date(),
+                                                    current = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+                                                w = timeHandler.xOfTimepoint(current.getTime())
+                                                if (w > timeHandler.width) w = timeHandler.width
+                                                children[1].style.width = w + "px"
+                                            }
+
+                                            {
+                                                var tomorrow = new Date();
+                                                tomorrow.setDate(tomorrow.getDate() + 1);
+                                                var w = timeHandler.xOfTimepoint(tomorrow.getTime())
+                                                if (w > timeHandler.width) w = timeHandler.width
+                                                children[2].style.width = w + "px"
+                                            }
+
+                                            {
+                                                var w = timeHandler.xOfTimepoint(now + (1000 * 60 * 60))
+                                                if (w > timeHandler.width) w = timeHandler.width
+                                                children[3].style.width = w + "px"
+                                            }
+
+                                            {
+                                                var w = timeHandler.xOfTimepoint(now + (1000 * 60))
+                                                if (w > timeHandler.width) w = timeHandler.width
+                                                children[4].style.width = w + "px"
+                                            }
+
+                                            {
+                                                var w = timeHandler.xOfTimepoint(now + 1000)
+                                                if (w > timeHandler.width) w = timeHandler.width
+                                                children[5].style.width = w + "px"
+                                            }
+
+                                        })
+                                    }
+                                </script>
                             </div>
+                            <style>
+                                #time-based-axis div {
+                                    background-color: brown;
+                                    transition: width 100ms;
+                                }
+                            </style>
                         </td>
                     </tr>
                 </tbody>
