@@ -96,7 +96,7 @@
             </script>
         </div>
     </div>
-    <div id="tome-based-view" style="padding: .5em 1em;">
+    <div id="time-based-view" style="padding: .5em 1em;">
         <div> time based view </div>
         <div>
             <table id="time-based">
@@ -175,12 +175,16 @@
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
                                 from: Date.now() - 1000 * 60 * 60 * 24 * 30,
                                 duration: 2 * 1000 * 60 * 60 * 24 * 30,
-                                width: 500, // sync with the within-width of the Time-based column
+
+                                colIdx: 3,
                                 scrollLeft: 0,
+                                width: 500,
+                                unitWidth: 14,
 
                                 synchronizedElms: [],
 
                                 assign: function (src) {
+                                    console.log(this.duration);
                                     const diff = deepAssign(src, this)
                                     if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
                                 },
@@ -217,9 +221,10 @@
                             var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
                             const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
                                 synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)],
-                                anInsideColElm = synchronizedElms[0], sw = anInsideColElm.style.width;
+                                anInsideColElm = synchronizedElms[0], sw = anInsideColElm.style.width
 
                             // sync width
+                            timeHandler.assign({});
                             (new ResizeObserver((entries) => {
                                 for (const entry of entries) if (entry.target === anInsideColElm) timeHandler.assign({ width: entry.contentRect.width })
                             })).observe(anInsideColElm)
@@ -231,8 +236,9 @@
                             // init value
                             timeHandler.assign({
                                 synchronizedElms: synchronizedElms,
-                                width: parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(anInsideColElm).getPropertyValue("width")).slice(0, -2)),
-                                scrollLeft: anInsideColElm.parentElement.scrollLeft
+                                colIdx: colIdx,
+                                scrollLeft: anInsideColElm.parentElement.scrollLeft,
+                                width: parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(anInsideColElm).getPropertyValue("width")).slice(0, -2))
                             })
                         }, { once: true })
 
@@ -426,36 +432,52 @@
                                         <script> { document.currentScript.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
                                     </label>
                                     <script>
-                                        const elm = document.currentScript.parentElement,
-                                            rangeInputElm = elm.rangeInputElm,
-                                            ratioInputElm = elm.ratioInputElm,
-                                            maxRatio = 1000 * 60 * 60 * 24 * 30 * 12
+                                        {
+                                            const elm = document.currentScript.parentElement,
+                                                rangeInputElm = elm.rangeInputElm,
+                                                ratioInputElm = elm.ratioInputElm,
+                                                maxRatio = 1000 * 60 * 60 * 24 * 30 * 12
 
-                                        rangeInputElm.addEventListener("change", function (event) {
-                                            const iMax = this.max, iMin = this.min
-                                            ratioInputElm.value = Math.pow(maxRatio, (iMax - this.value) / (iMax - iMin))
-                                            ratioInputElm.dispatchEvent(new Event("change"))
-                                        })
+                                            rangeInputElm.addEventListener("change", function (event) {
+                                                const iMax = this.max, iMin = this.min
+                                                ratioInputElm.value = Math.pow(maxRatio, (iMax - this.value) / (iMax - iMin))
+                                                ratioInputElm.dispatchEvent(new Event("change"))
+                                            })
 
-                                        ratioInputElm.addEventListener("change", function (event) {
-                                            const iMax = rangeInputElm.max, iMin = rangeInputElm.min
-                                            rangeInputElm.value = iMax - (iMax - iMin) * Math.log2(this.value) / Math.log2(maxRatio)
-                                        })
+                                            ratioInputElm.addEventListener("change", function (event) {
+                                                const iMax = rangeInputElm.max, iMin = rangeInputElm.min
+                                                rangeInputElm.value = iMax - (iMax - iMin) * Math.log2(this.value) / Math.log2(maxRatio)
+                                            })
 
-                                        function _setRatio(event) {
-                                            ratioInputElm.value = this.dataset.ratio
-                                            ratioInputElm.dispatchEvent(new Event("change"))
+                                            function _setRatio(event) {
+                                                ratioInputElm.value = this.dataset.ratio
+                                                ratioInputElm.dispatchEvent(new Event("change"))
+                                            }
+                                            var btn; for (btn of elm.querySelectorAll("*[data-ratio]")) {
+                                                btn.style.setProperty("margin-left", (100 * (1 - Math.log2(btn.dataset.ratio) / Math.log2(maxRatio))) + "%")
+                                                btn.addEventListener("click", _setRatio)
+                                            }
+
+                                            // sync with timeHandler
+                                            const TimeBasedTableElm = document.currentScript.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement,
+                                                timeHandler = TimeBasedTableElm.timeHandler
+                                            timeHandler.addEventListener("change", function (event) {
+                                                const diff = event.detail
+                                                if (!("duration" in diff || "unitWidth" in diff || "width" in diff)) return
+                                                ratioInputElm.value = this.duration * this.unitWidth / this.width
+                                                ratioInputElm.dispatchEvent(new Event("change"))
+                                            })
+                                            ratioInputElm.addEventListener("change", function (event) {
+                                                timeHandler.assign({
+                                                    duration: this.value * timeHandler.width / timeHandler.unitWidth
+                                                })
+                                            })
+
+                                            window.addEventListener("load", function (event) {
+                                                ratioInputElm.value = 1000 * 60
+                                                ratioInputElm.dispatchEvent(new Event("change"))
+                                            }, { once: true })
                                         }
-                                        var btn; for (btn of elm.querySelectorAll("*[data-ratio]")) {
-                                            btn.style.setProperty("margin-left", (100 * (1 - Math.log2(btn.dataset.ratio) / Math.log2(maxRatio))) + "%")
-                                            btn.addEventListener("click", _setRatio)
-                                        }
-
-                                        window.addEventListener("load", function (event) {
-                                            ratioInputElm.value = 1000 * 60
-                                            ratioInputElm.dispatchEvent(new Event("change"))
-                                        }, { once: true })
-
                                     </script>
                                 </div>
                             </div>
