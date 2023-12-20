@@ -184,7 +184,6 @@
                                 synchronizedElms: [],
 
                                 assign: function (src) {
-                                    console.log(this.duration);
                                     const diff = deepAssign(src, this)
                                     if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
                                 },
@@ -216,31 +215,11 @@
                         }, true)
 
 
-                        window.addEventListener("load", () => {
-                            const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
-                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
-                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
-                                synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)],
-                                anInsideColElm = synchronizedElms[0], sw = anInsideColElm.style.width
-
-                            // sync width
-                            timeHandler.assign({});
-                            (new ResizeObserver((entries) => {
-                                for (const entry of entries) if (entry.target === anInsideColElm) timeHandler.assign({ width: entry.contentRect.width })
-                            })).observe(anInsideColElm)
-                            function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
-                            timeHandler.addEventListener("change", function (event) {
-                                const width = event.detail.width; if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
-                            })
-
-                            // init value
-                            timeHandler.assign({
-                                synchronizedElms: synchronizedElms,
-                                colIdx: colIdx,
-                                scrollLeft: anInsideColElm.parentElement.scrollLeft,
-                                width: parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(anInsideColElm).getPropertyValue("width")).slice(0, -2))
-                            })
-                        }, { once: true })
+                        // sync width
+                        function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
+                        timeHandler.addEventListener("change", function (event) {
+                            const width = event.detail.width; if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
+                        })
 
                         {// column resizing
                             const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
@@ -293,10 +272,25 @@
                             }, true)
                         }
 
-                        // #TODO:
-                        window.addEventListener("load", function () {
-                            TimeBasedTableElm.setColWidth(2, 430)
+                        // initialize settings
+                        window.addEventListener("load", () => {
+                            const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
+                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
+                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
+                                synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)]
+
+                            // init value
+                            timeHandler.assign({
+                                synchronizedElms: synchronizedElms,
+                                colIdx: colIdx,
+                                scrollLeft: 0,
+                                width: 1900
+                            })
+
+                            TimeBasedTableElm.setColWidth(2, 500)
+                            TimeBasedTableElm.setColWidth(colIdx, 800)
                         }, { once: true })
+
                     }
                 </script>
                 <thead>
@@ -305,14 +299,14 @@
                             <div>#</div>
                         </th>
                         <th>
-                            <div style="width: 428px;">
+                            <div>
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div> Details
                             </div>
                         </th>
                         <th>
-                            <div id="time-based-col" style="width: 912px;">
+                            <div id="time-based-col">
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div> Time-based charts
@@ -463,21 +457,17 @@
                                                 timeHandler = TimeBasedTableElm.timeHandler
                                             timeHandler.addEventListener("change", function (event) {
                                                 const diff = event.detail
-                                                if (!("duration" in diff || "unitWidth" in diff || "width" in diff)) return
-                                                ratioInputElm.value = this.duration * this.unitWidth / this.width
-                                                ratioInputElm.dispatchEvent(new Event("change"))
+                                                if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
+                                                    console.log("xxxx");
+                                                    ratioInputElm.value = this.duration * this.unitWidth / this.width
+                                                    ratioInputElm.dispatchEvent(new Event("change"))
+                                                }
                                             })
                                             ratioInputElm.addEventListener("change", function (event) {
                                                 timeHandler.assign({
                                                     duration: this.value * timeHandler.width / timeHandler.unitWidth
                                                 })
                                             })
-
-                                            // #TODO
-                                            window.addEventListener("load", function (event) {
-                                                ratioInputElm.value = 1000 * 60
-                                                ratioInputElm.dispatchEvent(new Event("change"))
-                                            }, { once: true })
                                         }
                                     </script>
                                 </div>
@@ -485,12 +475,14 @@
                         </td>
                         <td>
                             <div>
-                                <div>year</div>
-                                <div>month</div>
-                                <div>day</div>
-                                <div>hour</div>
-                                <div>minute</div>
-                                <div>second</div>
+                                <div>
+                                    <div>year</div>
+                                    <div>month</div>
+                                    <div>day</div>
+                                    <div>hour</div>
+                                    <div>minute</div>
+                                    <div>second</div>
+                                </div>
                             </div>
                         </td>
                     </tr>
