@@ -99,76 +99,200 @@
     <div id="tome-based-view" style="padding: .5em 1em;">
         <div> time based view </div>
         <div>
-            <style>
-                table#time-based {
-                    table-layout: fixed;
-                    border-collapse: collapse;
-                }
-
-                table#time-based>*>* {
-                    position: relative;
-                    vertical-align: top;
-                    height: 2em;
-                }
-
-                table#time-based>*>*>* {
-                    position: relative;
-                    height: inherit;
-                    margin: 0;
-                    border: 0;
-                    /* padding: 0; */
-                }
-
-                table#time-based>*>*>*>div {
-                    position: relative;
-                    max-width: 100%;
-                    max-height: 100%;
-                    width: 100%;
-                    height: inherit;
-                    overflow: auto;
-                    background-color: darkslategray;
-                }
-
-                /* resizers */
-                .prevent-select,
-                .col-resizer,
-                .row-resizer {
-                    -webkit-user-select: none;
-                    -ms-user-select: none;
-                    user-select: none;
-                }
-
-                table#time-based .col-resizer {
-                    cursor: col-resize;
-                    position: relative;
-                    float: right;
-                    display: block;
-                    padding-left: .5em;
-                    padding-right: 2px;
-                    width: fit-content;
-                    height: 100%;
-                }
-
-                table#time-based>*>*>*:first-child {
-                    width: 1em;
-                }
-
-                table#time-based .row-resizer {
-                    position: absolute;
-                    display: block;
-                    cursor: row-resize;
-                    height: fit-content;
-                    bottom: 0;
-                    width: 100%;
-                    margin: auto;
-                }
-
-                table#time-based .row-resizer>div {
-                    width: fit-content;
-                    margin: auto;
-                }
-            </style>
             <table id="time-based">
+                <style>
+                    table#time-based {
+                        table-layout: fixed;
+                        border-collapse: collapse;
+                    }
+
+                    table#time-based>*>* {
+                        position: relative;
+                        vertical-align: top;
+                        height: 2em;
+                    }
+
+                    table#time-based>*>*>* {
+                        position: relative;
+                        height: inherit;
+                        margin: 0;
+                        border: 0;
+                        /* padding: 0; */
+                    }
+
+                    table#time-based>*>*>*>div {
+                        position: relative;
+                        max-width: 100%;
+                        max-height: 100%;
+                        width: 100%;
+                        height: inherit;
+                        overflow: auto;
+                        background-color: darkslategray;
+                    }
+
+                    /* resizers */
+                    .prevent-select,
+                    .col-resizer,
+                    .row-resizer {
+                        -webkit-user-select: none;
+                        -ms-user-select: none;
+                        user-select: none;
+                    }
+
+                    table#time-based .col-resizer {
+                        cursor: col-resize;
+                        position: relative;
+                        float: right;
+                        display: block;
+                        padding-left: .5em;
+                        padding-right: 2px;
+                        width: fit-content;
+                        height: 100%;
+                    }
+
+                    table#time-based>*>*>*:first-child {
+                        width: 1em;
+                    }
+
+                    table#time-based .row-resizer {
+                        position: absolute;
+                        display: block;
+                        cursor: row-resize;
+                        height: fit-content;
+                        bottom: 0;
+                        width: 100%;
+                        margin: auto;
+                    }
+
+                    table#time-based .row-resizer>div {
+                        width: fit-content;
+                        margin: auto;
+                    }
+                </style>
+                <script>
+                    {
+                        const TimeBasedTableElm = document.currentScript.parentElement,
+                            timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
+                                from: Date.now() - 1000 * 60 * 60 * 24 * 30,
+                                duration: 2 * 1000 * 60 * 60 * 24 * 30,
+                                width: 500, // sync with the within-width of the Time-based column
+                                scrollLeft: 0,
+
+                                synchronizedElms: [],
+
+                                assign: function (src) {
+                                    const diff = deepAssign(src, this)
+                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                },
+
+                                getXOfTimepoint: function (timepoint) {
+                                    return this.width * (timepoint - this.from) / this.duration
+                                }
+                            })
+
+                        //sync (parent's) scrollLeft in time-based table
+                        function _setParentColScrollLeft(elm) { elm.parentElement.scrollLeft = this }// this --> scrollLeft
+                        timeHandler.addEventListener("change", function (event) {
+                            const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.synchronizedElms.forEach(_setParentColScrollLeft, scrollLeft)
+                        })
+                        TimeBasedTableElm.addEventListener("scroll", function (event) {
+                            const elm = event.target
+                            if (!this.timeHandler.synchronizedElms.includes(elm.firstElementChild)) return
+                            event.stopPropagation()
+                            timeHandler.assign({ scrollLeft: elm.scrollLeft })
+                        }, true)
+
+                        //sync scrollTop in tbody of time-based table
+                        const tbodyScrollableDivQuery = `table#time-based>tbody>*>td>div`
+                        TimeBasedTableElm.addEventListener("scroll", function (event) {
+                            const elm = event.target; if (!elm.matches(tbodyScrollableDivQuery)) return
+                            const scrollTop = elm.scrollTop; var td; for (td of elm.parentElement.parentElement.children)
+                                if (td.firstElementChild !== elm)
+                                    td.firstElementChild.scrollTop = scrollTop
+                        }, true)
+
+
+                        window.addEventListener("load", () => {
+                            const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
+                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
+                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
+                                synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)],
+                                anInsideColElm = synchronizedElms[0], sw = anInsideColElm.style.width;
+
+                            // sync width
+                            (new ResizeObserver((entries) => {
+                                for (const entry of entries) if (entry.target === anInsideColElm) timeHandler.assign({ width: entry.contentRect.width })
+                            })).observe(anInsideColElm)
+                            function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
+                            timeHandler.addEventListener("change", function (event) {
+                                const width = event.detail.width; if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
+                            })
+
+                            // init value
+                            timeHandler.assign({
+                                synchronizedElms: synchronizedElms,
+                                width: parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(anInsideColElm).getPropertyValue("width")).slice(0, -2)),
+                                scrollLeft: anInsideColElm.parentElement.scrollLeft
+                            })
+                        }, { once: true })
+
+                        {// column resizing
+                            const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
+                            TimeBasedTableElm.setColWidth = function (idx, w) {
+                                ColQuery[1] = idx
+                                var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
+                            }
+
+                            var _th, _idx
+                            function _mousemoveEL(event) {
+                                const sw = _th.firstElementChild.style.width
+                                TimeBasedTableElm.setColWidth(_idx, parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).slice(0, -2)) + event.movementX)
+                            }
+                            function _mouseupEL(event) {
+                                _th = undefined
+                                window.removeEventListener("mousemove", _mousemoveEL)
+                            }
+                            TimeBasedTableElm.addEventListener("mousedown", function (event) {
+                                var elm = event.target, tElm = elm
+                                if (!tElm.classList.contains("col-resizer")) tElm = tElm.parentElement
+                                if (tElm.classList.contains("col-resizer")) {
+                                    event.stopImmediatePropagation()
+                                    _th = tElm.parentElement.parentElement
+                                    _idx = 1; var el; for (el of _th.parentElement.children) if (el !== _th) { ++_idx } else break
+                                    window.addEventListener("mousemove", _mousemoveEL)
+                                    window.addEventListener("mouseup", _mouseupEL, { once: true })
+                                }
+                            }, true)
+                        }
+
+                        {// row resizing
+                            var _th, _idx
+                            function _mousemoveEL(event) {
+                                const sh = _th.style.height || ""
+                                _th.style.height = (parseFloat((sh.endsWith("px") ? sh : window.getComputedStyle(_th).getPropertyValue("height")).slice(0, -2)) + event.movementY) + "px"
+                            }
+                            function _mouseupEL(event) {
+                                _th = undefined
+                                window.removeEventListener("mousemove", _mousemoveEL)
+                            }
+                            TimeBasedTableElm.addEventListener("mousedown", function (event) {
+                                var elm = event.target, tElm = elm
+                                if (!tElm.classList.contains("row-resizer")) tElm = tElm.parentElement
+                                if (tElm.classList.contains("row-resizer")) {
+                                    event.stopImmediatePropagation()
+                                    _th = tElm.parentElement.parentElement.parentElement
+                                    window.addEventListener("mousemove", _mousemoveEL)
+                                    window.addEventListener("mouseup", _mouseupEL, { once: true })
+                                }
+                            }, true)
+                        }
+
+                        // #TODO:
+                        window.addEventListener("load", function () {
+                            TimeBasedTableElm.setColWidth(2, 430)
+                        }, { once: true })
+                    }
+                </script>
                 <thead>
                     <tr>
                         <th>
@@ -349,130 +473,6 @@
                     </tr>
                 </tbody>
             </table>
-            <script>
-                {
-                    const TimeBasedTableElm = document.currentScript.previousElementSibling,
-                        timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
-                            from: Date.now() - 1000 * 60 * 60 * 24 * 30,
-                            duration: 2 * 1000 * 60 * 60 * 24 * 30,
-                            scrollLeft: 0,
-                            width: 500, // sync with the within-width of the Time-based column
-
-                            synchronizedElms: [],
-
-                            assign: function (src) {
-                                const diff = deepAssign(src, this)
-                                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-                            },
-
-                            getXOfTimepoint: function (timepoint) {
-                                return this.width * (timepoint - this.from) / this.duration
-                            }
-                        })
-
-                    //sync (parent's) scrollLeft in time-based table
-                    function _setParentColScrollLeft(elm) { elm.parentElement.scrollLeft = this }// this --> scrollLeft
-                    timeHandler.addEventListener("change", function (event) {
-                        const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.synchronizedElms.forEach(_setParentColScrollLeft, scrollLeft)
-                    })
-                    TimeBasedTableElm.addEventListener("scroll", function (event) {
-                        const elm = event.target
-                        if (!this.timeHandler.synchronizedElms.includes(elm.firstElementChild)) return
-                        event.stopPropagation()
-                        timeHandler.assign({ scrollLeft: elm.scrollLeft })
-                    }, true)
-
-                    //sync scrollTop in tbody of time-based table
-                    const tbodyScrollableDivQuery = `table#time-based>tbody>*>td>div`
-                    TimeBasedTableElm.addEventListener("scroll", function (event) {
-                        const elm = event.target; if (!elm.matches(tbodyScrollableDivQuery)) return
-                        const scrollTop = elm.scrollTop; var td; for (td of elm.parentElement.parentElement.children)
-                            if (td.firstElementChild !== elm)
-                                td.firstElementChild.scrollTop = scrollTop
-                    }, true)
-
-
-                    window.addEventListener("load", () => {
-                        const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
-                        var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
-                        const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
-                            synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)],
-                            anInsideColElm = synchronizedElms[0], sw = anInsideColElm.style.width;
-
-                        // sync width
-                        (new ResizeObserver((entries) => {
-                            for (const entry of entries) if (entry.target === anInsideColElm) timeHandler.assign({ width: entry.contentRect.width })
-                        })).observe(anInsideColElm)
-                        function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
-                        timeHandler.addEventListener("change", function (event) {
-                            const width = event.detail.width; if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
-                        })
-
-                        // init value
-                        timeHandler.assign({
-                            synchronizedElms: synchronizedElms,
-                            width: parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(anInsideColElm).getPropertyValue("width")).slice(0, -2)),
-                            scrollLeft: anInsideColElm.parentElement.scrollLeft
-                        })
-                    }, { once: true })
-
-                    {// column resizing
-                        const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
-                        TimeBasedTableElm.setColWidth = function (idx, w) {
-                            ColQuery[1] = idx
-                            var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
-                        }
-
-                        var _th, _idx
-                        function _mousemoveEL(event) {
-                            const sw = _th.firstElementChild.style.width
-                            TimeBasedTableElm.setColWidth(_idx, parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).slice(0, -2)) + event.movementX)
-                        }
-                        function _mouseupEL(event) {
-                            _th = undefined
-                            window.removeEventListener("mousemove", _mousemoveEL)
-                        }
-                        TimeBasedTableElm.addEventListener("mousedown", function (event) {
-                            var elm = event.target, tElm = elm
-                            if (!tElm.classList.contains("col-resizer")) tElm = tElm.parentElement
-                            if (tElm.classList.contains("col-resizer")) {
-                                event.stopImmediatePropagation()
-                                _th = tElm.parentElement.parentElement
-                                _idx = 1; var el; for (el of _th.parentElement.children) if (el !== _th) { ++_idx } else break
-                                window.addEventListener("mousemove", _mousemoveEL)
-                                window.addEventListener("mouseup", _mouseupEL, { once: true })
-                            }
-                        }, true)
-                    }
-
-                    {// row resizing
-                        var _th, _idx
-                        function _mousemoveEL(event) {
-                            const sh = _th.style.height || ""
-                            _th.style.height = (parseFloat((sh.endsWith("px") ? sh : window.getComputedStyle(_th).getPropertyValue("height")).slice(0, -2)) + event.movementY) + "px"
-                        }
-                        function _mouseupEL(event) {
-                            _th = undefined
-                            window.removeEventListener("mousemove", _mousemoveEL)
-                        }
-                        TimeBasedTableElm.addEventListener("mousedown", function (event) {
-                            var elm = event.target, tElm = elm
-                            if (!tElm.classList.contains("row-resizer")) tElm = tElm.parentElement
-                            if (tElm.classList.contains("row-resizer")) {
-                                event.stopImmediatePropagation()
-                                _th = tElm.parentElement.parentElement.parentElement
-                                window.addEventListener("mousemove", _mousemoveEL)
-                                window.addEventListener("mouseup", _mouseupEL, { once: true })
-                            }
-                        }, true)
-                    }
-
-                    // #TODO:
-                    window.addEventListener("load", function () {
-                        TimeBasedTableElm.setColWidth(2, 430)
-                    }, { once: true })
-                }
-            </script>
         </div>
     </div>
 </body>
