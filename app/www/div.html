@@ -190,7 +190,7 @@
 
                             })
 
-                        //sync (parent's) scrollLeft
+                        //sync (parent's) scrollLeft in time-based table
                         function _setParentColScrollLeft(elm) { elm.parentElement.scrollLeft = this }// this --> scrollLeft
                         timeHandler.addEventListener("change", function (event) {
                             const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.synchronizedElms.forEach(_setParentColScrollLeft, scrollLeft)
@@ -200,6 +200,15 @@
                             if (!this.timeHandler.synchronizedElms.includes(elm.firstElementChild)) return
                             event.stopPropagation()
                             timeHandler.assign({ scrollLeft: elm.scrollLeft })
+                        }, true)
+
+                        //sync scrollTop in tbody of time-based table
+                        const tbodyScrollableDivQuery = `table#time-based>tbody>*>td>div`
+                        TimeBasedTableElm.addEventListener("scroll", function (event) {
+                            const elm = event.target; if (!elm.matches(tbodyScrollableDivQuery)) return
+                            const scrollTop = elm.scrollTop; var td; for (td of elm.parentElement.parentElement.children)
+                                if (td.firstElementChild !== elm)
+                                    td.firstElementChild.scrollTop = scrollTop
                         }, true)
 
 
@@ -327,12 +336,12 @@
                         </th>
                         <td>
                             <div>
-                                <div style="width: 500px;background-color: brown;"> OKKKKKK </div>
+                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                         <td>
                             <div>
-                                <div>Line Chart</div>
+                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                     </tr>
@@ -349,7 +358,7 @@
                         </td>
                         <td>
                             <div>
-                                <div>yyyyyyyyyyyyyyyyyyyyy</div>
+                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                     </tr>
