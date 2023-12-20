@@ -206,6 +206,23 @@
                             <div>xxxxx</div>
                         </td>
                     </tr>
+                    <tr>
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>2
+                            </div>
+                        </th>
+                        <td>
+                            <div>xxxxx</div>
+                        </td>
+                        <td>
+                            <div>
+                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                    </tr>
                     <tr style="height: 28em;">
                         <th>
                             <div>
@@ -225,23 +242,6 @@
                             </div>
                         </td>
                     </tr>
-                    <tr>
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>2
-                            </div>
-                        </th>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
-                        <td>
-                            <div>
-                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-                            </div>
-                        </td>
-                    </tr>
                     <tr style="height: 126px;">
                         <th>
                             <div>
@@ -253,40 +253,48 @@
                         <td>
                             <div>
                                 <div style="width: 100%;">
-                                    <table style="width: 100%;">
+                                    <table id="range-input__levels" style="width: 100%;">
                                         <tbody>
                                             <tr>
-                                                <td colspan="5"><input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="width: 100%; margin: 0;"></td>
+                                                <td colspan="5">
+                                                    <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="width: 100%; margin: 0;">
+                                                    <script> { document.currentScript.parentElement.parentElement.parentElement.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
+                                                </td>
                                                 <td></td>
                                             </tr>
-                                            <tr id="range-input__levels">
-                                                <td style="width: 14.402878851064429%;">Year</td>
-                                                <td style="width: 19.713832646718107%;">Month</td>
-                                                <td style="width: 18.42046030363671;">Day</td>
-                                                <td style="width: 23.73141409929038%;">Hour</td>
-                                                <td style="width: 23.73141409929038%;">Minute</td>
-                                                <td>second</td>
+                                            <tr>
+                                                <td style="width: 14.402878851064429%;" data-ratio="31104000">Year</td>
+                                                <td style="width: 19.713832646718107%;" data-ratio="2592000">Month</td>
+                                                <td style="width: 18.42046030363671;" data-ratio="86400">Day</td>
+                                                <td style="width: 23.73141409929038%;" data-ratio="3600">Hour</td>
+                                                <td style="width: 23.73141409929038%;" data-ratio="60">Minute</td>
+                                                <td data-ratio="1">second</td>
                                                 <style>
-                                                    #range-input__levels td {
+                                                    table#range-input__levels {
+                                                        width: 100%;
+                                                    }
+
+                                                    table#range-input__levels>*>*>td {
+                                                        margin: 0;
+                                                        padding: 0;
+                                                    }
+
+                                                    #range-input__levels>tbody>tr:nth-child(2)>td {
                                                         border-left: 1px solid black;
+                                                        cursor: pointer;
+                                                    }
+
+                                                    #range-input__levels>tbody>tr:nth-child(2)>td:hover {
+                                                        background-color: gray;
                                                     }
                                                 </style>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <label>Zoom: <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="margin: 0;">
-                                        <script> { document.currentScript.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
-                                    </label>
                                     <br>
                                     <label>View ratio: 1:<input type="number" min="1">
                                         <script> { document.currentScript.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
                                     </label>
-                                    <div>year</div>
-                                    <div>month</div>
-                                    <div>day</div>
-                                    <div>hour</div>
-                                    <div>minute</div>
-                                    <div>second</div>
                                     <script>
                                         const elm = document.currentScript.parentElement,
                                             rangeInputElm = elm.rangeInputElm,
@@ -300,13 +308,15 @@
                                         })
 
                                         ratioInputElm.addEventListener("change", function (event) {
-                                            const iMax = rangeInputElm.max, iMin = rangeInputElm.min,
-                                                range = iMax - (iMax - iMin) * Math.log2(this.value) / Math.log2(maxRatio)
-                                            rangeInputElm.value = range
-                                            console.log(range);
+                                            const iMax = rangeInputElm.max, iMin = rangeInputElm.min
+                                            rangeInputElm.value = iMax - (iMax - iMin) * Math.log2(this.value) / Math.log2(maxRatio)
                                         })
 
-                                        // (Math.log2(60 * 60 * 24 * 30 * 12) - Math.log2(60 * 60 * 24 * 30 * 12)) / Math.log2(60 * 60 * 24 * 30 * 12)
+                                        function _setRatio(event) {
+                                            ratioInputElm.value = this.dataset.ratio
+                                            ratioInputElm.dispatchEvent(new Event("change"))
+                                        }
+                                        var btn; for (btn of elm.querySelectorAll("#range-input__levels>tbody>tr:nth-child(2)>td")) btn.addEventListener("click", _setRatio)
 
                                         window.addEventListener("load", function (event) {
                                             ratioInputElm.value = 60
