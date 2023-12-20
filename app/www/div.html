@@ -458,7 +458,6 @@
                                             timeHandler.addEventListener("change", function (event) {
                                                 const diff = event.detail
                                                 if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
-                                                    console.log("xxxx");
                                                     ratioInputElm.value = this.duration * this.unitWidth / this.width
                                                     ratioInputElm.dispatchEvent(new Event("change"))
                                                 }
