@@ -175,14 +175,14 @@
                             <div>#</div>
                         </th>
                         <th>
-                            <div>
+                            <div style="width: 428px;">
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div> Details
                             </div>
                         </th>
                         <th>
-                            <div id="time-based-col">
+                            <div id="time-based-col" style="width: 912px;">
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div> Time-based charts
@@ -206,7 +206,7 @@
                             <div>xxxxx</div>
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="height: 556px;">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -223,7 +223,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr style="height: 28em;">
+                    <tr style="height: 221px;">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -242,7 +242,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr style="height: 126px;">
+                    <tr style="height: 73px;">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -252,45 +252,51 @@
                         </th>
                         <td>
                             <div>
-                                <div style="width: 100%;">
-                                    <table id="range-input__levels" style="width: 100%;">
-                                        <tbody>
-                                            <tr>
-                                                <td colspan="5">
-                                                    <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="width: 100%; margin: 0;">
-                                                    <script> { document.currentScript.parentElement.parentElement.parentElement.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                            <tr>
-                                                <td style="width: 14.402878851064429%;" data-ratio="31104000">Year</td>
-                                                <td style="width: 19.713832646718107%;" data-ratio="2592000">Month</td>
-                                                <td style="width: 18.42046030363671;" data-ratio="86400">Day</td>
-                                                <td style="width: 23.73141409929038%;" data-ratio="3600">Hour</td>
-                                                <td style="width: 23.73141409929038%;" data-ratio="60">Minute</td>
-                                                <td data-ratio="1">second</td>
-                                                <style>
-                                                    table#range-input__levels {
-                                                        width: 100%;
-                                                    }
+                                <div style="width: 100%;min-width: 30em;">
+                                    <div id="time-based__range-input__levels" style="width: 100%;">
+                                        <style>
+                                            #time-based__range-input__levels {
+                                                padding: 0;
+                                                height: 2em;
+                                            }
 
-                                                    table#range-input__levels>*>*>td {
-                                                        margin: 0;
-                                                        padding: 0;
-                                                    }
+                                            #time-based__range-input__levels>div {
+                                                position: relative;
+                                                display: block;
+                                                width: 100%;
+                                                margin: 0;
+                                                border: 0;
+                                                padding: 0;
+                                            }
 
-                                                    #range-input__levels>tbody>tr:nth-child(2)>td {
-                                                        border-left: 1px solid black;
-                                                        cursor: pointer;
-                                                    }
+                                            #time-based__range-input__levels>div:nth-child(2)>div>div {
+                                                position: absolute;
+                                                margin-top: 1em;
+                                                padding-top: .5em;
+                                                border-left: 1px solid black;
+                                                padding: .5em 1em 2px 2px;
+                                                cursor: pointer;
+                                            }
 
-                                                    #range-input__levels>tbody>tr:nth-child(2)>td:hover {
-                                                        background-color: gray;
-                                                    }
-                                                </style>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                            #time-based__range-input__levels *[data-ratio]:hover {
+                                                background-color: gray;
+                                            }
+                                        </style>
+                                        <div>
+                                            <div>
+                                                <div data-ratio="31104000000">Year</div>
+                                                <div data-ratio="2592000000">Month</div>
+                                                <div data-ratio="86400000">Day</div>
+                                                <div data-ratio="3600000">Hour</div>
+                                                <div data-ratio="60000">Minute</div>
+                                                <div data-ratio="1000">second</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="width: 100%; margin: 0;">
+                                            <script> { document.currentScript.parentElement.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
+                                        </div>
+                                    </div>
                                     <br>
                                     <label>View ratio: 1:<input type="number" min="1">
                                         <script> { document.currentScript.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
@@ -299,7 +305,7 @@
                                         const elm = document.currentScript.parentElement,
                                             rangeInputElm = elm.rangeInputElm,
                                             ratioInputElm = elm.ratioInputElm,
-                                            maxRatio = 60 * 60 * 24 * 30 * 12
+                                            maxRatio = 1000 * 60 * 60 * 24 * 30 * 12
 
                                         rangeInputElm.addEventListener("change", function (event) {
                                             const iMax = this.max, iMin = this.min
@@ -316,10 +322,13 @@
                                             ratioInputElm.value = this.dataset.ratio
                                             ratioInputElm.dispatchEvent(new Event("change"))
                                         }
-                                        var btn; for (btn of elm.querySelectorAll("#range-input__levels>tbody>tr:nth-child(2)>td")) btn.addEventListener("click", _setRatio)
+                                        var btn; for (btn of elm.querySelectorAll("*[data-ratio]")) {
+                                            btn.style.setProperty("margin-left", (100 * (1 - Math.log2(btn.dataset.ratio) / Math.log2(maxRatio))) + "%")
+                                            btn.addEventListener("click", _setRatio)
+                                        }
 
                                         window.addEventListener("load", function (event) {
-                                            ratioInputElm.value = 60
+                                            ratioInputElm.value = 1000 * 60
                                             ratioInputElm.dispatchEvent(new Event("change"))
                                         }, { once: true })
 
@@ -358,8 +367,7 @@
 
                             getXOfTimepoint: function (timepoint) {
                                 return this.width * (timepoint - this.from) / this.duration
-                            },
-
+                            }
                         })
 
                     //sync (parent's) scrollLeft in time-based table
@@ -459,6 +467,10 @@
                         }, true)
                     }
 
+                    // #TODO:
+                    window.addEventListener("load", function () {
+                        TimeBasedTableElm.setColWidth(2, 430)
+                    }, { once: true })
                 }
             </script>
         </div>
