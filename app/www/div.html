@@ -252,34 +252,68 @@
                         </th>
                         <td>
                             <div>
-                                <div>
-                                    <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="margin: 0;width: 100%;">
-                                    <script>
-                                        {
-                                            const fontSizeUnit = window.getComputedStyle(document.currentScript.parentElement.parentElement.parentElement.parentElement.lastElementChild).getPropertyValue("font-size"),
-                                                rangeInput = document.currentScript.previousElementSibling
-
-                                            console.log(fontSizeUnit);
-
-                                            const base = 60 * 60 * 24 * 30 * 12,
-                                                u = Math.pow(base, 1 / rangeInput.max)
-
-                                            rangeInput.addEventListener("change", function (event) {
-
-                                                console.log(base / Math.pow(u, this.value));
-                                                // return true
-                                            })
-
-                                            console.log(u);
-
-                                        }
-                                    </script>
+                                <div style="width: 100%;">
+                                    <table style="width: 100%;">
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5"><input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="width: 100%; margin: 0;"></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr id="range-input__levels">
+                                                <td style="width: 14.402878851064429%;">Year</td>
+                                                <td style="width: 19.713832646718107%;">Month</td>
+                                                <td style="width: 18.42046030363671;">Day</td>
+                                                <td style="width: 23.73141409929038%;">Hour</td>
+                                                <td style="width: 23.73141409929038%;">Minute</td>
+                                                <td>second</td>
+                                                <style>
+                                                    #range-input__levels td {
+                                                        border-left: 1px solid black;
+                                                    }
+                                                </style>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <label>Zoom: <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="margin: 0;">
+                                        <script> { document.currentScript.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
+                                    </label>
+                                    <br>
+                                    <label>View ratio: 1:<input type="number" min="1">
+                                        <script> { document.currentScript.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
+                                    </label>
                                     <div>year</div>
                                     <div>month</div>
                                     <div>day</div>
                                     <div>hour</div>
                                     <div>minute</div>
                                     <div>second</div>
+                                    <script>
+                                        const elm = document.currentScript.parentElement,
+                                            rangeInputElm = elm.rangeInputElm,
+                                            ratioInputElm = elm.ratioInputElm,
+                                            maxRatio = 60 * 60 * 24 * 30 * 12
+
+                                        rangeInputElm.addEventListener("change", function (event) {
+                                            const iMax = this.max, iMin = this.min
+                                            ratioInputElm.value = Math.pow(maxRatio, (iMax - this.value) / (iMax - iMin))
+                                            ratioInputElm.dispatchEvent(new Event("change"))
+                                        })
+
+                                        ratioInputElm.addEventListener("change", function (event) {
+                                            const iMax = rangeInputElm.max, iMin = rangeInputElm.min,
+                                                range = iMax - (iMax - iMin) * Math.log2(this.value) / Math.log2(maxRatio)
+                                            rangeInputElm.value = range
+                                            console.log(range);
+                                        })
+
+                                        // (Math.log2(60 * 60 * 24 * 30 * 12) - Math.log2(60 * 60 * 24 * 30 * 12)) / Math.log2(60 * 60 * 24 * 30 * 12)
+
+                                        window.addEventListener("load", function (event) {
+                                            ratioInputElm.value = 60
+                                            ratioInputElm.dispatchEvent(new Event("change"))
+                                        }, { once: true })
+
+                                    </script>
                                 </div>
                             </div>
                         </td>
