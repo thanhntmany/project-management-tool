@@ -174,30 +174,70 @@
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
                                 from: Date.now() - 1000 * 60 * 60 * 24 * 30,
                                 duration: 2 * 1000 * 60 * 60 * 24 * 30,
+                                scrollLeft: 0,
                                 width: 500, // sync with the within-width of the Time-based column
+
+                                synchronizedElms: [],
+
+                                assign: function (src) {
+                                    const diff = deepAssign(src, this)
+                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                },
 
                                 getXOfTimepoint: function (timepoint) {
                                     return this.width * (timepoint - this.from) / this.duration
                                 },
 
-                                assign: function (src) {
-                                    const diff = deepAssign(src, this)
-                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-                                }
                             })
 
+                        //sync (parent's) scrollLeft
+                        function _setParentColScrollLeft(elm) { elm.parentElement.scrollLeft = this }// this --> scrollLeft
+                        timeHandler.addEventListener("change", function (event) {
+                            const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.synchronizedElms.forEach(_setParentColScrollLeft, scrollLeft)
+                        })
+                        TimeBasedTableElm.addEventListener("scroll", function (event) {
+                            const elm = event.target
+                            if (!this.timeHandler.synchronizedElms.includes(elm.firstElementChild)) return
+                            event.stopPropagation()
+                            timeHandler.assign({ scrollLeft: elm.scrollLeft })
+                        }, true)
 
-                        const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
-                        TimeBasedTableElm.setColWidth = function (idx, w) {
-                            ColQuery[1] = idx
-                            var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
-                        }
 
-                        {
+                        window.addEventListener("load", () => {
+                            const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
+                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
+                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
+                                synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)],
+                                anInsideColElm = synchronizedElms[0], sw = anInsideColElm.style.width;
+
+                            // sync width
+                            (new ResizeObserver((entries) => {
+                                for (const entry of entries) if (entry.target === anInsideColElm) timeHandler.assign({ width: entry.contentRect.width })
+                            })).observe(anInsideColElm)
+                            function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
+                            timeHandler.addEventListener("change", function (event) {
+                                const width = event.detail.width; if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
+                            })
+
+                            // init value
+                            timeHandler.assign({
+                                synchronizedElms: synchronizedElms,
+                                width: parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(anInsideColElm).getPropertyValue("width")).slice(0, -2)),
+                                scrollLeft: anInsideColElm.parentElement.scrollLeft
+                            })
+                        }, { once: true })
+
+                        {// column resizing
+                            const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
+                            TimeBasedTableElm.setColWidth = function (idx, w) {
+                                ColQuery[1] = idx
+                                var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
+                            }
+
                             var _th, _idx
                             function _mousemoveEL(event) {
-                                const sh = _th.firstElementChild.style.width
-                                TimeBasedTableElm.setColWidth(_idx, parseFloat((sh.endsWith("px") ? sh : window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).slice(0, -2)) + event.movementX)
+                                const sw = _th.firstElementChild.style.width
+                                TimeBasedTableElm.setColWidth(_idx, parseFloat((sw.endsWith("px") ? sw : window.getComputedStyle(_th.firstElementChild).getPropertyValue("width")).slice(0, -2)) + event.movementX)
                             }
                             function _mouseupEL(event) {
                                 _th = undefined
@@ -207,7 +247,7 @@
                                 var elm = event.target, tElm = elm
                                 if (!tElm.classList.contains("col-resizer")) tElm = tElm.parentElement
                                 if (tElm.classList.contains("col-resizer")) {
-                                    event.stopPropagation()
+                                    event.stopImmediatePropagation()
                                     _th = tElm.parentElement.parentElement
                                     _idx = 1; var el; for (el of _th.parentElement.children) if (el !== _th) { ++_idx } else break
                                     window.addEventListener("mousemove", _mousemoveEL)
@@ -216,7 +256,7 @@
                             }, true)
                         }
 
-                        {
+                        {// row resizing
                             var _th, _idx
                             function _mousemoveEL(event) {
                                 const sh = _th.style.height || ""
@@ -230,7 +270,7 @@
                                 var elm = event.target, tElm = elm
                                 if (!tElm.classList.contains("row-resizer")) tElm = tElm.parentElement
                                 if (tElm.classList.contains("row-resizer")) {
-                                    event.stopPropagation()
+                                    event.stopImmediatePropagation()
                                     _th = tElm.parentElement.parentElement.parentElement
                                     window.addEventListener("mousemove", _mousemoveEL)
                                     window.addEventListener("mouseup", _mouseupEL, { once: true })
@@ -238,37 +278,6 @@
                             }, true)
                         }
 
-                        window.addEventListener("load", () => {
-                            // TODO: ==>>>>> within-width
-
-                            // sync timeHandler with the width-size of the Time-based column
-                            const timeBasedColElm = document.getElementById("time-based-col"),
-                                th = timeBasedColElm.parentElement
-                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
-                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`
-
-                            const insideColElm = TimeBasedTableElm.querySelector(InsideTimeBasedColQuery),
-                                RO = new ResizeObserver((entries) => {
-                                    for (const entry of entries) if (entry.target === insideColElm) {
-                                        timeHandler.assign({
-                                            width: entry.contentRect.width
-                                        })
-                                        return
-                                    }
-                                })
-                            RO.observe(insideColElm)
-
-                            TimeBasedTableElm.setInsideTimeBasedColWidth = function (w) {
-                                var e; for (e of this.querySelectorAll(InsideTimeBasedColQuery)) DIL(e.style, e.style.setProperty, "width", w + "px")
-                            }
-                            timeHandler.addEventListener("change", function (event) {
-                                const width = event.detail.width
-                                if (width) TimeBasedTableElm.setInsideTimeBasedColWidth(width)
-                            })
-
-                            // console.log(timeHandler);
-                            console.log(TimeBasedTableElm);
-                        }, { once: true })
                     }
                 </script>
                 <thead>
@@ -323,7 +332,7 @@
                         </td>
                         <td>
                             <div>
-                                <div> Line CHart </div>
+                                <div>Line Chart</div>
                             </div>
                         </td>
                     </tr>
@@ -339,7 +348,9 @@
                             <div>xxxxx</div>
                         </td>
                         <td>
-                            <div>xxxxx</div>
+                            <div>
+                                <div>yyyyyyyyyyyyyyyyyyyyy</div>
+                            </div>
                         </td>
                     </tr>
                     <tr style="height: 126px;">
