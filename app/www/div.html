@@ -171,7 +171,23 @@
                 <script>
                     {
                         const TimeBasedTableElm = document.currentScript.parentElement,
-                            ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
+                            timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
+                                from: Date.now() - 1000 * 60 * 60 * 24 * 30,
+                                duration: 2 * 1000 * 60 * 60 * 24 * 30,
+                                width: 500, // sync with the within-width of the Time-based column
+
+                                getXOfTimepoint: function (timepoint) {
+                                    return this.width * (timepoint - this.from) / this.duration
+                                },
+
+                                assign: function (src) {
+                                    const diff = deepAssign(src, this)
+                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                }
+                            })
+
+
+                        const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
                         TimeBasedTableElm.setColWidth = function (idx, w) {
                             ColQuery[1] = idx
                             var e; for (e of this.querySelectorAll(ColQuery.join(""))) e.style.setProperty("width", w + "px")
@@ -222,8 +238,37 @@
                             }, true)
                         }
 
-                        window.addEventListener("load", () => TimeBasedTableElm.setColWidth(1, 20))
-                        // window.mTa = elm
+                        window.addEventListener("load", () => {
+                            // TODO: ==>>>>> within-width
+
+                            // sync timeHandler with the width-size of the Time-based column
+                            const timeBasedColElm = document.getElementById("time-based-col"),
+                                th = timeBasedColElm.parentElement
+                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
+                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`
+
+                            const insideColElm = TimeBasedTableElm.querySelector(InsideTimeBasedColQuery),
+                                RO = new ResizeObserver((entries) => {
+                                    for (const entry of entries) if (entry.target === insideColElm) {
+                                        timeHandler.assign({
+                                            width: entry.contentRect.width
+                                        })
+                                        return
+                                    }
+                                })
+                            RO.observe(insideColElm)
+
+                            TimeBasedTableElm.setInsideTimeBasedColWidth = function (w) {
+                                var e; for (e of this.querySelectorAll(InsideTimeBasedColQuery)) DIL(e.style, e.style.setProperty, "width", w + "px")
+                            }
+                            timeHandler.addEventListener("change", function (event) {
+                                const width = event.detail.width
+                                if (width) TimeBasedTableElm.setInsideTimeBasedColWidth(width)
+                            })
+
+                            // console.log(timeHandler);
+                            console.log(TimeBasedTableElm);
+                        }, { once: true })
                     }
                 </script>
                 <thead>
@@ -239,7 +284,7 @@
                             </div>
                         </th>
                         <th>
-                            <div>
+                            <div id="time-based-col">
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div> Time-based charts
@@ -277,7 +322,11 @@
                             </div>
                         </td>
                         <td>
-                            <div>xxxxx</div>
+                            <div>
+                                <div>
+                                    Line CHart
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -305,33 +354,35 @@
                         </th>
                         <td>
                             <div>
-                                <input type="range" min="0" max="100" setp="1" value="50" style="margin: 0;width: 100%;">
-                                <div>year</div>
-                                <div>month</div>
-                                <div>day</div>
-                                <div>hour</div>
-                                <div>minute</div>
-                                <div>second</div>
-                                <script>
-                                    {
-                                        const fontSizeUnit = window.getComputedStyle(document.currentScript.parentElement.parentElement.parentElement.lastElementChild).getPropertyValue("font-size"),
-                                            rangeInput = document.currentScript.parentElement.querySelector("input")
+                                <div>
+                                    <input type="range" min="0" max="100" setp="1" value="50" style="margin: 0;width: 100%;">
+                                    <div>year</div>
+                                    <div>month</div>
+                                    <div>day</div>
+                                    <div>hour</div>
+                                    <div>minute</div>
+                                    <div>second</div>
+                                    <script>
+                                        {
+                                            const fontSizeUnit = window.getComputedStyle(document.currentScript.parentElement.parentElement.parentElement.parentElement.lastElementChild).getPropertyValue("font-size"),
+                                                rangeInput = document.currentScript.parentElement.querySelector("input")
 
-                                        console.log(fontSizeUnit);
+                                            console.log(fontSizeUnit);
 
-                                        const base = 60 * 60 * 24 * 30 * 12,
-                                            u = Math.pow(base, 1 / rangeInput.max)
+                                            const base = 60 * 60 * 24 * 30 * 12,
+                                                u = Math.pow(base, 1 / rangeInput.max)
 
-                                        rangeInput.addEventListener("change", function (event) {
+                                            rangeInput.addEventListener("change", function (event) {
 
-                                            console.log(base/Math.pow(u, this.value));
-                                            // return true
-                                        })
+                                                console.log(base / Math.pow(u, this.value));
+                                                // return true
+                                            })
 
-                                        console.log(u);
+                                            console.log(u);
 
-                                    }
-                                </script>
+                                        }
+                                    </script>
+                                </div>
                             </div>
                         </td>
                         <td>
