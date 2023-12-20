@@ -214,7 +214,6 @@
                                     td.firstElementChild.scrollTop = scrollTop
                         }, true)
 
-
                         // sync width
                         function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
                         timeHandler.addEventListener("change", function (event) {
@@ -284,7 +283,8 @@
                                 synchronizedElms: synchronizedElms,
                                 colIdx: colIdx,
                                 scrollLeft: 0,
-                                width: 1900
+                                width: 1900,
+                                unitWidth: parseFloat(window.getComputedStyle(synchronizedElms[synchronizedElms.length - 1]).fontSize.slice(0, -2))
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
