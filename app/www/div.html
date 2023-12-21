@@ -28,7 +28,6 @@
                 this.dispatchEvent(new Event("change-timezone-offset"))
             }
         })
-        CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
 
         function isObject(obj) { return obj === Object(obj) }
         function deepAssign(src, dst, diff = {}) {
@@ -62,6 +61,7 @@
                     "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
                 }
             })
+            CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
         }, { once: true })
     </script>
     <div>
@@ -89,6 +89,7 @@
                     CORE.addEventListener("change-timezone-offset", function (e) {
                         if (offfsetElm.value === this.timezoneOffset) return
                         offfsetElm.value = this.timezoneOffset
+                        offfsetElm.dispatchEvent(new Event('change'))
                     })
 
                     offfsetElm.value = CORE.timezoneOffset
@@ -451,7 +452,7 @@
                                         </div>
                                     </div>
                                     <br>
-                                    <label>View ratio: 1:<input type="number" min="1">
+                                    <label>Ratio: 1:<input type="number" min="1">
                                         <script> { document.currentScript.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
                                     </label>
                                     <script>
@@ -503,6 +504,9 @@
                         </td>
                         <td>
                             <div class="time-based__sync-scroll-left show-scrollbar">
+                                <div style="position: sticky;top: 0;left: 0;height: 0;">
+                                    <div style="background-color: darkgreen;width: fit-content;">xxx</div>
+                                </div>
                                 <style>
                                     #time-based-axis div {
                                         background-color: brown;
@@ -510,16 +514,17 @@
                                     }
                                 </style>
                                 <div class="time-based__sync-width" id="time-based-axis">
-                                    <div>year</div>
-                                    <div>month</div>
-                                    <div>day</div>
-                                    <div>hour</div>
-                                    <div>minute</div>
-                                    <div>second</div>
+                                    <div class="years">year</div>
+                                    <div class="months">month</div>
+                                    <div class="days">day</div>
+                                    <div class="hours">hour</div>
+                                    <div class="minutes">minute</div>
+                                    <div class="seconds">second</div>
                                 </div>
                                 <script>
                                     {
-                                        document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
+                                        const timeBasedAxisElm = document.currentScript.previousElementSibling
+                                        timeBasedAxisElm.addEventListener("time-based-change", function (event) {
                                             const timeHandler = event.detail, now = Date.now()
                                             const children = this.children;
 
