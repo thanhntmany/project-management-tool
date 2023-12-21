@@ -284,7 +284,7 @@
                         window.addEventListener("load", () => {
                             const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
                             var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
-                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*:nth-child(${colIdx})>div>div:first-child`,
+                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*>div>div.time-based__synchronized`,
                                 synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)]
 
                             // init value
@@ -292,12 +292,12 @@
                                 synchronizedElms: synchronizedElms,
                                 colIdx: colIdx,
                                 scrollLeft: 0,
-                                width: 1900,
+                                width: 900,
                                 unitWidth: parseFloat(window.getComputedStyle(synchronizedElms[synchronizedElms.length - 1]).fontSize.slice(0, -2)) * 2
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
-                            TimeBasedTableElm.setColWidth(colIdx, 800)
+                            TimeBasedTableElm.setColWidth(colIdx, 650)
                         }, { once: true })
 
                     }
@@ -336,10 +336,12 @@
                             <div>xxxxx</div>
                         </td>
                         <td>
-                            <div>xxxxx</div>
+                            <div>
+                                <div class="time-based__synchronized">xxxxx</div>
+                            </div>
                         </td>
                     </tr>
-                    <tr style="height: 556px;">
+                    <tr style="height: 459px;">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -352,7 +354,7 @@
                         </td>
                         <td>
                             <div>
-                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                                <div class="time-based__synchronized" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                     </tr>
@@ -371,11 +373,11 @@
                         </td>
                         <td>
                             <div>
-                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                                <div class="time-based__synchronized" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                     </tr>
-                    <tr style="height: 200px;">
+                    <tr style="height: 123px;">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -483,7 +485,7 @@
                         </td>
                         <td>
                             <div>
-                                <div id="time-based-axis">
+                                <div class="time-based__synchronized" id="time-based-axis">
                                     <div>year</div>
                                     <div>month</div>
                                     <div>day</div>
@@ -540,13 +542,25 @@
                                         })
                                     }
                                 </script>
+                                <style>
+                                    .stick {
+                                        position: fixed;
+                                    }
+
+                                    /* #stick>div {
+                                    position: sticky;
+                                } */
+                                    #time-based-axis div {
+                                        background-color: brown;
+                                        transition: width 100ms;
+                                    }
+                                </style>
+                                <div class="stick">
+                                    <div>xxxx</div>
+                                    <div>xxxx</div>
+                                    <div>xxxx</div>
+                                </div>
                             </div>
-                            <style>
-                                #time-based-axis div {
-                                    background-color: brown;
-                                    transition: width 100ms;
-                                }
-                            </style>
                         </td>
                     </tr>
                 </tbody>
