@@ -171,7 +171,8 @@
                 </style>
                 <script>
                     {
-                        const TimeBasedTableElm = document.currentScript.parentElement,
+                        const syncScrollLeftClassName = "time-based__sync-scroll-left",
+                            TimeBasedTableElm = document.currentScript.parentElement,
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
                                 from: Date.now(),
                                 duration: 2 * 1000 * 60 * 60 * 24 * 30,
@@ -181,7 +182,8 @@
                                 width: 500,
                                 unitWidth: 14,
 
-                                synchronizedElms: [],
+                                syncedScrollLeftElms: [],
+                                syncedWidthElms: [],
 
                                 assign: function (src) {
                                     const diff = deepAssign(src, this)
@@ -194,13 +196,13 @@
                             })
 
                         //sync (parent's) scrollLeft in time-based table
-                        function _setParentColScrollLeft(elm) { elm.parentElement.scrollLeft = this }// this --> scrollLeft
+                        function _setScrollLeft(elm) { elm.scrollLeft = this }// this --> scrollLeft
                         timeHandler.addEventListener("change", function (event) {
-                            const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.synchronizedElms.forEach(_setParentColScrollLeft, scrollLeft)
+                            const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.syncedScrollLeftElms.forEach(_setScrollLeft, scrollLeft)
                         })
                         TimeBasedTableElm.addEventListener("scroll", function (event) {
                             const elm = event.target
-                            if (!this.timeHandler.synchronizedElms.includes(elm.firstElementChild)) return
+                            if (!this.timeHandler.syncedScrollLeftElms.includes(elm)) return
                             event.stopPropagation()
                             timeHandler.assign({ scrollLeft: elm.scrollLeft })
                         }, true)
@@ -222,11 +224,11 @@
                             const diff = event.detail,
                                 width = diff.width;
                             // sync width
-                            if (width >= 0) this.synchronizedElms.forEach(_setColWidth, width)
+                            if (width >= 0) this.syncedWidthElms.forEach(_setColWidth, width)
 
                             // sync time-based-change
                             if ("duration" in diff || "unitWidth" in diff || "width" in diff)
-                                this.synchronizedElms.forEach(_dispatchTimeBasedChange, this)
+                                this.syncedWidthElms.forEach(_dispatchTimeBasedChange, this)
                         })
 
                         {// column resizing
@@ -284,16 +286,16 @@
                         window.addEventListener("load", () => {
                             const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
                             var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
-                            const InsideTimeBasedColQuery = `table#time-based>tbody>*>*>div>div.time-based__synchronized`,
-                                synchronizedElms = [...TimeBasedTableElm.querySelectorAll(InsideTimeBasedColQuery)]
+                            const syncedWidthElms = [...TimeBasedTableElm.querySelectorAll(".time-based__sync-width")]
 
                             // init value
                             timeHandler.assign({
-                                synchronizedElms: synchronizedElms,
+                                syncedScrollLeftElms: [...TimeBasedTableElm.querySelectorAll(".time-based__sync-scroll-left")],
+                                syncedWidthElms: syncedWidthElms,
                                 colIdx: colIdx,
                                 scrollLeft: 0,
                                 width: 900,
-                                unitWidth: parseFloat(window.getComputedStyle(synchronizedElms[synchronizedElms.length - 1]).fontSize.slice(0, -2)) * 2
+                                unitWidth: parseFloat(window.getComputedStyle(syncedWidthElms[syncedWidthElms.length - 1]).fontSize.slice(0, -2)) * 2
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
@@ -336,8 +338,8 @@
                             <div>xxxxx</div>
                         </td>
                         <td>
-                            <div>
-                                <div class="time-based__synchronized">xxxxx</div>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width">xxxxx</div>
                             </div>
                         </td>
                     </tr>
@@ -353,8 +355,8 @@
                             <div>xxxxx</div>
                         </td>
                         <td>
-                            <div>
-                                <div class="time-based__synchronized" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                     </tr>
@@ -372,8 +374,8 @@
                             </div>
                         </td>
                         <td>
-                            <div>
-                                <div class="time-based__synchronized" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
                     </tr>
@@ -484,8 +486,22 @@
                             </div>
                         </td>
                         <td>
-                            <div>
-                                <div class="time-based__synchronized" id="time-based-axis">
+                            <div class="time-based__sync-scroll-left">
+                                <style>
+                                    /* .stick {
+                                        position: fixed;
+                                    } */
+                                    #time-based-axis div {
+                                        background-color: brown;
+                                        transition: width 100ms;
+                                    }
+                                </style>
+                                <div class="stick">
+                                    <div>xxxx</div>
+                                    <div>xxxx</div>
+                                    <div>xxxx</div>
+                                </div>
+                                <div class="time-based__sync-width" id="time-based-axis">
                                     <div>year</div>
                                     <div>month</div>
                                     <div>day</div>
@@ -542,24 +558,6 @@
                                         })
                                     }
                                 </script>
-                                <style>
-                                    .stick {
-                                        position: fixed;
-                                    }
-
-                                    /* #stick>div {
-                                    position: sticky;
-                                } */
-                                    #time-based-axis div {
-                                        background-color: brown;
-                                        transition: width 100ms;
-                                    }
-                                </style>
-                                <div class="stick">
-                                    <div>xxxx</div>
-                                    <div>xxxx</div>
-                                    <div>xxxx</div>
-                                </div>
                             </div>
                         </td>
                     </tr>
