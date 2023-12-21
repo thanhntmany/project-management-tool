@@ -191,6 +191,9 @@
                         const syncScrollLeftClassName = "time-based__sync-scroll-left",
                             TimeBasedTableElm = document.currentScript.parentElement,
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
+                                syncedScrollLeftElms: [],
+                                syncedWidthElms: [],
+
                                 from: Date.now(),
                                 duration: 2 * 1000 * 60 * 60 * 24 * 30,
 
@@ -199,18 +202,21 @@
                                 width: 500,
                                 unitWidth: 14,
 
-                                syncedScrollLeftElms: [],
-                                syncedWidthElms: [],
+                                timezoneOffset: undefined,
 
                                 assign: function (src) {
                                     const diff = deepAssign(src, this)
-                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                        if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
                                 },
 
                                 xOfTimepoint: function (timepoint) {
                                     return this.width * (timepoint - this.from) / this.duration
                                 }
                             })
+
+                        // bind with CORE's timezoneOffset
+                        CORE.addEventListener("change-timezone-offset", function (e) { timeHandler.assign({ timezoneOffset: this.timezoneOffset }) })
+
 
                         //sync (parent's) scrollLeft in time-based table
                         function _setScrollLeft(elm) { elm.scrollLeft = this }// this --> scrollLeft
@@ -244,7 +250,7 @@
                             if (width >= 0) this.syncedWidthElms.forEach(_setColWidth, width)
 
                             // sync time-based-change
-                            if ("duration" in diff || "unitWidth" in diff || "width" in diff)
+                            if ("duration" in diff || "unitWidth" in diff || "width" in diff || "timezoneOffset" in diff)
                                 this.syncedWidthElms.forEach(_dispatchTimeBasedChange, this)
                         })
 
