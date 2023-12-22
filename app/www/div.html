@@ -168,15 +168,16 @@
                     }
 
                     table#time-based .col-resizer {
-                        cursor: col-resize;
-                        position: relative;
+                        position: absolute;
+                        right: 0;
                         z-index: 1;
-                        float: right;
                         display: block;
-                        padding-left: .5em;
-                        padding-right: 2px;
+                        padding-left: 1px;
+                        padding-right: 1px;
                         width: fit-content;
                         height: 100%;
+                        cursor: col-resize;
+                        background-color: dimgrey;
                     }
 
                     table#time-based>*>*>*:first-child {
@@ -349,7 +350,7 @@
                     }
                 </script>
                 <thead>
-                    <tr style="height: 7em;">
+                    <tr style="height: 3.5em;">
                         <th>
                             <div>#</div>
                         </th>
@@ -365,7 +366,7 @@
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div>
-                                <div style="width: 100%;min-width: 30em;">
+                                <div style="width: 30em;">
                                     <div id="time-based__range-input__levels" style="width: 100%;">
                                         <style>
                                             #time-based__range-input__levels {
@@ -382,7 +383,7 @@
                                                 padding: 0;
                                             }
 
-                                            #time-based__range-input__levels>div:nth-child(2)>div>div {
+                                            #time-based__range-input__levels>div:nth-child(3)>div>div {
                                                 position: absolute;
                                                 padding-top: .5em;
                                                 border-left: 1px solid black;
@@ -394,8 +395,11 @@
                                                 background-color: gray;
                                             }
                                         </style>
-                                        <div>
-                                            <div>
+                                        <label style="display: none;">Ratio: 1:<input type="number" min="1">
+                                            <script> { document.currentScript.parentElement.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
+                                        </label>
+                                        <div style="margin-left: -.25em;margin-right: -0.25em;">
+                                            <div style="height: 2em;">
                                                 <div data-ratio="31104000000">Year</div>
                                                 <div data-ratio="2592000000">Month</div>
                                                 <div data-ratio="86400000">Day</div>
@@ -409,10 +413,6 @@
                                             <script> { document.currentScript.parentElement.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
                                         </div>
                                     </div>
-                                    <br>
-                                    <label>Ratio: 1:<input type="number" min="1">
-                                        <script> { document.currentScript.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
-                                    </label>
                                     <script>
                                         {
                                             const elm = document.currentScript.parentElement,
@@ -435,6 +435,7 @@
                                                 ratioInputElm.value = this.dataset.ratio
                                                 ratioInputElm.dispatchEvent(new Event("change"))
                                             }
+
                                             var btn; for (btn of elm.querySelectorAll("*[data-ratio]")) {
                                                 btn.style.setProperty("margin-left", (100 * (1 - Math.log2(btn.dataset.ratio) / Math.log2(maxRatio))) + "%")
                                                 btn.addEventListener("click", _setRatio)
