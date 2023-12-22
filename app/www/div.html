@@ -344,7 +344,7 @@
                     }
                 </script>
                 <thead>
-                    <tr style="height: 3.5em;">
+                    <tr>
                         <th>
                             <div>#</div>
                         </th>
@@ -360,131 +360,6 @@
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div>
-                                <div style="width: 30em;">
-                                    <div id="time-based__range-input__levels" style="width: 100%;">
-                                        <style>
-                                            #time-based__range-input__levels {
-                                                padding: 0;
-                                                height: 2em;
-                                            }
-
-                                            #time-based__range-input__levels>div {
-                                                position: relative;
-                                                display: block;
-                                                width: 100%;
-                                                margin: 0;
-                                                border: 0;
-                                                padding: 0;
-                                            }
-
-                                            #time-based__range-input__levels>div:nth-child(3)>div>div {
-                                                position: absolute;
-                                                padding-top: .5em;
-                                                border-left: 1px solid black;
-                                                padding: .5em 1em 2px 2px;
-                                                cursor: pointer;
-                                            }
-
-                                            #time-based__range-input__levels *[data-ratio]:hover {
-                                                background-color: gray;
-                                            }
-                                        </style>
-                                        <label style="display: none;">Ratio: 1:<input type="number" min="1">
-                                            <script> { document.currentScript.parentElement.parentElement.parentElement.ratioInputElm = document.currentScript.previousElementSibling }</script>
-                                        </label>
-                                        <div style="margin-left: -.25em;margin-right: -0.25em;">
-                                            <div style="height: 2em;">
-                                                <div data-ratio="31104000000">Year</div>
-                                                <div data-ratio="2592000000">Month</div>
-                                                <div data-ratio="86400000">Day</div>
-                                                <div data-ratio="3600000">Hour</div>
-                                                <div data-ratio="60000">Minute</div>
-                                                <div data-ratio="1000">second</div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <input class="prevent-select" type="range" min="0" max="100" setp="1" value="50" style="width: 100%; margin: 0;">
-                                            <script> { document.currentScript.parentElement.parentElement.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
-                                        </div>
-                                    </div>
-                                    <script>
-                                        {
-                                            const elm = document.currentScript.parentElement,
-                                                rangeInputElm = elm.rangeInputElm,
-                                                ratioInputElm = elm.ratioInputElm,
-                                                maxRatio = 1000 * 60 * 60 * 24 * 30 * 12
-
-                                            rangeInputElm.addEventListener("change", function (event) {
-                                                const iMax = this.max, iMin = this.min
-                                                ratioInputElm.value = Math.pow(maxRatio, (iMax - this.value) / (iMax - iMin))
-                                                ratioInputElm.dispatchEvent(new Event("change"))
-                                            })
-
-                                            ratioInputElm.addEventListener("change", function (event) {
-                                                const iMax = rangeInputElm.max, iMin = rangeInputElm.min
-                                                rangeInputElm.value = iMax - (iMax - iMin) * Math.log2(this.value) / Math.log2(maxRatio)
-                                            })
-
-                                            function _setRatio(event) {
-                                                ratioInputElm.value = this.dataset.ratio
-                                                ratioInputElm.dispatchEvent(new Event("change"))
-                                            }
-
-                                            var btn; for (btn of elm.querySelectorAll("*[data-ratio]")) {
-                                                btn.style.setProperty("margin-left", (100 * (1 - Math.log2(btn.dataset.ratio) / Math.log2(maxRatio))) + "%")
-                                                btn.addEventListener("click", _setRatio)
-                                            }
-
-                                            // sync with timeHandler
-                                            const TimeBasedTableElm = document.currentScript.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement,
-                                                timeHandler = TimeBasedTableElm.timeHandler
-                                            timeHandler.addEventListener("change", function (event) {
-                                                const diff = event.detail
-                                                if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
-                                                    ratioInputElm.value = this.duration * this.unitWidth / this.width
-                                                    ratioInputElm.dispatchEvent(new Event("change"))
-                                                }
-                                            })
-                                            ratioInputElm.addEventListener("change", function (event) {
-                                                timeHandler.assign({
-                                                    duration: this.value * timeHandler.width / timeHandler.unitWidth
-                                                })
-                                            })
-                                        }
-                                    </script>
-                                </div>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>&nbsp;
-                            </div>
-                        </th>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
-                        <td>
-                            <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width">xxxxx</div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="height: 459px;">
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>2
-                            </div>
-                        </th>
-                        <td>
-                            <div>
                                 <div class="time-ratio-input">
                                     <style style="display: none;">
                                         .time-ratio-input {
@@ -622,145 +497,189 @@
                                             timeRatioInputElm.addEventListener("change", function (event) { numberInputElm.value = this.value })
                                             numberInputElm.addEventListener("change", function (event) { timeRatioInputElm.setValue(parseFloat(this.value)) })
 
-                                            timeRatioInputElm.setValue(86400000)
+                                            // sync with timeHandler
+                                            const TimeBasedTableElm = document.currentScript.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement,
+                                                timeHandler = TimeBasedTableElm.timeHandler
+
+                                            timeHandler.addEventListener("change", function (event) {
+                                                const diff = event.detail
+                                                if ("duration" in diff || "unitWidth" in diff || "width" in diff)
+                                                    timeRatioInputElm.setValue(this.duration * this.unitWidth / this.width)
+                                            })
+                                            timeRatioInputElm.addEventListener("change", function (event) {
+                                                timeHandler.assign({
+                                                    duration: this.value * timeHandler.width / timeHandler.unitWidth
+                                                })
+                                            })
                                         }
                                     </script>
                                 </div>
                             </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>&nbsp;
+                            </div>
+                        </th>
+                        <td>
+                            <div>xxxxx</div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width">xxxxx</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 459px;">
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>2
+                            </div>
+                        </th>
+                        <td>
+                            <div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 221px;">
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>1
+                            </div>
+                        </th>
+                        <td>
+                            <div>
+                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 90px;">
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>📈
+                            </div>
+                        </th>
+                        <td>
+                            <div>
+                                <div>xx</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left show-scrollbar">
+                                <style>
+                                    #time-based-axis div {
+                                        background-color: brown;
+                                        transition: width 100ms;
+                                    }
+                                </style>
+                                <div style="position: sticky;top: 0;left: 0;height: 0;">
+                                    <div style="background-color: darkgreen;width: fit-content;">xxx</div>
+                                </div>
+                                <div class="time-based__sync-width" id="time-based-axis">
+                                    <div class="years">
+                                        <div>2023</div>
+                                        <div>2024</div>
+                                    </div>
+                                    <div class="months">month</div>
+                                    <div class="days">day</div>
+                                    <div class="hours">hour</div>
+                                    <div class="minutes">minute</div>
+                                    <div class="seconds">second</div>
+                                </div>
+                                <script>
+                                    {
+                                        document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
+                                            const { timeHandler, diff } = event.detail, now = timeHandler.from,
+                                                children = this.children,
+                                                dateOffset_from = timeHandler.dateoffsetOfTimestamp(timeHandler.from),
+                                                dateOffset_to = timeHandler.dateoffsetOfTimestamp(timeHandler.from + timeHandler.duration)
+
+
+                                            console.log(timeHandler.duration);
+
+                                            {// year
+                                                const f = new Date(dateOffset_from.getFullYear())
+
+                                            }
+
+                                            // {// year
+                                            //     const year_from = new Date(offset_from)
+                                            //     console.log(offset_from.getFullYear());
+
+                                            //     const datetime = new Date(now)
+                                            //     datetime.setFullYear(datetime.getFullYear() + 1)
+                                            //     var w = timeHandler.xOfDatetime(datetime)
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[0].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     // const datetime = new Date(now)
+
+                                            //     var cur = new Date(now),
+                                            //         current = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+                                            //     w = timeHandler.xOfTimestamp(current.getTime())
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[1].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var tomorrow = new Date(now);
+                                            //     tomorrow.setDate(tomorrow.getDate() + 1);
+                                            //     var w = timeHandler.xOfTimestamp(tomorrow.getTime())
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[2].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var w = timeHandler.xOfTimestamp(now + (1000 * 60 * 60))
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[3].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var w = timeHandler.xOfTimestamp(now + (1000 * 60))
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[4].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var w = timeHandler.xOfTimestamp(now + 1000)
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[5].style.width = w + "px"
+                                            // }
+
+                                        })
+                                    }
+                                </script>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        </td>
-        <td>
-            <div class="time-based__sync-scroll-left">
-                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-            </div>
-        </td>
-        </tr>
-        <tr style="height: 221px;">
-            <th>
-                <div>
-                    <div class="row-resizer">
-                        <div>═</div>
-                    </div>1
-                </div>
-            </th>
-            <td>
-                <div>
-                    <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-                </div>
-            </td>
-            <td>
-                <div class="time-based__sync-scroll-left">
-                    <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-                </div>
-            </td>
-        </tr>
-        <tr style="height: 90px;">
-            <th>
-                <div>
-                    <div class="row-resizer">
-                        <div>═</div>
-                    </div>📈
-                </div>
-            </th>
-            <td>
-                <div>
-                    <div>xx</div>
-                </div>
-            </td>
-            <td>
-                <div class="time-based__sync-scroll-left show-scrollbar">
-                    <style>
-                        #time-based-axis div {
-                            background-color: brown;
-                            transition: width 100ms;
-                        }
-                    </style>
-                    <div style="position: sticky;top: 0;left: 0;height: 0;">
-                        <div style="background-color: darkgreen;width: fit-content;">xxx</div>
-                    </div>
-                    <div class="time-based__sync-width" id="time-based-axis">
-                        <div class="years">
-                            <div>2023</div>
-                            <div>2024</div>
-                        </div>
-                        <div class="months">month</div>
-                        <div class="days">day</div>
-                        <div class="hours">hour</div>
-                        <div class="minutes">minute</div>
-                        <div class="seconds">second</div>
-                    </div>
-                    <script>
-                        {
-                            document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
-                                const { timeHandler, diff } = event.detail, now = timeHandler.from,
-                                    children = this.children,
-                                    dateOffset_from = timeHandler.dateoffsetOfTimestamp(timeHandler.from),
-                                    dateOffset_to = timeHandler.dateoffsetOfTimestamp(timeHandler.from + timeHandler.duration)
-
-
-                                console.log(timeHandler.duration);
-
-                                {// year
-                                    const f = new Date(dateOffset_from.getFullYear())
-
-                                }
-
-                                // {// year
-                                //     const year_from = new Date(offset_from)
-                                //     console.log(offset_from.getFullYear());
-
-                                //     const datetime = new Date(now)
-                                //     datetime.setFullYear(datetime.getFullYear() + 1)
-                                //     var w = timeHandler.xOfDatetime(datetime)
-                                //     if (w > timeHandler.width) w = timeHandler.width
-                                //     children[0].style.width = w + "px"
-                                // }
-
-                                // {
-                                //     // const datetime = new Date(now)
-
-                                //     var cur = new Date(now),
-                                //         current = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-                                //     w = timeHandler.xOfTimestamp(current.getTime())
-                                //     if (w > timeHandler.width) w = timeHandler.width
-                                //     children[1].style.width = w + "px"
-                                // }
-
-                                // {
-                                //     var tomorrow = new Date(now);
-                                //     tomorrow.setDate(tomorrow.getDate() + 1);
-                                //     var w = timeHandler.xOfTimestamp(tomorrow.getTime())
-                                //     if (w > timeHandler.width) w = timeHandler.width
-                                //     children[2].style.width = w + "px"
-                                // }
-
-                                // {
-                                //     var w = timeHandler.xOfTimestamp(now + (1000 * 60 * 60))
-                                //     if (w > timeHandler.width) w = timeHandler.width
-                                //     children[3].style.width = w + "px"
-                                // }
-
-                                // {
-                                //     var w = timeHandler.xOfTimestamp(now + (1000 * 60))
-                                //     if (w > timeHandler.width) w = timeHandler.width
-                                //     children[4].style.width = w + "px"
-                                // }
-
-                                // {
-                                //     var w = timeHandler.xOfTimestamp(now + 1000)
-                                //     if (w > timeHandler.width) w = timeHandler.width
-                                //     children[5].style.width = w + "px"
-                                // }
-
-                            })
-                        }
-                    </script>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-        </table>
-    </div>
     </div>
 </body>
 
