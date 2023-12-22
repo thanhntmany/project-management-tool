@@ -488,17 +488,19 @@
                                 <div class="time-ratio-input">
                                     <style style="display: none;">
                                         .time-ratio-input {
-                                            height: 5em;
                                             cursor: e-resize;
                                             -webkit-user-select: none;
                                             -ms-user-select: none;
                                             user-select: none;
+                                            width: fit-content;
+                                            background-color: grey;
+                                            border-radius: 0.5em;
+                                            padding: 0.25em;
                                         }
 
                                         .time-ratio-input>* {
                                             display: inline-block;
                                             vertical-align: top;
-                                            height: inherit;
                                         }
 
                                         .time-ratio-input>script {
@@ -506,7 +508,7 @@
                                         }
 
                                         .time-ratio-input .time-range {
-                                            border: 1px solid black;
+                                            border-left: 2px solid black;
                                             width: 8em;
                                             white-space: nowrap;
                                             overflow-x: hidden;
@@ -514,7 +516,6 @@
 
                                         .time-ratio-input .time-range>* {
                                             position: relative;
-                                            height: inherit;
                                             transition: margin-left 100ms;
                                         }
 
@@ -522,12 +523,27 @@
                                             position: absolute;
                                             display: block;
                                             cursor: pointer;
-                                            height: fit-content;
-                                            top: 50%;
-                                            transform: translateY(-50%);
+                                            border-left: 1px solid black;
+                                        }
+
+                                        .time-ratio-input .option-btn {
+                                            cursor: pointer;
+                                        }
+
+                                        .time-ratio-input .option-btn:hover {
+                                            background-color: gray;
+                                        }
+
+                                        .time-ratio-input:not(.show-number-input)>input[type="number"] {
+                                            display: none;
                                         }
                                     </style>
-                                    <div>🔍</div>
+                                    <div class="option-btn">🔍</div>
+                                    <script>{
+                                            document.currentScript.previousElementSibling.addEventListener("click", function () { this.parentElement.classList.toggle("show-number-input") })
+                                        }</script>
+                                    <input type="number" min="1">
+                                    <script>{ document.currentScript.parentElement.numberInputElm = document.currentScript.previousElementSibling }</script>
                                     <div class="time-range">
                                         <div>
                                             <div data-ratio="1">Millisecond</div>
@@ -539,11 +555,9 @@
                                             <div data-ratio="31104000000">Year</div>
                                             <div data-ratio="311040000000">10 Year</div>
                                             <div data-ratio="3110400000000">100 Year</div>
-                                        </div>
+                                        </div>&nbsp;
                                     </div>
                                     <script>{ document.currentScript.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
-                                    <input type="number" min="1">
-                                    <script>{ document.currentScript.parentElement.numberInputElm = document.currentScript.previousElementSibling }</script>
                                     <script>
                                         {
                                             var R = 1, maxwPk = 0, X = 0
@@ -595,12 +609,18 @@
                                             }
                                             timeRatioInputElm.addEventListener("wheel", function (event) { this.changeX(event.deltaY / 3) })
 
+                                            {
+                                                var abortController
+                                                function _mousemoveEL(event) { timeRatioInputElm.changeX(-event.movementX) }
+                                                function _mouseupEL(event) { abortController.abort() }
+                                                timeRatioInputElm.addEventListener("mousedown", function (event) {
+                                                    window.addEventListener("mousemove", _mousemoveEL, { signal: (abortController = new AbortController()).signal })
+                                                    window.addEventListener("mouseup", _mouseupEL, { once: true })
+                                                }, true)
+                                            }
 
                                             timeRatioInputElm.addEventListener("change", function (event) { numberInputElm.value = this.value })
                                             numberInputElm.addEventListener("change", function (event) { timeRatioInputElm.setValue(parseFloat(this.value)) })
-
-                                            // console.log(anchors);
-                                            // console.log(maxwPk);
 
                                             timeRatioInputElm.setValue(86400000)
                                         }
