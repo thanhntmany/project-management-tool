@@ -20,14 +20,24 @@
 
 <body>
     <script>
-        const CORE = Object.assign(new EventTarget(), {
-            timezoneOffset: undefined,
-            setTimezoneOffset: function (offfset) {
-                if (this.timezoneOffset === offfset) return
-                this.timezoneOffset = offfset
-                this.dispatchEvent(new Event("change-timezone-offset"))
-            }
-        })
+        const systemTimezoneOffset = -new Date().getTimezoneOffset(),
+            CORE = Object.assign(new EventTarget(), {
+                systemTimezoneOffset: systemTimezoneOffset,
+                timezoneOffset: undefined,
+
+                timezoneOffset: undefined,
+                _timezoneDelta: undefined,
+
+                setTimezoneOffset: function (offfset) {
+                    if (this.timezoneOffset === offfset) return
+                    this.timezoneOffset = offfset
+                    this._timezoneDelta = (this.timezoneOffset - this.systemTimezoneOffset) * 60000
+                    this.dispatchEvent(new Event("change-timezone-offset"))
+                },
+
+                timestampOfDateoffset: function (date) { return date.getTime() - this._timezoneDelta },
+                dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + this._timezoneDelta) },
+            })
 
         function isObject(obj) { return obj === Object(obj) }
         function deepAssign(src, dst, diff = {}) {
@@ -61,7 +71,8 @@
                     "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
                 }
             })
-            CORE.setTimezoneOffset(-new Date().getTimezoneOffset())
+
+            CORE.setTimezoneOffset(systemTimezoneOffset)
         }, { once: true })
     </script>
     <div>
@@ -84,7 +95,7 @@
                         offfsetElm.dispatchEvent(new Event('change'))
                     })
                     offfsetElm.addEventListener("change", function (e) {
-                        CORE.setTimezoneOffset(elm.value = this.value)
+                        CORE.setTimezoneOffset(elm.value = parseInt(this.value))
                     })
                     CORE.addEventListener("change-timezone-offset", function (e) {
                         if (offfsetElm.value === this.timezoneOffset) return
@@ -159,6 +170,7 @@
                     table#time-based .col-resizer {
                         cursor: col-resize;
                         position: relative;
+                        z-index: 1;
                         float: right;
                         display: block;
                         padding-left: .5em;
@@ -197,26 +209,24 @@
                                 from: Date.now(),
                                 duration: 2 * 1000 * 60 * 60 * 24 * 30,
 
-                                colIdx: 3,
                                 scrollLeft: 0,
                                 width: 500,
                                 unitWidth: 14,
 
-                                timezoneOffset: undefined,
+                                timezoneOffset: undefined, // sync from CORE
 
                                 assign: function (src) {
                                     const diff = deepAssign(src, this)
-                                        if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
                                 },
 
-                                xOfTimepoint: function (timepoint) {
-                                    return this.width * (timepoint - this.from) / this.duration
-                                }
+                                xOfTimestamp: function (timestamp) { return this.width * (timestamp - this.from) / this.duration },
+                                timestampOfX: function (x) { return (x * this.duration / this.width) + this.from },
+                                dateoffsetOfTimestamp: CORE.dateoffsetOfTimestamp.bind(CORE),
+                                timestampOfDateoffset: CORE.timestampOfDateoffset.bind(CORE),
+                                xOfDateoffset: function (dateoffset) { return this.xOfTimestamp(this.timestampOfDateoffset(dateoffset)) },
+                                dateoffsetOfx: function (x) { return this.dateoffsetOfTimestamp(this.timestampOfX(x)) }
                             })
-
-                        // bind with CORE's timezoneOffset
-                        CORE.addEventListener("change-timezone-offset", function (e) { timeHandler.assign({ timezoneOffset: this.timezoneOffset }) })
-
 
                         //sync (parent's) scrollLeft in time-based table
                         function _setScrollLeft(elm) { elm.scrollLeft = this }// this --> scrollLeft
@@ -230,6 +240,7 @@
                             timeHandler.assign({ scrollLeft: elm.scrollLeft })
                         }, true)
 
+
                         //sync scrollTop in tbody of time-based table
                         const tbodyScrollableDivQuery = `table#time-based>tbody>*>td>div`
                         TimeBasedTableElm.addEventListener("scroll", function (event) {
@@ -239,20 +250,29 @@
                                     td.firstElementChild.scrollTop = scrollTop
                         }, true)
 
+                        // sync width
                         function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
-                        function _dispatchTimeBasedChange(elm) { // this --> timeHandler
+                        timeHandler.addEventListener("change", function (event) {
+                            const width = event.detail.width
+                            if (width >= 0) this.syncedWidthElms.forEach(_setColWidth, width)
+                        })
+
+                        // sync time-based-change
+                        function _dispatchTimeBasedChange(elm) {
                             elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this }))
                         }
                         timeHandler.addEventListener("change", function (event) {
-                            const diff = event.detail,
-                                width = diff.width;
-                            // sync width
-                            if (width >= 0) this.syncedWidthElms.forEach(_setColWidth, width)
-
-                            // sync time-based-change
+                            const diff = event.detail
                             if ("duration" in diff || "unitWidth" in diff || "width" in diff || "timezoneOffset" in diff)
-                                this.syncedWidthElms.forEach(_dispatchTimeBasedChange, this)
+                                this.syncedWidthElms.forEach(_dispatchTimeBasedChange, {
+                                    timeHandler: this,
+                                    diff: diff
+                                })
                         })
+                        CORE.addEventListener("change-timezone-offset", function (e) {
+                            timeHandler.assign({ timezoneOffset: this.timezoneOffset })
+                        })
+
 
                         {// column resizing
                             const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
@@ -307,28 +327,29 @@
 
                         // initialize settings
                         window.addEventListener("load", () => {
-                            const timeBasedColElm = document.getElementById("time-based-col"), th = timeBasedColElm.parentElement
-                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
-                            const syncedWidthElms = [...TimeBasedTableElm.querySelectorAll(".time-based__sync-width")]
+                            const timeBasedColElm = document.getElementById("time-based-col"),
+                                syncedWidthElms = [...TimeBasedTableElm.querySelectorAll(".time-based__sync-width")]
 
                             // init value
                             timeHandler.assign({
                                 syncedScrollLeftElms: [...TimeBasedTableElm.querySelectorAll(".time-based__sync-scroll-left")],
                                 syncedWidthElms: syncedWidthElms,
-                                colIdx: colIdx,
                                 scrollLeft: 0,
                                 width: 900,
                                 unitWidth: parseFloat(window.getComputedStyle(syncedWidthElms[syncedWidthElms.length - 1]).fontSize.slice(0, -2)) * 2
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
+
+                            const th = timeBasedColElm.parentElement
+                            var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
                             TimeBasedTableElm.setColWidth(colIdx, 650)
                         }, { once: true })
 
                     }
                 </script>
                 <thead>
-                    <tr>
+                    <tr style="height: 7em;">
                         <th>
                             <div>#</div>
                         </th>
@@ -343,75 +364,7 @@
                             <div id="time-based-col">
                                 <div class="col-resizer">
                                     <div>‖</div>
-                                </div> Time-based charts
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>&nbsp;
-                            </div>
-                        </th>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
-                        <td>
-                            <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width">xxxxx</div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="height: 459px;">
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>2
-                            </div>
-                        </th>
-                        <td>
-                            <div>xxxxx</div>
-                        </td>
-                        <td>
-                            <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="height: 221px;">
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>1
-                            </div>
-                        </th>
-                        <td>
-                            <div>
-                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="height: 123px;">
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>📈
-                            </div>
-                        </th>
-                        <td>
-                            <div>
+                                </div>
                                 <div style="width: 100%;min-width: 30em;">
                                     <div id="time-based__range-input__levels" style="width: 100%;">
                                         <style>
@@ -431,7 +384,6 @@
 
                                             #time-based__range-input__levels>div:nth-child(2)>div>div {
                                                 position: absolute;
-                                                margin-top: 1em;
                                                 padding-top: .5em;
                                                 border-left: 1px solid black;
                                                 padding: .5em 1em 2px 2px;
@@ -507,20 +459,92 @@
                                     </script>
                                 </div>
                             </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>&nbsp;
+                            </div>
+                        </th>
+                        <td>
+                            <div>xxxxx</div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width">xxxxx</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 459px;">
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>2
+                            </div>
+                        </th>
+                        <td>
+                            <div>xxxxx</div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 221px;">
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>1
+                            </div>
+                        </th>
+                        <td>
+                            <div>
+                                <div style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="time-based__sync-scroll-left">
+                                <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="height: 90px;">
+                        <th>
+                            <div>
+                                <div class="row-resizer">
+                                    <div>═</div>
+                                </div>📈
+                            </div>
+                        </th>
+                        <td>
+                            <div>
+                                <div>xx</div>
+                            </div>
                         </td>
                         <td>
                             <div class="time-based__sync-scroll-left show-scrollbar">
-                                <div style="position: sticky;top: 0;left: 0;height: 0;">
-                                    <div style="background-color: darkgreen;width: fit-content;">xxx</div>
-                                </div>
                                 <style>
                                     #time-based-axis div {
                                         background-color: brown;
                                         transition: width 100ms;
                                     }
                                 </style>
+                                <div style="position: sticky;top: 0;left: 0;height: 0;">
+                                    <div style="background-color: darkgreen;width: fit-content;">xxx</div>
+                                </div>
                                 <div class="time-based__sync-width" id="time-based-axis">
-                                    <div class="years">year</div>
+                                    <div class="years">
+                                        <div>2023</div>
+                                        <div>2024</div>
+                                    </div>
                                     <div class="months">month</div>
                                     <div class="days">day</div>
                                     <div class="hours">hour</div>
@@ -529,50 +553,63 @@
                                 </div>
                                 <script>
                                     {
-                                        const timeBasedAxisElm = document.currentScript.previousElementSibling
-                                        timeBasedAxisElm.addEventListener("time-based-change", function (event) {
-                                            const timeHandler = event.detail, now = Date.now()
-                                            const children = this.children;
+                                        document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
+                                            const { timeHandler, diff } = event.detail, now = timeHandler.from,
+                                                children = this.children,
+                                                dateOffset_from = timeHandler.dateoffsetOfTimestamp(timeHandler.from),
+                                                dateOffset_to = timeHandler.dateoffsetOfTimestamp(timeHandler.from + timeHandler.duration)
 
-                                            {
-                                                var oneYearFromNow = new Date(), w = timeHandler.xOfTimepoint(oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1));
-                                                if (w > timeHandler.width) w = timeHandler.width
-                                                children[0].style.width = w + "px"
+                                            {// year
+                                                const f = new Date(dateOffset_from.getFullYear())
+
                                             }
 
-                                            {
-                                                var cur = new Date(),
-                                                    current = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-                                                w = timeHandler.xOfTimepoint(current.getTime())
-                                                if (w > timeHandler.width) w = timeHandler.width
-                                                children[1].style.width = w + "px"
-                                            }
+                                            // {// year
+                                            //     const year_from = new Date(offset_from)
+                                            //     console.log(offset_from.getFullYear());
 
-                                            {
-                                                var tomorrow = new Date();
-                                                tomorrow.setDate(tomorrow.getDate() + 1);
-                                                var w = timeHandler.xOfTimepoint(tomorrow.getTime())
-                                                if (w > timeHandler.width) w = timeHandler.width
-                                                children[2].style.width = w + "px"
-                                            }
+                                            //     const datetime = new Date(now)
+                                            //     datetime.setFullYear(datetime.getFullYear() + 1)
+                                            //     var w = timeHandler.xOfDatetime(datetime)
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[0].style.width = w + "px"
+                                            // }
 
-                                            {
-                                                var w = timeHandler.xOfTimepoint(now + (1000 * 60 * 60))
-                                                if (w > timeHandler.width) w = timeHandler.width
-                                                children[3].style.width = w + "px"
-                                            }
+                                            // {
+                                            //     // const datetime = new Date(now)
 
-                                            {
-                                                var w = timeHandler.xOfTimepoint(now + (1000 * 60))
-                                                if (w > timeHandler.width) w = timeHandler.width
-                                                children[4].style.width = w + "px"
-                                            }
+                                            //     var cur = new Date(now),
+                                            //         current = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+                                            //     w = timeHandler.xOfTimestamp(current.getTime())
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[1].style.width = w + "px"
+                                            // }
 
-                                            {
-                                                var w = timeHandler.xOfTimepoint(now + 1000)
-                                                if (w > timeHandler.width) w = timeHandler.width
-                                                children[5].style.width = w + "px"
-                                            }
+                                            // {
+                                            //     var tomorrow = new Date(now);
+                                            //     tomorrow.setDate(tomorrow.getDate() + 1);
+                                            //     var w = timeHandler.xOfTimestamp(tomorrow.getTime())
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[2].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var w = timeHandler.xOfTimestamp(now + (1000 * 60 * 60))
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[3].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var w = timeHandler.xOfTimestamp(now + (1000 * 60))
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[4].style.width = w + "px"
+                                            // }
+
+                                            // {
+                                            //     var w = timeHandler.xOfTimestamp(now + 1000)
+                                            //     if (w > timeHandler.width) w = timeHandler.width
+                                            //     children[5].style.width = w + "px"
+                                            // }
 
                                         })
                                     }
