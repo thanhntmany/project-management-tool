@@ -205,16 +205,14 @@
                             TimeBasedTableElm = document.currentScript.parentElement,
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
                                 syncedScrollLeftElms: [],
-                                syncedWidthElms: [],
-
-                                from: Date.now(),
-                                duration: 2 * 1000 * 60 * 60 * 24 * 30,
-
                                 scrollLeft: 0,
+
+                                syncedWidthElms: [],
                                 width: 500,
                                 unitWidth: 14,
 
-                                timezoneOffset: undefined, // sync from CORE
+                                from: Date.now(),
+                                duration: 2 * 1000 * 60 * 60 * 24 * 30,
 
                                 assign: function (src) {
                                     const diff = deepAssign(src, this)
@@ -259,21 +257,15 @@
                         })
 
                         // sync time-based-change
-                        function _dispatchTimeBasedChange(elm) {
-                            elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this }))
-                        }
+                        function _dispatchTimeBasedChange(elm) { elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this })) }
                         timeHandler.addEventListener("change", function (event) {
                             const diff = event.detail
-                            if ("duration" in diff || "unitWidth" in diff || "width" in diff || "timezoneOffset" in diff)
+                            if ("duration" in diff || "unitWidth" in diff || "width" in diff)
                                 this.syncedWidthElms.forEach(_dispatchTimeBasedChange, {
                                     timeHandler: this,
                                     diff: diff
                                 })
                         })
-                        CORE.addEventListener("change-timezone-offset", function (e) {
-                            timeHandler.assign({ timezoneOffset: this.timezoneOffset })
-                        })
-
 
                         {// column resizing
                             const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
@@ -559,6 +551,9 @@
                                                 children = this.children,
                                                 dateOffset_from = timeHandler.dateoffsetOfTimestamp(timeHandler.from),
                                                 dateOffset_to = timeHandler.dateoffsetOfTimestamp(timeHandler.from + timeHandler.duration)
+
+
+                                            console.log(timeHandler.duration);
 
                                             {// year
                                                 const f = new Date(dateOffset_from.getFullYear())
