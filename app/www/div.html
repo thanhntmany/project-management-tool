@@ -582,7 +582,7 @@
                         </td>
                         <td>
                             <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width">Sample</div>
+                                <div class="time-based__sync-width"></div>
                             </div>
                         </td>
                     </tr>
@@ -669,43 +669,67 @@
                         </td>
                         <td>
                             <div class="time-based__sync-scroll-left show-scrollbar">
-                                <style>
-                                    #time-based-axis div {
-                                        background-color: brown;
-                                        transition: width 100ms;
-                                    }
-                                </style>
-                                <div style="position: sticky;top: 0;left: 0;height: 0;">
-                                    <div style="background-color: darkgreen;width: fit-content;">xxx</div>
-                                </div>
-                                <div class="time-based__sync-width" id="time-based-axis">
-                                    <div class="years">
-                                        <div>2023</div>
-                                        <div>2024</div>
-                                    </div>
-                                    <div class="months">month</div>
-                                    <div class="days">day</div>
-                                    <div class="hours">hour</div>
-                                    <div class="minutes">minute</div>
-                                    <div class="seconds">second</div>
-                                </div>
-                                <script>
-                                    {
-                                        document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
-                                            const { timeHandler, diff } = event.detail, now = timeHandler.from,
-                                                children = this.children
-
-                                            console.log(timeHandler.width);
-
-
-                                        })
-                                    }
-                                </script>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
+            <div>
+                <!-- Time Axis builder-->
+                <style>
+                    #time-based-axis div {
+                        background-color: brown;
+                        transition: width 100ms;
+                    }
+                </style>
+                <div>
+                    <div> Timezone:
+                        <script>
+                            {
+                                const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
+                                document.currentScript.remove()
+                            }
+                        </script>
+                    </div>
+                </div>
+                <script>{ const elm = document.currentScript.previousElementSibling; elm.parentElement.detailElm = elm; document.currentScript.remove() }</script>
+                <div class="time-based__sync-width" id="time-based-axis">
+                    <div class="years">
+                        <div>2023</div>
+                        <div>2024</div>
+                    </div>
+                    <div class="months">month</div>
+                    <div class="days">day</div>
+                    <div class="hours">hour</div>
+                    <div class="minutes">minute</div>
+                    <div class="seconds">second</div>
+                </div>
+                <script>{ const elm = document.currentScript.previousElementSibling; elm.parentElement.timeBasedElm = elm; document.currentScript.remove() }</script>
+                <script>
+                    {
+                        // document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
+                        //     const { timeHandler, diff } = event.detail, now = timeHandler.from,
+                        //         children = this.children
+                        //     console.log(timeHandler.width);
+                        // })
+
+                        const TimeBasedTableElm = document.getElementById("time-based"),
+                            trElm = TimeBasedTableElm.addRow(),
+                            { detailElm, timeBasedElm } = trElm
+
+                        // detailElm.innerText = "xxx"
+                        // timeBasedElm.innerText = "timeBasedElm"
+
+                        const raw = document.currentScript.parentElement
+
+                        detailElm.replaceWith(raw.detailElm)
+                        timeBasedElm.replaceWith(raw.timeBasedElm)
+
+                        console.log(raw)
+                        document.currentScript.remove()
+                    }
+                </script>
+            </div>
         </div>
     </div>
 </body>
