@@ -158,7 +158,7 @@
                     if (x > X) x = X
                     this.setValue(Math.pow(R, x / X))
                 },
-                wheelEL: function (event) { this.changeX(event.deltaY / 5) },
+                wheelEL: function (event) { this.changeX(event.deltaY / 10) },
                 mousedownEL: function (event) {
                     const abortController = new AbortController()
                     window.addEventListener("mousemove", event => this.changeX(-event.movementX), { signal: abortController.signal })
@@ -192,10 +192,7 @@
                 numberInputer.addEventListener("change", sample.numberInputer_changeEL)
                 numberInputer.addEventListener("mousedown", sample.numberInputer_mousedownEL)
 
-                elm.setValue(60000)
-                console.log(optionBtn);
-                console.log(timeRangeRuler);
-
+                elm.setValue(1)
                 return elm
             }
         }
@@ -227,7 +224,7 @@
                     [311040000000, "Decades"],
                     [3110400000000, "Centuries"]],
                 R = sample.R = Math.max.apply(null, Ratios.map(e => e[0])),
-                X = sample.X = 650,
+                X = sample.X = 720,
                 XPLogR = sample.XPLogR = X / Math.log(R)
 
             Ratios.forEach(function ([r, name]) {
@@ -308,98 +305,101 @@
     <div id="time-based-view" style="padding: .5em 1em;">
         <div> time based view </div>
         <div>
+            <style>
+                table#time-based {
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                }
+
+                table#time-based>*>* {
+                    position: relative;
+                    vertical-align: top;
+                    height: 2em;
+                }
+
+                table#time-based>*>*>* {
+                    position: relative;
+                    height: inherit;
+                    margin: 0;
+                    border: 0;
+                    padding: .5px;
+                    /* padding: 0; */
+                }
+
+                table#time-based>*>*>*>div {
+                    position: relative;
+                    max-width: 100%;
+                    max-height: 100%;
+                    width: 100%;
+                    height: inherit;
+                    overflow: auto;
+                    background-color: darkslategray;
+                }
+
+                .time-based__sync-scroll-left {
+                    margin: 0;
+                    border: 0;
+                    padding: 0;
+                }
+
+                .time-based__sync-scroll-left:not(.show-scrollbar) {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+
+                .time-based__sync-scroll-left:not(.show-scrollbar)::-webkit-scrollbar {
+                    display: none;
+                }
+
+                /* resizers */
+                .prevent-select,
+                .col-resizer,
+                .row-resizer {
+                    -webkit-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                }
+
+                table#time-based .col-resizer {
+                    position: absolute;
+                    right: 0;
+                    z-index: 1;
+                    display: block;
+                    padding-left: 1px;
+                    padding-right: 1px;
+                    width: fit-content;
+                    height: 100%;
+                    cursor: col-resize;
+                    background-color: dimgrey;
+                }
+
+                table#time-based>*>*>*:first-child {
+                    width: 1em;
+                }
+
+                table#time-based .row-resizer {
+                    position: absolute;
+                    display: block;
+                    cursor: row-resize;
+                    height: fit-content;
+                    bottom: 0;
+                    width: 100%;
+                    margin: auto;
+                }
+
+                table#time-based .row-resizer>div {
+                    width: fit-content;
+                    margin: auto;
+                }
+
+                table#time-based .time-based__sync-width {
+                    transition: width 100ms;
+                }
+            </style>
             <table id="time-based">
-                <style>
-                    table#time-based {
-                        table-layout: fixed;
-                        border-collapse: collapse;
-                    }
-
-                    table#time-based>*>* {
-                        position: relative;
-                        vertical-align: top;
-                        height: 2em;
-                    }
-
-                    table#time-based>*>*>* {
-                        position: relative;
-                        height: inherit;
-                        margin: 0;
-                        border: 0;
-                        padding: .5px;
-                        /* padding: 0; */
-                    }
-
-                    table#time-based>*>*>*>div {
-                        position: relative;
-                        max-width: 100%;
-                        max-height: 100%;
-                        width: 100%;
-                        height: inherit;
-                        overflow: auto;
-                        background-color: darkslategray;
-                    }
-
-                    .time-based__sync-scroll-left {
-                        margin: 0;
-                        border: 0;
-                        padding: 0;
-                    }
-
-                    .time-based__sync-scroll-left:not(.show-scrollbar) {
-                        -ms-overflow-style: none;
-                        scrollbar-width: none;
-                    }
-
-                    .time-based__sync-scroll-left:not(.show-scrollbar)::-webkit-scrollbar {
-                        display: none;
-                    }
-
-                    /* resizers */
-                    .prevent-select,
-                    .col-resizer,
-                    .row-resizer {
-                        -webkit-user-select: none;
-                        -ms-user-select: none;
-                        user-select: none;
-                    }
-
-                    table#time-based .col-resizer {
-                        position: absolute;
-                        right: 0;
-                        z-index: 1;
-                        display: block;
-                        padding-left: 1px;
-                        padding-right: 1px;
-                        width: fit-content;
-                        height: 100%;
-                        cursor: col-resize;
-                        background-color: dimgrey;
-                    }
-
-                    table#time-based>*>*>*:first-child {
-                        width: 1em;
-                    }
-
-                    table#time-based .row-resizer {
-                        position: absolute;
-                        display: block;
-                        cursor: row-resize;
-                        height: fit-content;
-                        bottom: 0;
-                        width: 100%;
-                        margin: auto;
-                    }
-
-                    table#time-based .row-resizer>div {
-                        width: fit-content;
-                        margin: auto;
-                    }
-                </style>
                 <script>
                     {
-                        const syncScrollLeftClassName = "time-based__sync-scroll-left",
-                            TimeBasedTableElm = document.currentScript.parentElement,
+                        const TimeBasedTableElm = document.currentScript.parentElement,
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
                                 syncedScrollLeftElms: [],
                                 scrollLeft: 0,
@@ -515,8 +515,7 @@
 
                         // initialize settings
                         window.addEventListener("load", () => {
-                            const timeBasedColElm = document.getElementById("time-based-col"),
-                                syncedWidthElms = [...TimeBasedTableElm.querySelectorAll(".time-based__sync-width")]
+                            const syncedWidthElms = [...TimeBasedTableElm.querySelectorAll(".time-based__sync-width")]
 
                             // init value
                             timeHandler.assign({
@@ -529,11 +528,12 @@
 
                             TimeBasedTableElm.setColWidth(2, 500)
 
-                            const th = timeBasedColElm.parentElement
+                            const th = document.getElementById("time-based-col").parentElement
                             var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
                             TimeBasedTableElm.setColWidth(colIdx, 650)
                         }, { once: true })
 
+                        document.currentScript.remove()
                     }
                 </script>
                 <thead>
@@ -557,7 +557,7 @@
                                     {
                                         const elm = TimeRatioInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript), timeHandler = document.getElementById("time-based").timeHandler
                                         timeHandler.addEventListener("change", function (event) { const diff = event.detail; if ("duration" in diff || "unitWidth" in diff || "width" in diff) elm.setValue(this.duration * this.unitWidth / this.width) })
-                                        elm.addEventListener("change", function (event) { timeHandler.assign({ duration: this.value * timeHandler.width / timeHandler.unitWidth }) })
+                                        elm.addEventListener("change", function (event) { timeHandler.assign({ width: timeHandler.unitWidth * timeHandler.duration / this.value }) })
                                         document.currentScript.remove()
                                     }
                                 </script>
@@ -591,19 +591,18 @@
                             const tbody = document.currentScript.parentElement,
                                 table = tbody.parentElement,
                                 trSample = document.currentScript.previousElementSibling
-
                             table.createRowElement = function () {
                                 const elm = trSample.cloneNode(true)
                                 elm.detailElm = elm.children[1].firstElementChild.firstElementChild
                                 elm.timeBasedElm = elm.children[2].firstElementChild.firstElementChild
                                 return elm
                             }
-
                             table.addRow = function () {
                                 const elm = this.createRowElement()
                                 this.mainBody.append(elm)
                                 return elm
                             }
+                            tbody.remove()
                         }
                     </script>
                 </tbody>
@@ -698,7 +697,7 @@
                                             const { timeHandler, diff } = event.detail, now = timeHandler.from,
                                                 children = this.children
 
-                                            console.log(timeHandler);
+                                            console.log(timeHandler.width);
 
 
                                         })
