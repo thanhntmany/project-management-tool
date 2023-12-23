@@ -142,6 +142,7 @@
                     const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
                     elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(parseInt(this.value)) })
                     CORE.addEventListener("change-timezone-offset", function (e) { if (elm.value === this.timezoneOffset) return; elm.setValue(this.timezoneOffset) })
+                    document.currentScript.remove()
                 }
             </script>
         </div>
@@ -448,9 +449,7 @@
                                         }
                                     </style>
                                     <div class="option-btn">🔍</div>
-                                    <script>{
-                                            document.currentScript.previousElementSibling.addEventListener("click", function () { this.parentElement.classList.toggle("show-number-input") })
-                                        }</script>
+                                    <script>{ document.currentScript.previousElementSibling.addEventListener("click", function () { this.parentElement.classList.toggle("show-number-input") }) }</script>
                                     <input type="number" min="1">
                                     <script>{ document.currentScript.parentElement.numberInputElm = document.currentScript.previousElementSibling }</script>
                                     <div class="time-range">
@@ -617,7 +616,18 @@
                         </th>
                         <td>
                             <div>
-                                <div>xx</div>
+                                <div>
+                                    <div> Timezone:
+                                        <script>// CORE: Timezone selector
+                                            {
+                                                const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
+                                                // elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(parseInt(this.value)) })
+                                                // CORE.addEventListener("change-timezone-offset", function (e) { if (elm.value === this.timezoneOffset) return; elm.setValue(this.timezoneOffset) })
+                                                document.currentScript.remove()
+                                            }
+                                        </script>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                         <td>
