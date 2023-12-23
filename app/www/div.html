@@ -16,6 +16,78 @@
             color: white;
         }
     </style>
+    <script> //TimeZoneInputer
+        const TimeZoneInputer = {
+            sample: {
+                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
+                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
+                _setValue: function (value) { if (this.value === value) return; this.value = this.selectInput.value = this.offfsetInput.value = value; this.dispatchEvent(new Event("change")); },
+                optionBtn_clickEL: function (event) { const s = this._root.offfsetSpan.style; if (s.getPropertyValue("display") !== "none") { s.setProperty("display", "none") } else s.removeProperty("display") }
+            },
+            createElement: function () {
+                const sample = this.sample,
+                    elm = sample.elm.cloneNode(true),
+                    selectInput = elm.selectInput = elm.children[0],
+                    optionBtn = elm.optionBtn = elm.children[1],
+                    offfsetSpan = elm.offfsetSpan = elm.children[2],
+                    offfsetInput = elm.offfsetInput = offfsetSpan.children[0]
+
+                elm.setValue = sample._setValue
+                selectInput._root = offfsetInput._root = optionBtn._root = elm
+                selectInput.addEventListener("change", sample.selectInput_changeEL)
+                offfsetInput.addEventListener("change", sample.offfsetInput_changeEL)
+                optionBtn.addEventListener("click", sample.optionBtn_clickEL)
+                elm.setValue(new Date().getTimezoneOffset())
+
+                return elm
+            }
+        }
+
+        {
+            const elm = TimeZoneInputer.sample.elm = document.createElement("label")
+
+            const selectInput = document.createElement("select");
+            ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                const offfset = -(label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9))),
+                    e = document.createElement("option")
+                e.value = offfset
+                e.innerText = label
+                selectInput.appendChild(e)
+            })
+
+            const offfsetSpan = document.createElement("span")
+            offfsetSpan.style.setProperty("display", "none")
+
+            const offfsetInput = document.createElement("input")
+            offfsetInput.type = "number"
+            offfsetInput.min = -720
+            offfsetInput.max = 840
+
+            const optionBtn = document.createElement("input")
+            optionBtn.type = "button"
+            optionBtn.value = "⋮"
+
+            elm.append(selectInput)
+            elm.append(optionBtn)
+            elm.append(offfsetSpan)
+            offfsetSpan.append("(Offfset: ")
+            offfsetSpan.append(offfsetInput)
+            offfsetSpan.append("minutes)")
+        }
+    </script>
+    <script> // Object Assigner
+        function isObject(obj) { return obj === Object(obj) }
+        function deepAssign(src, dst, diff = {}) {
+            var k, S, D; for (k in src) {
+                D = dst[k]
+                if (isObject(S = src[k]) && isObject(D)) {
+                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+                }
+                else if (D !== S) diff[k] = dst[k] = S
+            }
+            return Object.keys(diff).length ? diff : null
+        }
+    </script>
 </head>
 
 <body>
@@ -38,18 +110,6 @@
                 timestampOfDateoffset: function (date) { return date.getTime() - this._timezoneDelta },
                 dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + this._timezoneDelta) },
             })
-
-        function isObject(obj) { return obj === Object(obj) }
-        function deepAssign(src, dst, diff = {}) {
-            var k, S, D; for (k in src) {
-                D = dst[k]
-                if (isObject(S = src[k]) && isObject(D)) {
-                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
-                }
-                else if (D !== S) diff[k] = dst[k] = S
-            }
-            return Object.keys(diff).length ? diff : null
-        }
 
         const DatabaseHandler = Object.assign(new EventTarget(), {
             data: {},
@@ -76,34 +136,12 @@
         }, { once: true })
     </script>
     <div>
-        <div>
-            <label>Timezone:<select id="timezone-selector" name="timezone-selector"></select></label> (Offfset: <input id="timezone-offfset" type="number" min="-720" max="840" style="text-align: right;">minutes)
-            <script>
+        <div> Timezone:
+            <script>// CORE: Timezone selector
                 {
-                    const elm = document.getElementById("timezone-selector");
-                    ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
-                        const offfset = (label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9)))
-                        e = document.createElement("option")
-                        e.value = offfset
-                        e.innerText = label
-                        elm.appendChild(e)
-                    })
-
-                    const offfsetElm = document.getElementById("timezone-offfset")
-                    elm.addEventListener("change", function (e) {
-                        offfsetElm.value = this.value
-                        offfsetElm.dispatchEvent(new Event('change'))
-                    })
-                    offfsetElm.addEventListener("change", function (e) {
-                        CORE.setTimezoneOffset(elm.value = parseInt(this.value))
-                    })
-                    CORE.addEventListener("change-timezone-offset", function (e) {
-                        if (offfsetElm.value === this.timezoneOffset) return
-                        offfsetElm.value = this.timezoneOffset
-                        offfsetElm.dispatchEvent(new Event('change'))
-                    })
-
-                    offfsetElm.value = CORE.timezoneOffset
+                    const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
+                    elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(parseInt(this.value)) })
+                    CORE.addEventListener("change-timezone-offset", function (e) { if (elm.value === this.timezoneOffset) return; elm.setValue(this.timezoneOffset) })
                 }
             </script>
         </div>
@@ -220,11 +258,7 @@
                                 },
 
                                 xOfTimestamp: function (timestamp) { return this.width * (timestamp - this.from) / this.duration },
-                                timestampOfX: function (x) { return (x * this.duration / this.width) + this.from },
-                                dateoffsetOfTimestamp: CORE.dateoffsetOfTimestamp.bind(CORE),
-                                timestampOfDateoffset: CORE.timestampOfDateoffset.bind(CORE),
-                                xOfDateoffset: function (dateoffset) { return this.xOfTimestamp(this.timestampOfDateoffset(dateoffset)) },
-                                dateoffsetOfx: function (x) { return this.dateoffsetOfTimestamp(this.timestampOfX(x)) }
+                                timestampOfX: function (x) { return (x * this.duration / this.width) + this.from }
                             })
 
                         //sync (parent's) scrollLeft in time-based table
@@ -612,64 +646,10 @@
                                     {
                                         document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
                                             const { timeHandler, diff } = event.detail, now = timeHandler.from,
-                                                children = this.children,
-                                                dateOffset_from = timeHandler.dateoffsetOfTimestamp(timeHandler.from),
-                                                dateOffset_to = timeHandler.dateoffsetOfTimestamp(timeHandler.from + timeHandler.duration)
+                                                children = this.children
 
+                                            console.log(timeHandler);
 
-                                            console.log(timeHandler.duration);
-
-                                            {// year
-                                                const f = new Date(dateOffset_from.getFullYear())
-
-                                            }
-
-                                            // {// year
-                                            //     const year_from = new Date(offset_from)
-                                            //     console.log(offset_from.getFullYear());
-
-                                            //     const datetime = new Date(now)
-                                            //     datetime.setFullYear(datetime.getFullYear() + 1)
-                                            //     var w = timeHandler.xOfDatetime(datetime)
-                                            //     if (w > timeHandler.width) w = timeHandler.width
-                                            //     children[0].style.width = w + "px"
-                                            // }
-
-                                            // {
-                                            //     // const datetime = new Date(now)
-
-                                            //     var cur = new Date(now),
-                                            //         current = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-                                            //     w = timeHandler.xOfTimestamp(current.getTime())
-                                            //     if (w > timeHandler.width) w = timeHandler.width
-                                            //     children[1].style.width = w + "px"
-                                            // }
-
-                                            // {
-                                            //     var tomorrow = new Date(now);
-                                            //     tomorrow.setDate(tomorrow.getDate() + 1);
-                                            //     var w = timeHandler.xOfTimestamp(tomorrow.getTime())
-                                            //     if (w > timeHandler.width) w = timeHandler.width
-                                            //     children[2].style.width = w + "px"
-                                            // }
-
-                                            // {
-                                            //     var w = timeHandler.xOfTimestamp(now + (1000 * 60 * 60))
-                                            //     if (w > timeHandler.width) w = timeHandler.width
-                                            //     children[3].style.width = w + "px"
-                                            // }
-
-                                            // {
-                                            //     var w = timeHandler.xOfTimestamp(now + (1000 * 60))
-                                            //     if (w > timeHandler.width) w = timeHandler.width
-                                            //     children[4].style.width = w + "px"
-                                            // }
-
-                                            // {
-                                            //     var w = timeHandler.xOfTimestamp(now + 1000)
-                                            //     if (w > timeHandler.width) w = timeHandler.width
-                                            //     children[5].style.width = w + "px"
-                                            // }
 
                                         })
                                     }
