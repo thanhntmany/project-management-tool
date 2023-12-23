@@ -401,10 +401,7 @@
                     {
                         const TimeBasedTableElm = document.currentScript.parentElement,
                             timeHandler = TimeBasedTableElm.timeHandler = Object.assign(new EventTarget(), {
-                                syncedScrollLeftElms: [],
                                 scrollLeft: 0,
-
-                                syncedWidthElms: [],
                                 width: 500,
                                 unitWidth: 14,
 
@@ -421,13 +418,15 @@
                             })
 
                         //sync (parent's) scrollLeft in time-based table
-                        function _setScrollLeft(elm) { elm.scrollLeft = this }// this --> scrollLeft
                         timeHandler.addEventListener("change", function (event) {
-                            const scrollLeft = event.detail.scrollLeft; if (scrollLeft >= 0) this.syncedScrollLeftElms.forEach(_setScrollLeft, scrollLeft)
+                            const scrollLeft = event.detail.scrollLeft;
+                            if (scrollLeft >= 0)
+                                for (const e of TimeBasedTableElm.querySelectorAll(".time-based__sync-scroll-left"))
+                                    e.scrollLeft = scrollLeft
                         })
                         TimeBasedTableElm.addEventListener("scroll", function (event) {
                             const elm = event.target
-                            if (!this.timeHandler.syncedScrollLeftElms.includes(elm)) return
+                            if (!elm.classList.contains("time-based__sync-scroll-left")) return
                             event.stopPropagation()
                             timeHandler.assign({ scrollLeft: elm.scrollLeft })
                         }, true)
@@ -443,21 +442,24 @@
                         }, true)
 
                         // sync width
-                        function _setColWidth(elm) { DIL(elm.style, elm.style.setProperty, "width", this + "px") }// this --> width
                         timeHandler.addEventListener("change", function (event) {
                             const width = event.detail.width
-                            if (width >= 0) this.syncedWidthElms.forEach(_setColWidth, width)
+                            if (width >= 0) {
+                                const w = width + "px"
+                                for (const e of TimeBasedTableElm.querySelectorAll(".time-based__sync-width"))
+                                    DIL(e.style, e.style.setProperty, "width", w)
+                            }
                         })
 
                         // sync time-based-change
                         function _dispatchTimeBasedChange(elm) { elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this })) }
                         timeHandler.addEventListener("change", function (event) {
                             const diff = event.detail
-                            if ("duration" in diff || "unitWidth" in diff || "width" in diff)
-                                this.syncedWidthElms.forEach(_dispatchTimeBasedChange, {
-                                    timeHandler: this,
-                                    diff: diff
-                                })
+                            if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
+                                const options = { detail: { timeHandler: this, diff: diff } }
+                                for (const e of TimeBasedTableElm.querySelectorAll(".time-based__sync-width"))
+                                    e.dispatchEvent(new CustomEvent("time-based-change", options))
+                            }
                         })
 
                         {// column resizing
@@ -515,15 +517,10 @@
 
                         // initialize settings
                         window.addEventListener("load", () => {
-                            const syncedWidthElms = [...TimeBasedTableElm.querySelectorAll(".time-based__sync-width")]
-
-                            // init value
                             timeHandler.assign({
-                                syncedScrollLeftElms: [...TimeBasedTableElm.querySelectorAll(".time-based__sync-scroll-left")],
-                                syncedWidthElms: syncedWidthElms,
                                 scrollLeft: 0,
                                 width: 900,
-                                unitWidth: parseFloat(window.getComputedStyle(syncedWidthElms[syncedWidthElms.length - 1]).fontSize.slice(0, -2)) * 2
+                                unitWidth: parseFloat(window.getComputedStyle(TimeBasedTableElm).fontSize.slice(0, -2)) * 2
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
@@ -566,6 +563,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <script>{ const elm = document.currentScript.parentElement; elm.parentElement.mainBody = elm; document.currentScript.remove() }</script>
                     <tr>
                         <th>
                             <div>
@@ -582,7 +580,7 @@
                         </td>
                         <td>
                             <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width">xxxx</div>
+                                <div class="time-based__sync-width">Sample</div>
                             </div>
                         </td>
                     </tr>
@@ -602,12 +600,9 @@
                                 this.mainBody.append(elm)
                                 return elm
                             }
-                            tbody.remove()
+                            // tbody.remove()
                         }
                     </script>
-                </tbody>
-                <tbody>
-                    <script>{ const elm = document.currentScript.parentElement; elm.parentElement.mainBody = elm; document.currentScript.remove() }</script>
                     <tr style="height: 459px;">
                         <th>
                             <div>
@@ -660,8 +655,6 @@
                                         <script>// CORE: Timezone selector
                                             {
                                                 const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
-                                                // elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(parseInt(this.value)) })
-                                                // CORE.addEventListener("change-timezone-offset", function (e) { if (elm.value === this.timezoneOffset) return; elm.setValue(this.timezoneOffset) })
                                                 document.currentScript.remove()
                                             }
                                         </script>
