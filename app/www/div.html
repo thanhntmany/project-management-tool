@@ -16,7 +16,8 @@
             color: white;
         }
     </style>
-    <script> //TimeZoneInputer
+    <!-- TimeZoneInputer -->
+    <script>
         const TimeZoneInputer = {
             sample: {
                 offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
@@ -42,7 +43,6 @@
                 return elm
             }
         }
-
         {
             const elm = TimeZoneInputer.sample.elm = document.createElement("label")
 
@@ -75,7 +75,8 @@
             offfsetSpan.append("minutes)")
         }
     </script>
-    <script> // Object Assigner
+    <!-- Object Assigner -->
+    <script>
         function isObject(obj) { return obj === Object(obj) }
         function deepAssign(src, dst, diff = {}) {
             var k, S, D; for (k in src) {
@@ -86,6 +87,163 @@
                 else if (D !== S) diff[k] = dst[k] = S
             }
             return Object.keys(diff).length ? diff : null
+        }
+    </script>
+    <!-- TimeRatioInputer -->
+    <style style="display: none;">
+        .time-ratio-input {
+            cursor: e-resize;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            width: fit-content;
+            background-color: grey;
+            border-radius: 0.5em;
+            padding: 0.25em;
+        }
+
+        .time-ratio-input>* {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .time-ratio-input>script {
+            display: none;
+        }
+
+        .time-ratio-input .time-range {
+            border-left: 2px solid black;
+            width: 8em;
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+
+        .time-ratio-input .time-range>* {
+            position: relative;
+            transition: margin-left 100ms;
+        }
+
+        .time-ratio-input .time-range>*>* {
+            position: absolute;
+            display: block;
+            cursor: pointer;
+            border-left: 1px solid black;
+        }
+
+        .time-ratio-input .option-btn {
+            cursor: pointer;
+        }
+
+        .time-ratio-input .option-btn:hover {
+            background-color: gray;
+        }
+
+        .time-ratio-input:not(.show-number-input)>input[type="number"] {
+            display: none;
+        }
+    </style>
+    <script>
+        const TimeRatioInputer = {
+            sample: {
+                setValue: function (value) {
+                    if (this.value === value) return;
+                    this.value = this.numberInputer.value = value;
+                    this.timeRangeRuler.style.setProperty("margin-left", -(Math.log(value) * this.XPLogR) + "px")
+                    this.dispatchEvent(new Event("change"));
+                },
+                changeX: function (delta) {
+                    var x = (Math.log(this.value) * this.XPLogR) + delta
+                    const X = this.X, R = this.R
+                    if (x < 0) x = 0
+                    if (x > X) x = X
+                    this.setValue(Math.pow(R, x / X))
+                },
+                wheelEL: function (event) { this.changeX(event.deltaY / 5) },
+                mousedownEL: function (event) {
+                    const abortController = new AbortController()
+                    window.addEventListener("mousemove", event => this.changeX(-event.movementX), { signal: abortController.signal })
+                    window.addEventListener("mouseup", () => abortController.abort(), { once: true })
+                },
+                optionBtn_clickEL: function () { this._root.classList.toggle("show-number-input") },
+                numberInputer_changeEL: function (event) { this._root.setValue(parseFloat(this.value)) },
+                numberInputer_mousedownEL: function (event) { event.stopPropagation() }
+            },
+            createElement: function () {
+                const sample = this.sample,
+                    elm = this.sample.elm.cloneNode(true),
+                    optionBtn = elm.optionBtn = elm.children[0],
+                    numberInputer = elm.numberInputer = elm.children[1],
+                    timeRange = elm.timeRange = elm.children[2],
+                    timeRangeRuler = elm.timeRangeRuler = timeRange.firstElementChild
+
+                elm.R = sample.R
+                elm.X = sample.X
+                elm.XPLogR = sample.XPLogR
+                elm.setValue = sample.setValue
+                elm.changeX = sample.changeX
+
+                elm.addEventListener("wheel", sample.wheelEL)
+                elm.addEventListener("mousedown", sample.mousedownEL)
+
+                optionBtn._root = elm
+                optionBtn.addEventListener("click", sample.optionBtn_clickEL)
+
+                numberInputer._root = elm
+                numberInputer.addEventListener("change", sample.numberInputer_changeEL)
+                numberInputer.addEventListener("mousedown", sample.numberInputer_mousedownEL)
+
+                elm.setValue(60000)
+                console.log(optionBtn);
+                console.log(timeRangeRuler);
+
+                return elm
+            }
+        }
+        {
+            const sample = TimeRatioInputer.sample,
+                elm = sample.elm = document.createElement("div")
+            elm.classList.add("time-ratio-input")
+
+            const optionBtn = document.createElement("div")
+            optionBtn.classList.add("option-btn")
+            optionBtn.innerText = "🔍 "
+
+            const numberInputer = document.createElement("input")
+            numberInputer.type = "number"
+            numberInputer.min = "1"
+
+            const timeRange = document.createElement("div")
+            timeRange.classList.add("time-range")
+
+            const timeRangeRuler = document.createElement("div"),
+                Ratios = [
+                    [1, "Milliseconds"],
+                    [1000, "Seconds"],
+                    [60000, "Minutes"],
+                    [3600000, "Hours"],
+                    [86400000, "Days"],
+                    [2592000000, "Months"],
+                    [31104000000, "Years"],
+                    [311040000000, "Decades"],
+                    [3110400000000, "Centuries"]],
+                R = sample.R = Math.max.apply(null, Ratios.map(e => e[0])),
+                X = sample.X = 650,
+                XPLogR = sample.XPLogR = X / Math.log(R)
+
+            Ratios.forEach(function ([r, name]) {
+                const e = document.createElement("div")
+                e.setAttribute("data-ratio", r)
+                e.style.setProperty("margin-left", (Math.log(r) * XPLogR) + "px")
+                e.innerText = name
+                timeRangeRuler.append(e)
+            })
+
+            elm.append(optionBtn)
+            elm.append(numberInputer)
+            elm.append(timeRange)
+            timeRange.append(timeRangeRuler)
+            const space = document.createElement("div"); space.innerHTML = "&nbsp;"
+            timeRange.appendChild(space)
         }
     </script>
 </head>
@@ -395,158 +553,14 @@
                                 <div class="col-resizer">
                                     <div>‖</div>
                                 </div>
-                                <div class="time-ratio-input">
-                                    <style style="display: none;">
-                                        .time-ratio-input {
-                                            cursor: e-resize;
-                                            -webkit-user-select: none;
-                                            -ms-user-select: none;
-                                            user-select: none;
-                                            width: fit-content;
-                                            background-color: grey;
-                                            border-radius: 0.5em;
-                                            padding: 0.25em;
-                                        }
-
-                                        .time-ratio-input>* {
-                                            display: inline-block;
-                                            vertical-align: top;
-                                        }
-
-                                        .time-ratio-input>script {
-                                            display: none;
-                                        }
-
-                                        .time-ratio-input .time-range {
-                                            border-left: 2px solid black;
-                                            width: 8em;
-                                            white-space: nowrap;
-                                            overflow-x: hidden;
-                                        }
-
-                                        .time-ratio-input .time-range>* {
-                                            position: relative;
-                                            transition: margin-left 100ms;
-                                        }
-
-                                        .time-ratio-input .time-range>*>* {
-                                            position: absolute;
-                                            display: block;
-                                            cursor: pointer;
-                                            border-left: 1px solid black;
-                                        }
-
-                                        .time-ratio-input .option-btn {
-                                            cursor: pointer;
-                                        }
-
-                                        .time-ratio-input .option-btn:hover {
-                                            background-color: gray;
-                                        }
-
-                                        .time-ratio-input:not(.show-number-input)>input[type="number"] {
-                                            display: none;
-                                        }
-                                    </style>
-                                    <div class="option-btn">🔍</div>
-                                    <script>{ document.currentScript.previousElementSibling.addEventListener("click", function () { this.parentElement.classList.toggle("show-number-input") }) }</script>
-                                    <input type="number" min="1">
-                                    <script>{ document.currentScript.parentElement.numberInputElm = document.currentScript.previousElementSibling }</script>
-                                    <div class="time-range">
-                                        <div>
-                                            <div data-ratio="1">Millisecond</div>
-                                            <div data-ratio="1000">Second</div>
-                                            <div data-ratio="60000">Minute</div>
-                                            <div data-ratio="3600000">Hour</div>
-                                            <div data-ratio="86400000">Day</div>
-                                            <div data-ratio="2592000000">Month</div>
-                                            <div data-ratio="31104000000">Year</div>
-                                            <div data-ratio="311040000000">10 Year</div>
-                                            <div data-ratio="3110400000000">100 Year</div>
-                                        </div>&nbsp;
-                                    </div>
-                                    <script>{ document.currentScript.parentElement.rangeInputElm = document.currentScript.previousElementSibling }</script>
-                                    <script>
-                                        {
-                                            var R = 1, maxwPk = 0, X = 0
-                                            const timeRatioInputElm = document.currentScript.parentElement,
-                                                rangeInputElm = timeRatioInputElm.rangeInputElm,
-                                                numberInputElm = timeRatioInputElm.numberInputElm,
-                                                anchorsElm = rangeInputElm.firstElementChild,
-                                                anchors = [...anchorsElm.children].map(e => {
-                                                    const r = parseFloat(e.dataset.ratio)
-                                                    if (R < r) R = r
-                                                    return {
-                                                        elm: e,
-                                                        width: e.offsetWidth + 6,
-                                                        r: r
-                                                    }
-                                                }),
-                                                logR = Math.log2(R)
-
-                                            anchors.forEach((a, i, arr) => {
-                                                a.k = Math.log2(a.r) / logR
-                                                if (i > 0) {
-                                                    const la = arr[i - 1]
-                                                    wPk = la.width / (a.k - la.k)
-                                                    if (maxwPk < wPk) maxwPk = wPk
-                                                }
-                                            })
-                                            anchors.forEach((a, i, arr) => {
-                                                const s = a.elm.style, x = a.k * maxwPk
-                                                if (X < x) X = x
-                                                DIL(s, s.setProperty, "margin-left", x + "px")
-                                            })
-
-                                            const XpLogR = X / Math.log2(R)
-                                            timeRatioInputElm.setValue = function (value) {
-                                                this.value = value
-                                                anchorsElm.style.setProperty("margin-left", (-Math.log2(value) * XpLogR) + "px")
-                                                this.dispatchEvent(new Event("change"))
-                                            }
-
-                                            function _anchor_onclick(event) { timeRatioInputElm.setValue(this.dataset.ratio) }
-                                            anchors.forEach(a => a.elm.addEventListener("dblclick", _anchor_onclick))
-
-
-                                            timeRatioInputElm.changeX = function (delta) {
-                                                var x = delta - parseFloat(anchorsElm.style.getPropertyValue("margin-left").slice(0, -2))
-                                                if (x < 0) x = 0
-                                                if (x > X) x = X
-                                                timeRatioInputElm.setValue(Math.pow(R, x / X))
-                                            }
-                                            timeRatioInputElm.addEventListener("wheel", function (event) { this.changeX(event.deltaY / 3) })
-
-                                            {
-                                                var abortController
-                                                function _mousemoveEL(event) { timeRatioInputElm.changeX(-event.movementX) }
-                                                function _mouseupEL(event) { abortController.abort() }
-                                                timeRatioInputElm.addEventListener("mousedown", function (event) {
-                                                    window.addEventListener("mousemove", _mousemoveEL, { signal: (abortController = new AbortController()).signal })
-                                                    window.addEventListener("mouseup", _mouseupEL, { once: true })
-                                                }, true)
-                                            }
-
-                                            timeRatioInputElm.addEventListener("change", function (event) { numberInputElm.value = this.value })
-                                            numberInputElm.addEventListener("change", function (event) { timeRatioInputElm.setValue(parseFloat(this.value)) })
-
-                                            // sync with timeHandler
-                                            const TimeBasedTableElm = document.currentScript.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement,
-                                                timeHandler = TimeBasedTableElm.timeHandler
-
-                                            timeHandler.addEventListener("change", function (event) {
-                                                const diff = event.detail
-                                                if ("duration" in diff || "unitWidth" in diff || "width" in diff)
-                                                    timeRatioInputElm.setValue(this.duration * this.unitWidth / this.width)
-                                            })
-                                            timeRatioInputElm.addEventListener("change", function (event) {
-                                                timeHandler.assign({
-                                                    duration: this.value * timeHandler.width / timeHandler.unitWidth
-                                                })
-                                            })
-                                        }
-                                    </script>
-                                </div>
+                                <script>
+                                    {
+                                        const elm = TimeRatioInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript), timeHandler = document.getElementById("time-based").timeHandler
+                                        timeHandler.addEventListener("change", function (event) { const diff = event.detail; if ("duration" in diff || "unitWidth" in diff || "width" in diff) elm.setValue(this.duration * this.unitWidth / this.width) })
+                                        elm.addEventListener("change", function (event) { timeHandler.assign({ duration: this.value * timeHandler.width / timeHandler.unitWidth }) })
+                                        document.currentScript.remove()
+                                    }
+                                </script>
                             </div>
                         </th>
                     </tr>
@@ -561,14 +575,40 @@
                             </div>
                         </th>
                         <td>
-                            <div>xxxxx</div>
+                            <div>
+                                <div>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             <div class="time-based__sync-scroll-left">
-                                <div class="time-based__sync-width">xxxxx</div>
+                                <div class="time-based__sync-width">xxxx</div>
                             </div>
                         </td>
                     </tr>
+                    <script>
+                        {
+                            const tbody = document.currentScript.parentElement,
+                                table = tbody.parentElement,
+                                trSample = document.currentScript.previousElementSibling
+
+                            table.createRowElement = function () {
+                                const elm = trSample.cloneNode(true)
+                                elm.detailElm = elm.children[1].firstElementChild.firstElementChild
+                                elm.timeBasedElm = elm.children[2].firstElementChild.firstElementChild
+                                return elm
+                            }
+
+                            table.addRow = function () {
+                                const elm = this.createRowElement()
+                                this.mainBody.append(elm)
+                                return elm
+                            }
+                        }
+                    </script>
+                </tbody>
+                <tbody>
+                    <script>{ const elm = document.currentScript.parentElement; elm.parentElement.mainBody = elm; document.currentScript.remove() }</script>
                     <tr style="height: 459px;">
                         <th>
                             <div>
