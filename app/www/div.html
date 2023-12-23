@@ -317,6 +317,10 @@
                     height: 2em;
                 }
 
+                table#time-based>*>tr.sample {
+                    display: none;
+                }
+
                 table#time-based>*>*>* {
                     position: relative;
                     height: inherit;
@@ -529,7 +533,6 @@
                             var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
                             TimeBasedTableElm.setColWidth(colIdx, 650)
                         }, { once: true })
-
                         document.currentScript.remove()
                     }
                 </script>
@@ -563,8 +566,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <script>{ const elm = document.currentScript.parentElement; elm.parentElement.mainBody = elm; document.currentScript.remove() }</script>
-                    <tr>
+                    <tr class="sample">
                         <th>
                             <div>
                                 <div class="row-resizer">
@@ -589,8 +591,11 @@
                             const tbody = document.currentScript.parentElement,
                                 table = tbody.parentElement,
                                 trSample = document.currentScript.previousElementSibling
+
+                            table.mainBody = tbody
                             table.createRowElement = function () {
                                 const elm = trSample.cloneNode(true)
+                                elm.classList.remove("sample")
                                 elm.detailElm = elm.children[1].firstElementChild.firstElementChild
                                 elm.timeBasedElm = elm.children[2].firstElementChild.firstElementChild
                                 return elm
@@ -600,7 +605,7 @@
                                 this.mainBody.append(elm)
                                 return elm
                             }
-                            // tbody.remove()
+                            document.currentScript.remove()
                         }
                     </script>
                     <tr style="height: 459px;">
