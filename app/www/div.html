@@ -158,7 +158,7 @@
                     if (x > X) x = X
                     this.setValue(Math.pow(R, x / X))
                 },
-                wheelEL: function (event) { this.changeX(event.deltaY / 10) },
+                wheelEL: function (event) { this.changeX(event.deltaY / 20) },
                 mousedownEL: function (event) {
                     const abortController = new AbortController()
                     window.addEventListener("mousemove", event => this.changeX(-event.movementX), { signal: abortController.signal })
@@ -224,7 +224,7 @@
                     [311040000000, "Decades"],
                     [3110400000000, "Centuries"]],
                 R = sample.R = Math.max.apply(null, Ratios.map(e => e[0])),
-                X = sample.X = 720,
+                X = sample.X = 900,
                 XPLogR = sample.XPLogR = X / Math.log(R)
 
             Ratios.forEach(function ([r, name]) {
@@ -722,11 +722,12 @@
                         })
                         timeZoneInpouter.addEventListener("change", function (event) { trElm._obj.assign({ timeZoneOffset: this.value * 60000 }) })
 
+                        timeBasedElm._cachedAnchorElm = {}
                         timeBasedElm.getOrAddAnchorByTimestamp = function (timestamp) {
-                            var elm = this.querySelector(`[data-timestamp="${timestamp}"]`)
+                            var elm = this._cachedAnchorElm[timestamp]
                             if (!elm) {
-                                elm = document.createElement("div")
-                                elm.dataset.timestamp = timestamp
+                                this._cachedAnchorElm[timestamp] = elm = document.createElement("div")
+                                elm._timestamp = timestamp
 
                                 const d = new Date(timestamp),
                                     ye = d.getUTCFullYear(),
@@ -742,39 +743,33 @@
                                 }
                                 else if (se !== 0) {
                                     elm.innerText = se
-                                    this.seconds.append(elm)
-                                    // DIL(this.seconds, this.seconds.append, elm)
+                                    DIL(this.seconds, this.seconds.append, elm)
                                 }
                                 else if (mi !== 0) {
                                     elm.innerText = mi
-                                    this.minutes.append(elm)
-                                    // DIL(this.minutes, this.minutes.append, elm)
+                                    DIL(this.minutes, this.minutes.append, elm)
                                 }
                                 else if (ho !== 0) {
                                     elm.innerText = ho
-                                    this.hours.append(elm)
-                                    // DIL(this.hours, this.hours.append, elm)
+                                    DIL(this.hours, this.hours.append, elm)
                                 }
                                 else if (da !== 1) {
                                     elm.innerText = da
-                                    this.days.append(elm)
-                                    // DIL(this.days, this.days.append, elm)
+                                    DIL(this.days, this.days.append, elm)
                                 }
                                 else if (mo !== 0) {
                                     elm.innerText = mo + 1
-                                    this.months.append(elm)
-                                    // DIL(this.months, this.months.append, elm)
+                                    DIL(this.months, this.months.append, elm)
                                 }
                                 else if (ye !== 0) {
                                     elm.innerText = ye
-                                    this.years.append(elm)
-                                    // DIL(this.years, this.years.append, elm)
+                                    DIL(this.years, this.years.append, elm)
                                 }
                             }
                             return elm
                         }
                         timeBasedElm.refreshAnchorElm = function (elm) {
-                            DIL(elm.style, elm.style.setProperty, "margin-left", timeHandler.xOfTimestamp(parseInt(elm.dataset.timestamp) + obj.timeZoneOffset) + "px")
+                            DIL(elm.style, elm.style.setProperty, "margin-left", timeHandler.xOfTimestamp(parseInt(elm._timestamp) + obj.timeZoneOffset) + "px")
                         }
 
                         timeBasedElm.refresh = function () {
