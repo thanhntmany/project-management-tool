@@ -355,6 +355,17 @@
                     display: none;
                 }
 
+                .time-based__sync-scroll-left>* {
+                    position: relative;
+                }
+
+                table#time-based .time-based__sync-width {
+                    display: block;
+                    box-sizing: border-box;
+                    transition: width 100ms;
+                    overflow-x: hidden;
+                }
+
                 /* resizers */
                 .prevent-select,
                 .col-resizer,
@@ -394,10 +405,6 @@
                 table#time-based .row-resizer>div {
                     width: fit-content;
                     margin: auto;
-                }
-
-                table#time-based .time-based__sync-width {
-                    transition: width 100ms;
                 }
             </style>
             <table id="time-based">
@@ -456,15 +463,15 @@
                         })
 
                         // sync time-based-change
-                        function _dispatchTimeBasedChange(elm) { elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this })) }
-                        timeHandler.addEventListener("change", function (event) {
-                            const diff = event.detail
-                            if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
-                                const options = { detail: { timeHandler: this, diff: diff } }
-                                for (const e of TimeBasedTableElm.querySelectorAll(".time-based__sync-width"))
-                                    e.dispatchEvent(new CustomEvent("time-based-change", options))
-                            }
-                        })
+                        // function _dispatchTimeBasedChange(elm) { elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this })) }
+                        // timeHandler.addEventListener("change", function (event) {
+                        //     const diff = event.detail
+                        //     if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
+                        //         const options = { detail: { timeHandler: this, diff: diff } }
+                        //         for (const e of TimeBasedTableElm.querySelectorAll(".time-based__sync-width"))
+                        //             e.dispatchEvent(new CustomEvent("time-based-change", options))
+                        //     }
+                        // })
 
                         {// column resizing
                             const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
@@ -595,7 +602,7 @@
                             table.mainBody = tbody
                             table.createRowElement = function () {
                                 const elm = trSample.cloneNode(true)
-                                elm.classList.remove("sample")
+                                elm.removeAttribute("class")
                                 elm.detailElm = elm.children[1].firstElementChild.firstElementChild
                                 elm.timeBasedElm = elm.children[2].firstElementChild.firstElementChild
                                 return elm
@@ -645,87 +652,157 @@
                             </div>
                         </td>
                     </tr>
-                    <tr style="height: 90px;">
-                        <th>
-                            <div>
-                                <div class="row-resizer">
-                                    <div>═</div>
-                                </div>📈
-                            </div>
-                        </th>
-                        <td>
-                            <div>
-                                <div>
-                                    <div> Timezone:
-                                        <script>// CORE: Timezone selector
-                                            {
-                                                const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
-                                                document.currentScript.remove()
-                                            }
-                                        </script>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="time-based__sync-scroll-left show-scrollbar">
-                            </div>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
             <div>
                 <!-- Time Axis builder-->
                 <style>
-                    #time-based-axis div {
+                    .time-based-axis>div {
                         background-color: brown;
                         transition: width 100ms;
+                        height: 1em;
+                    }
+
+                    .time-based-axis>div>* {
+                        position: absolute;
+                        transition: margin-left 100ms;
                     }
                 </style>
                 <div>
-                    <div> Timezone:
+                    <div>Timezone:
                         <script>
                             {
                                 const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
+                                elm.setAttribute("name", "timeZone")
                                 document.currentScript.remove()
                             }
                         </script>
                     </div>
                 </div>
                 <script>{ const elm = document.currentScript.previousElementSibling; elm.parentElement.detailElm = elm; document.currentScript.remove() }</script>
-                <div class="time-based__sync-width" id="time-based-axis">
-                    <div class="years">
-                        <div>2023</div>
-                        <div>2024</div>
-                    </div>
-                    <div class="months">month</div>
-                    <div class="days">day</div>
-                    <div class="hours">hour</div>
-                    <div class="minutes">minute</div>
-                    <div class="seconds">second</div>
+                <div class="time-based__sync-width time-based-axis">
+                    <div class="years"></div>
+                    <div class="months"></div>
+                    <div class="days"></div>
+                    <div class="hours"></div>
+                    <div class="minutes"></div>
+                    <div class="seconds"></div>
                 </div>
                 <script>{ const elm = document.currentScript.previousElementSibling; elm.parentElement.timeBasedElm = elm; document.currentScript.remove() }</script>
                 <script>
                     {
-                        // document.currentScript.previousElementSibling.addEventListener("time-based-change", function (event) {
-                        //     const { timeHandler, diff } = event.detail, now = timeHandler.from,
-                        //         children = this.children
-                        //     console.log(timeHandler.width);
-                        // })
+                        const raw = document.currentScript.parentElement,
+                            TimeBasedTableElm = document.getElementById("time-based"),
+                            timeHandler = TimeBasedTableElm.timeHandler,
+                            trElm = TimeBasedTableElm.addRow()
 
-                        const TimeBasedTableElm = document.getElementById("time-based"),
-                            trElm = TimeBasedTableElm.addRow(),
-                            { detailElm, timeBasedElm } = trElm
 
-                        // detailElm.innerText = "xxx"
-                        // timeBasedElm.innerText = "timeBasedElm"
+                        trElm.style.setProperty("height", "100px")
 
-                        const raw = document.currentScript.parentElement
+                        var { detailElm, timeBasedElm } = trElm
+                        detailElm.replaceWith(detailElm = trElm.detailElm = raw.detailElm)
+                        timeBasedElm.replaceWith(timeBasedElm = trElm.timeBasedElm = raw.timeBasedElm)
 
-                        detailElm.replaceWith(raw.detailElm)
-                        timeBasedElm.replaceWith(raw.timeBasedElm)
+                        timeBasedElm.years = timeBasedElm.querySelector(".years")
+                        timeBasedElm.months = timeBasedElm.querySelector(".months")
+                        timeBasedElm.days = timeBasedElm.querySelector(".days")
+                        timeBasedElm.hours = timeBasedElm.querySelector(".hours")
+                        timeBasedElm.minutes = timeBasedElm.querySelector(".minutes")
+                        timeBasedElm.seconds = timeBasedElm.querySelector(".seconds")
 
-                        console.log(raw)
+                        const timeZoneInpouter = detailElm.querySelector('[name="timeZone"]')
+
+                        const obj = trElm._obj = Object.assign(new EventTarget(), {
+                            timeZoneOffset: timeZoneInpouter.value * 60000,
+                            assign: function (src) {
+                                const diff = deepAssign(src, this)
+                                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                return diff
+                            }
+                        })
+                        timeZoneInpouter.addEventListener("change", function (event) { trElm._obj.assign({ timeZoneOffset: this.value * 60000 }) })
+
+                        timeBasedElm.getOrAddAnchorByTimestamp = function (timestamp) {
+                            var elm = this.querySelector(`[data-timestamp="${timestamp}"]`)
+                            if (!elm) {
+                                elm = document.createElement("div")
+                                elm.dataset.timestamp = timestamp
+
+                                const d = new Date(timestamp),
+                                    ye = d.getUTCFullYear(),
+                                    mo = d.getUTCMonth(),
+                                    da = d.getUTCDate(),
+                                    ho = d.getUTCHours(),
+                                    mi = d.getUTCMinutes(),
+                                    se = d.getUTCSeconds(),
+                                    ms = d.getUTCMilliseconds()
+
+                                if (ms !== 0) {
+                                    // #TODO:
+                                }
+                                else if (se !== 0) {
+                                    elm.innerText = se
+                                    this.seconds.append(elm)
+                                    // DIL(this.seconds, this.seconds.append, elm)
+                                }
+                                else if (mi !== 0) {
+                                    elm.innerText = mi
+                                    this.minutes.append(elm)
+                                    // DIL(this.minutes, this.minutes.append, elm)
+                                }
+                                else if (ho !== 0) {
+                                    elm.innerText = ho
+                                    this.hours.append(elm)
+                                    // DIL(this.hours, this.hours.append, elm)
+                                }
+                                else if (da !== 1) {
+                                    elm.innerText = da
+                                    this.days.append(elm)
+                                    // DIL(this.days, this.days.append, elm)
+                                }
+                                else if (mo !== 0) {
+                                    elm.innerText = mo + 1
+                                    this.months.append(elm)
+                                    // DIL(this.months, this.months.append, elm)
+                                }
+                                else if (ye !== 0) {
+                                    elm.innerText = ye
+                                    this.years.append(elm)
+                                    // DIL(this.years, this.years.append, elm)
+                                }
+                            }
+                            return elm
+                        }
+                        timeBasedElm.refreshAnchorElm = function (elm) {
+                            DIL(elm.style, elm.style.setProperty, "margin-left", timeHandler.xOfTimestamp(parseInt(elm.dataset.timestamp) + obj.timeZoneOffset) + "px")
+                        }
+
+                        timeBasedElm.refresh = function () {
+                            const timeZoneOffset = obj.timeZoneOffset,
+                                from = timeHandler.from - timeZoneOffset,
+                                to = from + timeHandler.duration
+
+                            const delta = 1000 * 60 * 60 * 24
+
+                            var t = new Date(from)
+                            t.setUTCMilliseconds(0)
+                            t.setUTCSeconds(0)
+                            t.setUTCMinutes(0)
+                            t.setUTCHours(0)
+                            t -= delta
+                            do {
+                                this.refreshAnchorElm(this.getOrAddAnchorByTimestamp(t += delta))
+                            } while (t <= to)
+
+                        }
+
+                        obj.addEventListener("change", function (event) { timeBasedElm.refresh() })
+                        timeHandler.addEventListener("change", function (event) {
+                            const diff = event.detail
+                            if ("duration" in diff || "unitWidth" in diff || "width" in diff) timeBasedElm.refresh()
+                        })
+
+                        window.addEventListener("load", function () { timeBasedElm.refresh() })
                         document.currentScript.remove()
                     }
                 </script>
