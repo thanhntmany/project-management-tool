@@ -462,17 +462,6 @@
                             }
                         })
 
-                        // sync time-based-change
-                        // function _dispatchTimeBasedChange(elm) { elm.dispatchEvent(new CustomEvent("time-based-change", { detail: this })) }
-                        // timeHandler.addEventListener("change", function (event) {
-                        //     const diff = event.detail
-                        //     if ("duration" in diff || "unitWidth" in diff || "width" in diff) {
-                        //         const options = { detail: { timeHandler: this, diff: diff } }
-                        //         for (const e of TimeBasedTableElm.querySelectorAll(".time-based__sync-width"))
-                        //             e.dispatchEvent(new CustomEvent("time-based-change", options))
-                        //     }
-                        // })
-
                         {// column resizing
                             const ColQuery = [`table#time-based>*>*>*:nth-child(`, , `)>div`]
                             TimeBasedTableElm.setColWidth = function (idx, w) {
@@ -535,6 +524,7 @@
                             })
 
                             TimeBasedTableElm.setColWidth(2, 500)
+                            TimeBasedTableElm.setColWidth(4, 30)
 
                             const th = document.getElementById("time-based-col").parentElement
                             var colIdx = 1, el; for (el of th.parentElement.children) if (el !== th) { ++colIdx } else break
@@ -570,6 +560,13 @@
                                 </script>
                             </div>
                         </th>
+                        <th>
+                            <div>
+                                <div class="col-resizer">
+                                    <div>‖</div>
+                                </div>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -590,6 +587,12 @@
                         <td>
                             <div class="time-based__sync-scroll-left">
                                 <div class="time-based__sync-width"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -632,6 +635,12 @@
                                 <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
                             </div>
                         </td>
+                        <td>
+                            <div>
+                                <div>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                     <tr style="height: 221px;">
                         <th>
@@ -649,6 +658,12 @@
                         <td>
                             <div class="time-based__sync-scroll-left">
                                 <div class="time-based__sync-width" style="width: 500px;height: 800px;background-color: brown;"> OKKKKKK </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>
+                                </div>
                             </div>
                         </td>
                     </tr>
