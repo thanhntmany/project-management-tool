@@ -317,6 +317,26 @@
                 width: 100%;
             }
 
+            .time-based-header {
+                width: 100%;
+                white-space: inherit;
+            }
+
+            .time-based-header>div {
+                position: relative;
+                display: inline-block;
+            }
+
+            .time-based-header>.right-resizer {
+                cursor: ew-resize;
+                float: right;
+            }
+
+            .time-based-header>.left-resizer {
+                cursor: ew-resize;
+                float: left;
+            }
+
             .time-based-scroll-box {
                 white-space: nowrap;
                 overflow-x: auto;
@@ -347,29 +367,9 @@
                 width: fit-content;
                 background: #001aff47;
             }
-
-            .time-based-header {
-                width: 100%;
-                white-space: inherit;
-            }
-
-            .time-based-header>div {
-                position: relative;
-                display: inline-block;
-            }
-
-            .time-based-header>.right-resizer {
-                cursor: ew-resize;
-                float: right;
-            }
-
-            .time-based-header>.left-resizer {
-                cursor: ew-resize;
-                float: left;
-            }
         </style>
         <div id="time-based-view">
-            <div class="time-based-wrapper" style="margin-left: 2em;min-width: 15em;padding: 0 2em;">
+            <div class="time-based-wrapper" style="margin-left: 1em;min-width: 15em;padding: 0 2em;">
                 <div class="time-based-header">
                     <input class="right-resizer" type="button" value="↤">
                     <script>
@@ -427,7 +427,6 @@
                     </script>
                 </div>
                 <div class=" time-based-scroll-box" style="background-color: dimgrey;">
-                    <br>
                     <div class="time-based-container">
                         <div>
                             <div>
@@ -436,7 +435,8 @@
                                 <div>xxxxxx</div>
                             </div>
                             <div> right sidebar</div>
-                            <div> content content <br>content content content content content content content content<br> content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content <br><br>
+                            <div>
+                                content content <br>content content content content content content content content<br> content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content <br><br>
                             </div>
                         </div>
                         <script>
