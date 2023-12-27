@@ -369,7 +369,7 @@
             }
         </style>
         <div id="time-based-view">
-            <div class="time-based-wrapper" style="min-width: 15em;padding: 0 2em;">
+            <div class="time-based-wrapper" style="margin-left: 2em;min-width: 15em;padding: 0 2em;">
                 <div class="time-based-header">
                     <input class="right-resizer" type="button" value="↤">
                     <script>
@@ -404,7 +404,7 @@
                             var abortController
                             function _mousemoveEL(event) {
                                 var sv = parseFloat((wrapper.firstElementChild.style.getPropertyValue(_p) || window.getComputedStyle(wrapper).getPropertyValue(_p)).slice(0, -2)) + event.movementX
-                                if (sv < 21) sv = 21
+                                if (sv < 0) sv = 0
                                 wrapper.style.setProperty(_p, sv + "px")
                             }
                             function _mouseupEL(event) { abortController.abort() }
@@ -419,7 +419,9 @@
                     </script>
                     <script>
                         {
-                            const elm = TimeRatioInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript), timeHandler = document.getElementById("time-based").timeHandler
+                            const elm = TimeRatioInputer.createElement();
+                            document.currentScript.parentElement.insertBefore(elm, document.currentScript)
+                            // timeHandler = document.getElementById("time-based").timeHandler;
                             document.currentScript.remove()
                         }
                     </script>
