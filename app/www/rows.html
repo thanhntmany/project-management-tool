@@ -15,6 +15,14 @@
             background-color: black;
             color: white;
         }
+
+        html,
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            border: 0;
+            padding: 0;
+        }
     </style>
     <!-- TimeZoneInputer -->
     <style>
@@ -317,6 +325,11 @@
                 width: 100%;
             }
 
+            .time-based-wrapper {
+                margin-left: 2em;
+                --section-nav-width: 2em;
+            }
+
             .time-based-header {
                 width: 100%;
                 white-space: inherit;
@@ -340,28 +353,63 @@
             .time-based-scroll-box {
                 white-space: nowrap;
                 overflow-x: auto;
-                /* margin-left: 4em;
-                margin-right: 4em; */
             }
 
+            /* time-based-container */
             .time-based-scroll-box>div {
                 width: max-content;
             }
 
-            .time-based-scroll-box>div>div>div>div {
+            /* time-based-section */
+            .time-based-scroll-box>div>div {
+                position: relative;
+                display: block;
+                border: 1px solid black;
+            }
+
+            /* time-based-section>nav */
+            .time-based-scroll-box>div>div>div:first-child {
+                position: fixed;
+                display: block;
+                left: 0;
+                width: var(--section-nav-width);
+                background-color: darkred;
+            }
+
+            .time-based-scroll-box>div>div>div:first-child>div {
+                text-align: center;
+                cursor: pointer;
+            }
+
+            /* time-based-section>rows */
+            .time-based-scroll-box>div>div>div:first-child+div {
+                position: relative;
+                display: block;
+            }
+
+            /* time-based-section>rows>row */
+            .time-based-scroll-box>div>div>div:first-child+div>div {
+                position: relative;
+                display: block;
+                background: #001aff47;
+            }
+
+            .time-based-scroll-box>div>div>div:first-child+div>div>div {
                 height: inherit;
             }
 
-            .time-based-scroll-box>div>div>div>div:nth-child(1) {
-                position: absolute;
+            /* row left sidebar */
+            .time-based-scroll-box>div>div>div:first-child+div>div>div:nth-child(1) {
+                position: fixed;
                 display: block;
-                left: 0;
+                left: var(--section-nav-width);
                 width: fit-content;
                 background: #ff00008f;
             }
 
-            .time-based-scroll-box>div>div>div>div:nth-child(2) {
-                position: absolute;
+            /* row right sidebar */
+            .time-based-scroll-box>div>div>div:first-child+div>div>div:nth-child(2) {
+                position: fixed;
                 display: block;
                 right: 0;
                 width: fit-content;
@@ -369,7 +417,7 @@
             }
         </style>
         <div id="time-based-view">
-            <div class="time-based-wrapper" style="margin-left: 1em;min-width: 15em;padding: 0 2em;">
+            <div class="time-based-wrapper" style=" min-width: 15em">
                 <div class="time-based-header">
                     <input class="right-resizer" type="button" value="↤">
                     <script>
@@ -431,13 +479,58 @@
                     <div>
                         <div>
                             <div>
-                                <div>left sidebar</div>
-                                <div>right sidebar</div>
-                                <div> content content <br>content content content content content content content content<br> content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content <br><br>
+                                <div>=</div>
+                                <div>-</div>
+                                <div>+</div>
+                            </div>
+                            <div>
+                                <div>
+                                    <div>left sidebar</div>
+                                    <div>right sidebar</div>
+                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
                                 </div>
+                                <div>
+                                    <div>left sidebar</div>
+                                    <div>right sidebar</div>
+                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
+                                </div>
+                                <div>
+                                    <div>left sidebar</div>
+                                    <div>right sidebar</div>
+                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
+                                </div>
+                                <div>
+                                    <div>left sidebar</div>
+                                    <div>right sidebar</div>
+                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
+                                </div>
+                                <div>
+                                    <div>left sidebar</div>
+                                    <div>right sidebar</div>
+                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
+                                </div>
+                                <div>
+                                    <div>left sidebar</div>
+                                    <div>right sidebar</div>
+                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
+                                </div>
+                                <script>
+                                    {
+                                        const script = document.currentScript, rowSample = script.previousElementSibling
+                                        script.parentElement.parentElement.parentElement.parentElement.createRow = function () {
+                                            const elm = rowSample.cloneNode(true), children = elm.children
+                                            elm.leftSidebarElm = children[0]
+                                            elm.rightSidebarElm = children[1]
+                                            elm.contentElm = children[2]
+                                            return elm
+                                        }
+                                        // rowSample.remove()
+                                        script.remove()
+                                    }
+                                </script>
                             </div>
                         </div>
-                        <script>
+                        <!-- <script>
                             {
                                 const script = document.currentScript,
                                     container = script.parentElement,
@@ -460,7 +553,6 @@
                                     elm.append(this.createRow())
                                     elm.append(this.createRow())
                                     elm.append(this.createRow())
-                                    elm.append(this.createRow())
                                     DIL(this, this.append, elm)
                                     return elm
                                 }
@@ -468,22 +560,17 @@
                                 script.previousElementSibling.remove()
                                 script.remove()
                             }
-                        </script>
+                        </script> -->
                     </div>
-                    <script>
+                    <!-- <script>
                         {
                             const container = document.currentScript.previousElementSibling
                             container.addRecord()
                             container.addRecord()
                             container.addRecord()
                             container.addRecord()
-                            container.addRecord()
-                            container.addRecord()
-                            container.addRecord()
-                            container.addRecord()
-                            container.addRecord()
                         }
-                    </script>
+                    </script> -->
                 </div>
             </div>
         </div>
