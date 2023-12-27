@@ -348,11 +348,11 @@
                 width: max-content;
             }
 
-            .time-based-scroll-box>div>div>div {
+            .time-based-scroll-box>div>div>div>div {
                 height: inherit;
             }
 
-            .time-based-scroll-box>div>div>div:nth-child(1) {
+            .time-based-scroll-box>div>div>div>div:nth-child(1) {
                 position: absolute;
                 display: block;
                 left: 0;
@@ -360,7 +360,7 @@
                 background: #ff00008f;
             }
 
-            .time-based-scroll-box>div>div>div:nth-child(2) {
+            .time-based-scroll-box>div>div>div>div:nth-child(2) {
                 position: absolute;
                 display: block;
                 right: 0;
@@ -427,34 +427,45 @@
                     </script>
                 </div>
                 <div class=" time-based-scroll-box" style="background-color: dimgrey;">
-                    <div class="time-based-container">
+                    <!-- time-based-container -->
+                    <div>
                         <div>
                             <div>
-                                <div>=</div>
-                                <div>xxxxxx</div>
-                                <div>xxxxxx</div>
-                            </div>
-                            <div> right sidebar</div>
-                            <div>
-                                content content <br>content content content content content content content content<br> content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content <br><br>
+                                <div>left sidebar</div>
+                                <div>right sidebar</div>
+                                <div> content content <br>content content content content content content content content<br> content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content <br><br>
+                                </div>
                             </div>
                         </div>
                         <script>
                             {
                                 const script = document.currentScript,
-                                    sample = script.previousElementSibling,
-                                    container = sample.parentElement
+                                    container = script.parentElement,
+                                    rowSample = script.previousElementSibling.firstElementChild
 
-                                container.addRecord = function () {
-                                    const elm = sample.cloneNode(true), children = elm.children
+                                container.createRow = function () {
+                                    const elm = rowSample.cloneNode(true), children = elm.children
                                     elm.leftSidebarElm = children[0]
                                     elm.rightSidebarElm = children[1]
                                     elm.contentElm = children[2]
+                                    return elm
+                                }
+
+                                container.createSection = function () {
+                                    return document.createElement("div")
+                                }
+
+                                container.addRecord = function () {
+                                    const elm = document.createElement("div")
+                                    elm.append(this.createRow())
+                                    elm.append(this.createRow())
+                                    elm.append(this.createRow())
+                                    elm.append(this.createRow())
                                     DIL(this, this.append, elm)
                                     return elm
                                 }
 
-                                sample.remove()
+                                script.previousElementSibling.remove()
                                 script.remove()
                             }
                         </script>
