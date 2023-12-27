@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Div way</title>
+    <script src="/do-it-later--requestAnimationFrame.js"></script>
+    <style>
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            background-color: black;
+            color: white;
+        }
+    </style>
+    <!-- TimeZoneInputer -->
+    <script>
+        const TimeZoneInputer = {
+            sample: {
+                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
+                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
+                _setValue: function (value) { if (this.value === value) return; this.value = this.selectInput.value = this.offfsetInput.value = value; this.dispatchEvent(new Event("change")); },
+                optionBtn_clickEL: function (event) { const s = this._root.offfsetSpan.style; if (s.getPropertyValue("display") !== "none") { s.setProperty("display", "none") } else s.removeProperty("display") }
+            },
+            createElement: function () {
+                const sample = this.sample,
+                    elm = sample.elm.cloneNode(true),
+                    selectInput = elm.selectInput = elm.children[0],
+                    optionBtn = elm.optionBtn = elm.children[1],
+                    offfsetSpan = elm.offfsetSpan = elm.children[2],
+                    offfsetInput = elm.offfsetInput = offfsetSpan.children[0]
+
+                elm.setValue = sample._setValue
+                selectInput._root = offfsetInput._root = optionBtn._root = elm
+                selectInput.addEventListener("change", sample.selectInput_changeEL)
+                offfsetInput.addEventListener("change", sample.offfsetInput_changeEL)
+                optionBtn.addEventListener("click", sample.optionBtn_clickEL)
+                elm.setValue(new Date().getTimezoneOffset())
+
+                return elm
+            }
+        }
+        {
+            const elm = TimeZoneInputer.sample.elm = document.createElement("label")
+
+            const selectInput = document.createElement("select");
+            ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:30", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00", "UTC-03:30", "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC±00:00", "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00", "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00", "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00", "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00", "UTC+12:45", "UTC+13:00", "UTC+14:00"].forEach(label => {
+                const offfset = -(label.substring(3, 4) === "-" ? -1 : 1) * (parseInt(label.substring(4, 6) * 60) + parseInt(label.substring(7, 9))),
+                    e = document.createElement("option")
+                e.value = offfset
+                e.innerText = label
+                selectInput.appendChild(e)
+            })
+
+            const offfsetSpan = document.createElement("span")
+            offfsetSpan.style.setProperty("display", "none")
+
+            const offfsetInput = document.createElement("input")
+            offfsetInput.type = "number"
+            offfsetInput.min = -720
+            offfsetInput.max = 840
+
+            const optionBtn = document.createElement("input")
+            optionBtn.type = "button"
+            optionBtn.value = "⋮"
+
+            elm.append(selectInput)
+            elm.append(optionBtn)
+            elm.append(offfsetSpan)
+            offfsetSpan.append("(Offfset: ")
+            offfsetSpan.append(offfsetInput)
+            offfsetSpan.append("minutes)")
+        }
+    </script>
+    <!-- Object Assigner -->
+    <script>
+        function isObject(obj) { return obj === Object(obj) }
+        function deepAssign(src, dst, diff = {}) {
+            var k, S, D; for (k in src) {
+                D = dst[k]
+                if (isObject(S = src[k]) && isObject(D)) {
+                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+                }
+                else if (D !== S) diff[k] = dst[k] = S
+            }
+            return Object.keys(diff).length ? diff : null
+        }
+    </script>
+    <!-- TimeRatioInputer -->
+    <style style="display: none;">
+        .time-ratio-input {
+            cursor: e-resize;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            width: fit-content;
+            background-color: grey;
+            border-radius: 0.5em;
+            padding: 0.25em;
+        }
+
+        .time-ratio-input>* {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .time-ratio-input>script {
+            display: none;
+        }
+
+        .time-ratio-input .time-range {
+            border-left: 2px solid black;
+            width: 8em;
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+
+        .time-ratio-input .time-range>* {
+            position: relative;
+            transition: margin-left 100ms;
+        }
+
+        .time-ratio-input .time-range>*>* {
+            position: absolute;
+            display: block;
+            cursor: pointer;
+            border-left: 1px solid black;
+        }
+
+        .time-ratio-input .option-btn {
+            cursor: pointer;
+        }
+
+        .time-ratio-input .option-btn:hover {
+            background-color: gray;
+        }
+
+        .time-ratio-input:not(.show-number-input)>input[type="number"] {
+            display: none;
+        }
+    </style>
+    <script>
+        const TimeRatioInputer = {
+            sample: {
+                setValue: function (value) {
+                    if (this.value === value) return;
+                    this.value = this.numberInputer.value = value;
+                    this.timeRangeRuler.style.setProperty("margin-left", -(Math.log(value) * this.XPLogR) + "px")
+                    this.dispatchEvent(new Event("change"));
+                },
+                changeX: function (delta) {
+                    var x = (Math.log(this.value) * this.XPLogR) + delta
+                    const X = this.X, R = this.R
+                    if (x < 0) x = 0
+                    if (x > X) x = X
+                    this.setValue(Math.pow(R, x / X))
+                },
+                wheelEL: function (event) { this.changeX(event.deltaY / 20) },
+                mousedownEL: function (event) {
+                    const abortController = new AbortController()
+                    window.addEventListener("mousemove", event => this.changeX(-event.movementX), { signal: abortController.signal })
+                    window.addEventListener("mouseup", () => abortController.abort(), { once: true })
+                },
+                optionBtn_clickEL: function () { this._root.classList.toggle("show-number-input") },
+                numberInputer_changeEL: function (event) { this._root.setValue(parseFloat(this.value)) },
+                numberInputer_mousedownEL: function (event) { event.stopPropagation() }
+            },
+            createElement: function () {
+                const sample = this.sample,
+                    elm = this.sample.elm.cloneNode(true),
+                    optionBtn = elm.optionBtn = elm.children[0],
+                    numberInputer = elm.numberInputer = elm.children[1],
+                    timeRange = elm.timeRange = elm.children[2],
+                    timeRangeRuler = elm.timeRangeRuler = timeRange.firstElementChild
+
+                elm.R = sample.R
+                elm.X = sample.X
+                elm.XPLogR = sample.XPLogR
+                elm.setValue = sample.setValue
+                elm.changeX = sample.changeX
+
+                elm.addEventListener("wheel", sample.wheelEL)
+                elm.addEventListener("mousedown", sample.mousedownEL)
+
+                optionBtn._root = elm
+                optionBtn.addEventListener("click", sample.optionBtn_clickEL)
+
+                numberInputer._root = elm
+                numberInputer.addEventListener("change", sample.numberInputer_changeEL)
+                numberInputer.addEventListener("mousedown", sample.numberInputer_mousedownEL)
+
+                elm.setValue(1)
+                return elm
+            }
+        }
+        {
+            const sample = TimeRatioInputer.sample,
+                elm = sample.elm = document.createElement("div")
+            elm.classList.add("time-ratio-input")
+
+            const optionBtn = document.createElement("div")
+            optionBtn.classList.add("option-btn")
+            optionBtn.innerText = "🔍 "
+
+            const numberInputer = document.createElement("input")
+            numberInputer.type = "number"
+            numberInputer.min = "1"
+
+            const timeRange = document.createElement("div")
+            timeRange.classList.add("time-range")
+
+            const timeRangeRuler = document.createElement("div"),
+                Ratios = [
+                    [1, "Milliseconds"],
+                    [1000, "Seconds"],
+                    [60000, "Minutes"],
+                    [3600000, "Hours"],
+                    [86400000, "Days"],
+                    [2592000000, "Months"],
+                    [31104000000, "Years"],
+                    [311040000000, "Decades"],
+                    [3110400000000, "Centuries"]],
+                R = sample.R = Math.max.apply(null, Ratios.map(e => e[0])),
+                X = sample.X = 900,
+                XPLogR = sample.XPLogR = X / Math.log(R)
+
+            Ratios.forEach(function ([r, name]) {
+                const e = document.createElement("div")
+                e.setAttribute("data-ratio", r)
+                e.style.setProperty("margin-left", (Math.log(r) * XPLogR) + "px")
+                e.innerText = name
+                timeRangeRuler.append(e)
+            })
+
+            elm.append(optionBtn)
+            elm.append(numberInputer)
+            elm.append(timeRange)
+            timeRange.append(timeRangeRuler)
+            const space = document.createElement("div"); space.innerHTML = "&nbsp;"
+            timeRange.appendChild(space)
+        }
+    </script>
+</head>
+
+<body>
+    <script>
+        const systemTimezoneOffset = -new Date().getTimezoneOffset(),
+            CORE = Object.assign(new EventTarget(), {
+                systemTimezoneOffset: systemTimezoneOffset,
+                timezoneOffset: undefined,
+
+                timezoneOffset: undefined,
+                _timezoneDelta: undefined,
+
+                setTimezoneOffset: function (offfset) {
+                    if (this.timezoneOffset === offfset) return
+                    this.timezoneOffset = offfset
+                    this._timezoneDelta = (this.timezoneOffset - this.systemTimezoneOffset) * 60000
+                    this.dispatchEvent(new Event("change-timezone-offset"))
+                },
+
+                timestampOfDateoffset: function (date) { return date.getTime() - this._timezoneDelta },
+                dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + this._timezoneDelta) },
+            })
+
+        const DatabaseHandler = Object.assign(new EventTarget(), {
+            data: {},
+            assign: function (src) {
+                const diff = deepAssign(src, this.data)
+                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+            }
+        })
+
+        window.addEventListener("load", function (e) {
+            DatabaseHandler.assign({
+                tasks: {
+                    "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
+                    "3": { name: "Research", assigned: "Pete S", progress: Math.round(Math.random() * 100) },
+                    "4": { name: "Projections", assigned: "Steve L", progress: Math.round(Math.random() * 100) },
+                    "5": { name: "Stakeholders", assigned: "Allen W", progress: Math.round(Math.random() * 100) },
+                    "6": { name: "Guidelines", assigned: "Malik M", progress: Math.round(Math.random() * 100) },
+                    "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
+                }
+            })
+
+            CORE.setTimezoneOffset(systemTimezoneOffset)
+        }, { once: true })
+    </script>
+    <div>
+        <div> Timezone:
+            <script>// CORE: Timezone selector
+                {
+                    const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
+                    elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(parseInt(this.value)) })
+                    CORE.addEventListener("change-timezone-offset", function (e) { if (elm.value === this.timezoneOffset) return; elm.setValue(this.timezoneOffset) })
+                    document.currentScript.remove()
+                }
+            </script>
+        </div>
+    </div>
+    <div id="main-view">
+        <div id="time-based-view">
+            <style>
+                #time-based-view {
+                    display: block;
+                    width: 100%;
+                }
+
+                table#time-based-table {
+                    display: block;
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                table#time-based-table>*>*>* {
+                    position: relative;
+                    height: inherit;
+                    margin: 0;
+                    border: 0;
+                    padding: .5px;
+                    border: 1px solid white;
+                }
+
+                table#time-based-table>tbody>*>* {
+                    height: inherit;
+                    vertical-align: top;
+                }
+
+                table#time-based-table>tbody>*>*>div {
+                    height: 100%;
+                    width: 100%;
+                }
+            </style>
+            <table id="time-based-table">
+                <thead>
+                    <tr>
+                        <th style="width: 300px;">Detais</th>
+                        <th style="width: 900px;">Time-based</th>
+                        <th>ruler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="height: 800px;">
+                        <td>
+                            <div>
+                                <div>xxxx</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="background-color: cadetblue;">
+                                <div>xxxx</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>xxxx</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <script>
+                        {
+                            console.log(document.currentScript.previousElementSibling);
+                            document.currentScript.remove()
+                        }
+                    </script>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
