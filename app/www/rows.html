@@ -357,19 +357,20 @@
             }
 
             /* time-based-container */
-            .time-based-scroll-box>div {
+            .time-based-container {
                 width: max-content;
             }
 
             /* time-based-section */
-            .time-based-scroll-box>div>div {
+            .time-based-container>div {
                 position: relative;
                 display: block;
+                width: 100%;
                 border: 1px solid black;
             }
 
             /* time-based-section>nav */
-            .time-based-scroll-box>div>div>div:first-child {
+            .time-based-container>div>div:first-child {
                 position: fixed;
                 display: block;
                 left: 0;
@@ -378,31 +379,33 @@
                 background-color: darkred;
             }
 
-            .time-based-scroll-box>div>div>div:first-child>div {
+            .time-based-container>div>div:first-child>div {
                 text-align: center;
                 cursor: pointer;
             }
 
             /* time-based-section>rows */
-            .time-based-scroll-box>div>div>div:first-child+div {
+            .time-based-container>div>div:first-child+div {
                 position: relative;
                 display: block;
+                width: 100%;
                 min-height: var(--section-nav-min-height);
             }
 
             /* time-based-section>rows>row */
-            .time-based-scroll-box>div>div>div:first-child+div>div {
+            .time-based-container>div>div:first-child+div>div {
                 position: relative;
                 display: block;
+                width: 100%;
                 background: #001aff47;
             }
 
-            .time-based-scroll-box>div>div>div:first-child+div>div>div {
+            .time-based-container>div>div:first-child+div>div>div {
                 height: inherit;
             }
 
             /* row left sidebar */
-            .time-based-scroll-box>div>div>div:first-child+div>div>div:nth-child(1) {
+            .time-based-container>div>div:first-child+div>div>div:nth-child(1) {
                 position: fixed;
                 display: block;
                 left: var(--section-nav-width);
@@ -411,12 +414,20 @@
             }
 
             /* row right sidebar */
-            .time-based-scroll-box>div>div>div:first-child+div>div>div:nth-child(2) {
+            .time-based-container>div>div:first-child+div>div>div:nth-child(2) {
                 position: fixed;
                 display: block;
                 right: 0;
                 width: fit-content;
                 background: #001aff47;
+            }
+
+            /* row content */
+            .time-based-container>div>div:first-child+div>div>div:nth-child(3) {
+                position: relative;
+                display: block;
+                width: 100%;
+                background: red;
             }
         </style>
         <br>
@@ -608,7 +619,6 @@
             </script>
             <!-- time ruler -->
             <style>
-
             </style>
             <script>
                 {
