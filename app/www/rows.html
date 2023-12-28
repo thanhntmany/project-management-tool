@@ -421,7 +421,7 @@
         </style>
         <br>
         <div id="time-based-view">
-            <div class="time-based-wrapper" style=" min-width: 15em">
+            <div class="time-based-wrapper" style="min-width: 15em">
                 <div class="time-based-header">
                     <input class="right-resizer" type="button" value="↤">
                     <script>
@@ -479,8 +479,7 @@
                     </script>
                 </div>
                 <div class=" time-based-scroll-box" style="background-color: dimgrey;">
-                    <!-- time-based-container -->
-                    <div>
+                    <div class=" time-based-container">
                         <div>
                             <div>
                                 <div>
@@ -489,9 +488,9 @@
                             </div>
                             <div>
                                 <div>
-                                    <div>left sidebar</div>
-                                    <div>right sidebar</div>
-                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
                                 </div>
                                 <script>
                                     {
@@ -525,27 +524,31 @@
 
                                 container.addSection = function (section) { this.append(section || (section = this.createSection())); return section }
 
-                                script.previousElementSibling.remove()
+                                sectionSample.remove()
                                 script.remove()
                             }
                         </script>
                     </div>
-                    <script>
-                        {
-                            const script = document.currentScript,
-                                container = script.previousElementSibling
-
-                            container.addSection().addRow()
-                            container.addSection().addRow()
-                            container.addSection().addRow()
-                            container.addSection().addRow()
-                            container.addSection().addRow()
-
-                            script.remove()
-                        }
-                    </script>
                 </div>
             </div>
+            <script>
+                {
+                    const script = document.currentScript,
+                        view = script.parentElement,
+                        container = view.container = view.querySelector(".time-based-container")
+
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+                    view.container.addSection().addRow()
+
+                    script.remove()
+                }
+            </script>
         </div>
     </div>
 </body>
