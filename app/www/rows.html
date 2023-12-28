@@ -389,7 +389,8 @@
                 display: block;
                 left: 0;
                 min-height: var(--section-nav-min-height);
-                z-index: 1;
+                z-index: 2;
+                background-color: gray;
             }
 
             .time-based-container>div>div:first-child>* {
@@ -426,7 +427,6 @@
                 position: relative;
                 display: block;
                 width: 100%;
-                background: #001aff47;
             }
 
             .time-based-container>div>div:first-child+div>div>div {
@@ -440,7 +440,6 @@
                 left: var(--section-nav-width);
                 width: fit-content;
                 z-index: 1;
-                background: #ff00008f;
             }
 
             /* row right sidebar */
@@ -450,7 +449,6 @@
                 right: 0;
                 width: fit-content;
                 z-index: 1;
-                background: #001aff47;
             }
 
             /* row content */
@@ -459,7 +457,6 @@
                 display: block;
                 width: 100%;
                 overflow: hidden;
-                background: red;
             }
         </style>
         <br>
@@ -593,8 +590,8 @@
                                         const script = document.currentScript, rowSample = script.previousElementSibling
                                         script.parentElement.parentElement.parentElement.createRow = function () {
                                             const elm = rowSample.cloneNode(true), children = elm.children
-                                            elm.leftSidebarElm = children[0]
-                                            elm.rightSidebarElm = children[1]
+                                            elm.leftSidebar = children[0]
+                                            elm.rightSidebar = children[1]
                                             elm.contentElm = children[2]
                                             return elm
                                         }
@@ -717,7 +714,7 @@
                                 row = section.addRow()
 
                             const timeZoneInputer = TimeZoneInputer.createElement()
-                            section.navOps.append(timeZoneInputer)
+                            row.leftSidebar.append(timeZoneInputer)
 
                             row.contentElm.append(contentSample.cloneNode(true))
 
