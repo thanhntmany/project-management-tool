@@ -443,12 +443,19 @@
                 }
             </script>
             <div class="time-based-wrapper" style="min-width: 15em">
+                <script>
+                    {
+                        const script = document.currentScript
+                        document.getElementById("time-based-view").wrapper = script.parentElement
+                        script.remove()
+                    }
+                </script>
                 <div class="time-based-header">
                     <input class="right-resizer" type="button" value="↤">
                     <script>
                         {
                             const script = document.currentScript,
-                                wrapper = script.parentElement.parentElement,
+                                wrapper = document.getElementById("time-based-view").wrapper,
                                 _p = "padding-right"
 
                             var abortController
@@ -512,6 +519,13 @@
                 </div>
                 <div class=" time-based-scroll-box" style="background-color: dimgrey;">
                     <div class=" time-based-container">
+                        <script>
+                            {
+                                const script = document.currentScript
+                                document.getElementById("time-based-view").container = script.parentElement
+                                script.remove()
+                            }
+                        </script>
                         <div>
                             <div>
                                 <div>
@@ -564,10 +578,38 @@
                 </div>
             </div>
             <script>
-                {
+                {// persisting Declaration
                     const script = document.currentScript,
                         view = script.parentElement,
-                        container = view.container = view.querySelector(".time-based-container")
+                        wrapper = view.wrapper
+
+                    view.loadDeclaration = function (dec) {
+                        if (!dec) dec = {}
+                        wrapper.style.setProperty("padding-left", (dec.paddingLeft || 0) + "px")
+                        wrapper.style.setProperty("padding-right", (dec.paddingRight || 0) + "px")
+                    }
+                    view.getDeclaration = function () {
+                        return {
+                            paddingLeft: parseFloat((wrapper.firstElementChild.style.getPropertyValue("padding-left") || window.getComputedStyle(wrapper).getPropertyValue("padding-left")).slice(0, -2)),
+                            paddingRight: parseFloat((wrapper.firstElementChild.style.getPropertyValue("padding-right") || window.getComputedStyle(wrapper).getPropertyValue("padding-right")).slice(0, -2))
+                        }
+                    }
+
+                    const view_key = "time-based-view_dec"
+                    window.addEventListener("load", function (event) {
+                        view.loadDeclaration(JSON.parse(localStorage.getItem(view_key)))
+                    });
+                    window.addEventListener("beforeunload", function (event) {
+                        localStorage.setItem(view_key, JSON.stringify(view.getDeclaration()))
+                    });
+
+                    script.remove()
+                }
+            </script>
+            <script>
+                {
+                    const script = document.currentScript,
+                        view = script.parentElement
 
                     view.container.addSection().addRow()
                     view.container.addSection().addRow()
@@ -577,6 +619,8 @@
                     view.container.addSection().addRow()
                     view.container.addSection().addRow()
                     view.container.addSection().addRow()
+
+                    console.log(view);
 
                     script.remove()
                 }
