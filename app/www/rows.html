@@ -380,7 +380,7 @@
                 position: relative;
                 display: block;
                 width: 100%;
-                border: 1px solid black;
+                /* border: 1px solid black; */
             }
 
             /* time-based-section>nav */
@@ -592,7 +592,7 @@
                                             const elm = rowSample.cloneNode(true), children = elm.children
                                             elm.leftSidebar = children[0]
                                             elm.rightSidebar = children[1]
-                                            elm.contentElm = children[2]
+                                            elm.content = children[2]
                                             return elm
                                         }
                                         rowSample.remove()
@@ -693,30 +693,40 @@
                         background-color: chocolate;
                     }
                 </style>
-                <div class="time-ruler">
-                    <div class="time-ruler__years">years</div>
-                    <div class="time-ruler__months">months</div>
-                    <!-- <div class="time-ruler__days">days</div>
-                    <div class="time-ruler__hours">hours</div>
-                    <div class="time-ruler__minutes">minutes</div>
-                    <div class="time-ruler__seconds">seconds</div>
-                    <div class="time-ruler__milliseconds">Milliseconds</div> -->
+                <!-- sample -->
+                <div>
+                    <div name="leftSidebar">
+                        <div>
+                            <!-- #TODO: expand/collapse -->
+                        </div>
+                    </div>
+                    <div name="content">
+                        <div class="time-ruler">
+                            <div class="time-ruler__years">years</div>
+                            <div class="time-ruler__months">months</div>
+                            <div class="time-ruler__days">days</div>
+                            <div class="time-ruler__hours">hours</div>
+                            <div class="time-ruler__minutes">minutes</div>
+                            <div class="time-ruler__seconds">seconds</div>
+                            <div class="time-ruler__milliseconds">Milliseconds</div>
+                        </div>
+                    </div>
                 </div>
                 <script>
                     {
                         const script = document.currentScript,
                             view = document.getElementById("time-based-view"),
                             container = view.container,
-                            contentSample = script.previousElementSibling
+                            sample = script.previousElementSibling,
+                            leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild
+                            contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
                         container.sectionBuilders.timeRuler = function () {
-                            const section = container.createSection(),
-                                row = section.addRow()
+                            const section = container.createSection(), row = section.addRow()
 
                             const timeZoneInputer = TimeZoneInputer.createElement()
                             row.leftSidebar.append(timeZoneInputer)
-
-                            row.contentElm.append(contentSample.cloneNode(true))
+                            row.content.append(contentSample.cloneNode(true))
 
                             return section
                         }
