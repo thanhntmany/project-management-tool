@@ -451,7 +451,7 @@
                     }
                 </script>
                 <div class="time-based-header">
-                    <input class="right-resizer" type="button" value="↤">
+                    <input class="right-resizer" type="button" value="⤆">
                     <script>
                         {
                             const script = document.currentScript,
@@ -474,7 +474,7 @@
                             script.remove()
                         }
                     </script>
-                    <input class="left-resizer" type="button" value="↦">
+                    <input class="left-resizer" type="button" value="⤇">
                     <script>
                         {
                             const script = document.currentScript,
@@ -598,10 +598,10 @@
                     const view_key = "time-based-view_dec"
                     window.addEventListener("load", function (event) {
                         view.loadDeclaration(JSON.parse(localStorage.getItem(view_key)))
-                    });
+                    })
                     window.addEventListener("beforeunload", function (event) {
                         localStorage.setItem(view_key, JSON.stringify(view.getDeclaration()))
-                    });
+                    })
 
                     script.remove()
                 }
