@@ -237,9 +237,7 @@
                     [3600000, "Hours"],
                     [86400000, "Days"],
                     [2592000000, "Months"],
-                    [31104000000, "Years"],
-                    [311040000000, "Decades"],
-                    [3110400000000, "Centuries"]],
+                    [31104000000, "Years"]],
                 R = sample.R = Math.max.apply(null, Ratios.map(e => e[0])),
                 X = sample.X = 900,
                 XPLogR = sample.XPLogR = X / Math.log(R)
@@ -584,7 +582,6 @@
                                 function _addRow(row) { this.rowsElm.append(row || (row = container.createRow())); return row }
                                 container.sectionBuilders = {}
                                 container.createSection = function (type) {
-                                    console.trace()
                                     const builder = this.sectionBuilders[type]
                                     if (!builder) {
                                         const elm = sectionSample.cloneNode(true)
@@ -644,6 +641,12 @@
                 <!-- time ruler -->
                 <style>
                 </style>
+                <div class="time-ruler">
+                    <div>years</div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
                 <script>
                     {
                         const script = document.currentScript,
