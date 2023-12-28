@@ -34,9 +34,13 @@
     <script>
         const TimeZoneInputer = {
             sample: {
-                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
-                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.setValue(this.value) },
-                _setValue: function (value) { if (this.value === value) return; this.value = this.selectInput.value = this.offfsetInput.value = value; this.dispatchEvent(new Event("change")); },
+                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) })},
+                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) })},
+                _changeEL: function (event) {
+                    const timeOffset = event.detail.timeOffset
+                    if (!isNaN(timeOffset)) this.selectInput.value = this.offfsetInput.value = timeOffset
+                },
+
                 optionBtn_clickEL: function (event) { const s = this._root.offfsetSpan.style; if (s.getPropertyValue("display") !== "none") { s.setProperty("display", "none") } else s.removeProperty("display") }
             },
             createElement: function () {
@@ -47,12 +51,24 @@
                     offfsetSpan = elm.offfsetSpan = elm.children[2],
                     offfsetInput = elm.offfsetInput = offfsetSpan.children[0]
 
-                elm.setValue = sample._setValue
+                Object.assign(elm, {
+                    data: {
+                        timeOffset: new Date().getTimezoneOffset()
+                    },
+                    assign: function (src) {
+                        const diff = deepAssign(src, this.data)
+                        if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                    },
+                    toJSON: function () {
+                        return this.data
+                    }
+                })
+
                 selectInput._root = offfsetInput._root = optionBtn._root = elm
                 selectInput.addEventListener("change", sample.selectInput_changeEL)
                 offfsetInput.addEventListener("change", sample.offfsetInput_changeEL)
                 optionBtn.addEventListener("click", sample.optionBtn_clickEL)
-                elm.setValue(new Date().getTimezoneOffset())
+                elm.addEventListener("change", sample._changeEL)
 
                 return elm
             }
@@ -281,13 +297,13 @@
         const systemTimezoneOffset = -new Date().getTimezoneOffset(),
             CORE = Object.assign(new EventTarget(), {
                 systemTimezoneOffset: systemTimezoneOffset,
-                timezoneOffset: undefined,
+                timeOffset: undefined,
                 _timezoneDelta: undefined,
 
                 setTimezoneOffset: function (offfset) {
-                    if (this.timezoneOffset === offfset) return
-                    this.timezoneOffset = offfset
-                    this._timezoneDelta = (this.timezoneOffset - this.systemTimezoneOffset) * 60000
+                    if (this.timeOffset === offfset) return
+                    this.timeOffset = offfset
+                    this._timezoneDelta = (this.timeOffset - this.systemTimezoneOffset) * 60000
                     this.dispatchEvent(new Event("change-timezone-offset"))
                 },
 
@@ -324,8 +340,8 @@
             <script>// CORE: Timezone selector
                 {
                     const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
-                    elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(parseInt(this.value)) })
-                    CORE.addEventListener("change-timezone-offset", function (e) { if (elm.value === this.timezoneOffset) return; elm.setValue(this.timezoneOffset) })
+                    elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(this.data.timeOffset) })
+                    CORE.addEventListener("change-timezone-offset", function (e) { elm.assign({ timeOffset: this.timeOffset }) })
                     document.currentScript.remove()
                 }
             </script>
@@ -639,8 +655,10 @@
                                         section.addRow = section_addRow
                                         return section
                                     }
+                                    const section = builder()
+                                    section.dataset.type = type
 
-                                    return builder()
+                                    return section
                                 }
                                 container.addSection = function (section) {
                                     if (typeof section === 'string' || section instanceof String) section = this.createSection(section)
@@ -719,8 +737,10 @@
                             view = document.getElementById("time-based-view"),
                             container = view.container,
                             sample = script.previousElementSibling,
-                            leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild
-                        contentSample = sample.querySelector(`[name="content"]`).firstElementChild
+                            leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild,
+                            contentSample = sample.querySelector(`[name="content"]`).firstElementChild
+
+                        function timeZoneInputer_changeEL(event) { this._root.assign({ timeOffset: parseInt(this.value) }) }
 
                         container.sectionBuilders.timeRuler = function () {
                             const section = container.createSection(), row = section.addRow()
@@ -728,6 +748,19 @@
                             const timeZoneInputer = TimeZoneInputer.createElement()
                             row.leftSidebar.append(timeZoneInputer)
                             row.content.append(contentSample.cloneNode(true))
+
+                            Object.assign(section, {
+                                data: {
+                                    timeOffset: timeZoneInputer.value
+                                },
+                                assign: function (src) {
+                                    const diff = deepAssign(src, this.data)
+                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                }
+                            })
+
+                            timeZoneInputer._root = section
+                            timeZoneInputer.addEventListener("change", timeZoneInputer_changeEL)
 
                             return section
                         }
