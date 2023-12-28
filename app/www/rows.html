@@ -378,10 +378,8 @@
             }
 
             /* time-based-section>nav>section-ops */
-            .time-based-container>div>div:first-child>div:first-child {
-                width: var(--section-nav-width);
-                text-align: center;
-                cursor: pointer;
+            .time-based-container>div>div:first-child>div {
+                float: left;
             }
 
             /* time-based-section>rows */
@@ -542,9 +540,11 @@
                     <div class="time-based-container" style="width: 2000px;">
                         <div>
                             <div>
-                                <span>
-                                    <input type="button" value="=">
-                                </span>
+                                <div>
+                                    <div>
+                                        <input type="button" value="=">
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <div>
