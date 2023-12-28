@@ -398,6 +398,16 @@
                 float: left;
             }
 
+            /* time-based-section>nav.expand/collapse operations */
+            .time-based-container>div>div:first-child>*:first-child>*:first-child>*:first-child {
+                cursor: pointer;
+            }
+
+            .time-based-container>div>div:first-child:not(.expanded)>*:first-child>*:not(:first-child),
+            .time-based-container>div>div:first-child:not(.expanded)>*:not(:first-child) {
+                display: none;
+            }
+
             /* time-based-section>rows */
             .time-based-container>div>div:first-child+div {
                 position: relative;
@@ -558,7 +568,7 @@
                             <div>
                                 <div>
                                     <div>
-                                        <input type="button" value="=">
+                                        <input type="button" value="᎒᎒᎒">
                                     </div>
                                     <div>
                                         <input type="button" value="+">
@@ -605,16 +615,27 @@
 
                                 const sectionSample = script.previousElementSibling
                                 sectionSample.remove()
-                                function _addRow(row) { this.rowsElm.append(row || (row = container.createRow())); return row }
+                                function section_addRow(row) { this.rowsElm.append(row || (row = container.createRow())); return row }
+                                function navElm_toggleExpandCollapse() { this.classList.toggle("expanded") }
+                                function opsBtn_clickEl(event) {
+                                    this.parentElement.parentElement.parentElement.toggleExpandCollapse()
+                                }
+
                                 container.sectionBuilders = {}
                                 container.createSection = function (type) {
                                     const builder = this.sectionBuilders[type]
                                     if (!builder) {
-                                        const elm = sectionSample.cloneNode(true)
-                                        elm.navElm = elm.children[0]
-                                        elm.rowsElm = elm.children[1]
-                                        elm.addRow = _addRow
-                                        return elm
+                                        const section = sectionSample.cloneNode(true),
+                                            navElm = section.navElm = section.children[0],
+                                            opsBtn = navElm.firstElementChild.firstElementChild.firstElementChild
+
+                                        navElm.toggleExpandCollapse = navElm_toggleExpandCollapse
+
+                                        opsBtn.addEventListener("click", opsBtn_clickEl)
+
+                                        section.rowsElm = section.children[1]
+                                        section.addRow = section_addRow
+                                        return section
                                     }
 
                                     return builder()
