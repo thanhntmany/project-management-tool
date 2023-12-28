@@ -421,6 +421,27 @@
         </style>
         <br>
         <div id="time-based-view">
+            <script>
+                {
+                    const script = document.currentScript,
+                        view = script.parentElement,
+                        timeHandler = view.timeHandler = Object.assign(new EventTarget(), {
+                            timeFrom: Date.now(),
+                            uTime: 1000 * 60 * 60 * 24,
+                            uWidth: 14,
+
+                            assign: function (src) {
+                                const diff = deepAssign(src, this)
+                                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                console.log(diff);
+                            },
+                            xOfTimestamp: function (timestamp) { return (timestamp - this.timeFrom) * this.uWidth / this.uTime },
+                            timestampOfX: function (x) { return (x * this.uTime / this.uWidth) + this.from }
+                        })
+
+                    script.remove()
+                }
+            </script>
             <div class="time-based-wrapper" style="min-width: 15em">
                 <div class="time-based-header">
                     <input class="right-resizer" type="button" value="↤">
@@ -471,10 +492,21 @@
                     </script>
                     <script>
                         {
-                            const elm = TimeRatioInputer.createElement();
+                            const script = document.currentScript,
+                                elm = TimeRatioInputer.createElement(),
+                                timeHandler = document.getElementById("time-based-view").timeHandler
+
+                            elm.setValue(timeHandler.uTime)
+                            timeHandler.addEventListener("change", function (event) {
+                                const diff = event.detail;
+                                if ("uTime" in diff) elm.setValue(diff.uTime)
+                            })
+                            elm.addEventListener("change", function (event) {
+                                timeHandler.assign({ uTime: this.value })
+                            })
+
                             document.currentScript.parentElement.insertBefore(elm, document.currentScript)
-                            // timeHandler = document.getElementById("time-based").timeHandler;
-                            document.currentScript.remove()
+                            script.remove()
                         }
                     </script>
                 </div>
