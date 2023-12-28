@@ -107,7 +107,10 @@
             var k, S, D; for (k in src) {
                 D = dst[k]
                 if (isObject(S = src[k]) && isObject(D)) {
-                    if (!deepAssignPre(S, D, diff[k] = {}, pre[k] = {})) delete diff[k]
+                    if (!deepAssignPre(S, D, diff[k] = {}, pre[k] = {})) {
+                        delete pre[k]
+                        delete diff[k]
+                    }
                 }
                 else if (D !== S) {
                     pre[k] = D
