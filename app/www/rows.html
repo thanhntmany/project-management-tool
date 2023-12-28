@@ -328,6 +328,7 @@
             .time-based-wrapper {
                 margin-left: 2em;
                 --section-nav-width: 2em;
+                --section-nav-min-height: 1.5em;
             }
 
             .time-based-header {
@@ -373,6 +374,7 @@
                 display: block;
                 left: 0;
                 width: var(--section-nav-width);
+                min-height: var(--section-nav-min-height);
                 background-color: darkred;
             }
 
@@ -385,6 +387,7 @@
             .time-based-scroll-box>div>div>div:first-child+div {
                 position: relative;
                 display: block;
+                min-height: var(--section-nav-min-height);
             }
 
             /* time-based-section>rows>row */
@@ -416,6 +419,7 @@
                 background: #001aff47;
             }
         </style>
+        <br>
         <div id="time-based-view">
             <div class="time-based-wrapper" style=" min-width: 15em">
                 <div class="time-based-header">
@@ -479,36 +483,11 @@
                     <div>
                         <div>
                             <div>
-                                <div>=</div>
-                                <div>-</div>
-                                <div>+</div>
+                                <div>
+                                    <input type="button" value="=">
+                                </div>
                             </div>
                             <div>
-                                <div>
-                                    <div>left sidebar</div>
-                                    <div>right sidebar</div>
-                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
-                                </div>
-                                <div>
-                                    <div>left sidebar</div>
-                                    <div>right sidebar</div>
-                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
-                                </div>
-                                <div>
-                                    <div>left sidebar</div>
-                                    <div>right sidebar</div>
-                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
-                                </div>
-                                <div>
-                                    <div>left sidebar</div>
-                                    <div>right sidebar</div>
-                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
-                                </div>
-                                <div>
-                                    <div>left sidebar</div>
-                                    <div>right sidebar</div>
-                                    <div>content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content content</div>
-                                </div>
                                 <div>
                                     <div>left sidebar</div>
                                     <div>right sidebar</div>
@@ -517,60 +496,54 @@
                                 <script>
                                     {
                                         const script = document.currentScript, rowSample = script.previousElementSibling
-                                        script.parentElement.parentElement.parentElement.parentElement.createRow = function () {
+                                        script.parentElement.parentElement.parentElement.createRow = function () {
                                             const elm = rowSample.cloneNode(true), children = elm.children
                                             elm.leftSidebarElm = children[0]
                                             elm.rightSidebarElm = children[1]
                                             elm.contentElm = children[2]
                                             return elm
                                         }
-                                        // rowSample.remove()
+                                        rowSample.remove()
                                         script.remove()
                                     }
                                 </script>
                             </div>
                         </div>
-                        <!-- <script>
+                        <script>
                             {
                                 const script = document.currentScript,
                                     container = script.parentElement,
-                                    rowSample = script.previousElementSibling.firstElementChild
+                                    sectionSample = script.previousElementSibling
 
-                                container.createRow = function () {
-                                    const elm = rowSample.cloneNode(true), children = elm.children
-                                    elm.leftSidebarElm = children[0]
-                                    elm.rightSidebarElm = children[1]
-                                    elm.contentElm = children[2]
-                                    return elm
-                                }
-
+                                function _addRow(row) { this.rowsElm.append(row || (row = container.createRow())) }
                                 container.createSection = function () {
-                                    return document.createElement("div")
-                                }
-
-                                container.addRecord = function () {
-                                    const elm = document.createElement("div")
-                                    elm.append(this.createRow())
-                                    elm.append(this.createRow())
-                                    elm.append(this.createRow())
-                                    DIL(this, this.append, elm)
+                                    const elm = sectionSample.cloneNode(true)
+                                    elm.rowsElm = elm.children[1]
+                                    elm.addRow = _addRow
                                     return elm
                                 }
+
+                                container.addSection = function (section) { this.append(section || (section = this.createSection())); return section }
 
                                 script.previousElementSibling.remove()
                                 script.remove()
                             }
-                        </script> -->
+                        </script>
                     </div>
-                    <!-- <script>
+                    <script>
                         {
-                            const container = document.currentScript.previousElementSibling
-                            container.addRecord()
-                            container.addRecord()
-                            container.addRecord()
-                            container.addRecord()
+                            const script = document.currentScript,
+                                container = script.previousElementSibling
+
+                            container.addSection().addRow()
+                            container.addSection().addRow()
+                            container.addSection().addRow()
+                            container.addSection().addRow()
+                            container.addSection().addRow()
+
+                            script.remove()
                         }
-                    </script> -->
+                    </script>
                 </div>
             </div>
         </div>
