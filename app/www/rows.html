@@ -408,6 +408,7 @@
                 display: block;
                 left: var(--section-nav-width);
                 width: fit-content;
+                z-index: 1;
                 background: #ff00008f;
             }
 
@@ -417,6 +418,7 @@
                 display: block;
                 right: 0;
                 width: fit-content;
+                z-index: 1;
                 background: #001aff47;
             }
 
@@ -640,18 +642,25 @@
             <div>
                 <!-- time ruler -->
                 <style>
+                    .time-ruler>.time-ruler__years {
+                        background-color: chocolate;
+                    }
                 </style>
                 <div class="time-ruler">
-                    <div>years</div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
+                    <div class="time-ruler__years">years</div>
+                    <div class="time-ruler__months">months</div>
+                    <div class="time-ruler__days">days</div>
+                    <div class="time-ruler__hours">hours</div>
+                    <div class="time-ruler__minutes">minutes</div>
+                    <div class="time-ruler__seconds">seconds</div>
+                    <div class="time-ruler__milliseconds">Milliseconds</div>
                 </div>
                 <script>
                     {
                         const script = document.currentScript,
                             view = document.getElementById("time-based-view"),
-                            container = view.container
+                            container = view.container,
+                            contentSample = script.previousElementSibling
 
                         container.sectionBuilders.timeRuler = function () {
                             const section = container.createSection(),
@@ -660,15 +669,18 @@
                             const timeZoneInputer = TimeZoneInputer.createElement()
                             row.leftSidebarElm.append(timeZoneInputer)
 
-
+                            row.contentElm.append(contentSample.cloneNode(true))
 
                             return section
                         }
 
-                        container.addSection("timeRuler")
-                        container.addSection("timeRuler")
-                        container.addSection("timeRuler")
+                        contentSample.remove()
                         script.remove()
+
+
+                        container.addSection("timeRuler")
+                        container.addSection("timeRuler")
+                        container.addSection("timeRuler")
                     }
                 </script>
             </div>
