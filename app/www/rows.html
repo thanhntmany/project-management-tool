@@ -391,6 +391,7 @@
                 min-height: var(--section-nav-min-height);
                 z-index: 2;
                 background-color: gray;
+                box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
             }
 
             .time-based-container>div>div:first-child>* {
@@ -719,7 +720,7 @@
                             container = view.container,
                             sample = script.previousElementSibling,
                             leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild
-                            contentSample = sample.querySelector(`[name="content"]`).firstElementChild
+                        contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
                         container.sectionBuilders.timeRuler = function () {
                             const section = container.createSection(), row = section.addRow()
