@@ -518,7 +518,7 @@
                     </script>
                 </div>
                 <div class=" time-based-scroll-box" style="background-color: dimgrey;">
-                    <div class=" time-based-container">
+                    <div class="time-based-container" style="width: 2000px;">
                         <script>
                             {
                                 const script = document.currentScript
@@ -560,7 +560,7 @@
                                     container = script.parentElement,
                                     sectionSample = script.previousElementSibling
 
-                                function _addRow(row) { this.rowsElm.append(row || (row = container.createRow())) }
+                                function _addRow(row) { this.rowsElm.append(row || (row = container.createRow())); return row }
                                 container.createSection = function () {
                                     const elm = sectionSample.cloneNode(true)
                                     elm.rowsElm = elm.children[1]
@@ -606,21 +606,17 @@
                     script.remove()
                 }
             </script>
+            <!-- time ruler -->
+            <style>
+
+            </style>
             <script>
                 {
                     const script = document.currentScript,
-                        view = script.parentElement
+                        view = script.parentElement,
+                        row = view.container.addSection().addRow()
 
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-                    view.container.addSection().addRow()
-
-                    console.log(view);
+                    console.log(row);
 
                     script.remove()
                 }
