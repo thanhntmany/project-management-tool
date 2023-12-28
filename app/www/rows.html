@@ -372,12 +372,14 @@
                 position: fixed;
                 display: block;
                 left: 0;
-                width: var(--section-nav-width);
                 min-height: var(--section-nav-min-height);
+                z-index: 1;
                 background-color: darkred;
             }
 
-            .time-based-container>div>div:first-child>div {
+            /* time-based-section>nav>section-ops */
+            .time-based-container>div>div:first-child>div:first-child {
+                width: var(--section-nav-width);
                 text-align: center;
                 cursor: pointer;
             }
@@ -540,9 +542,9 @@
                     <div class="time-based-container" style="width: 2000px;">
                         <div>
                             <div>
-                                <div>
+                                <span>
                                     <input type="button" value="=">
-                                </div>
+                                </span>
                             </div>
                             <div>
                                 <div>
@@ -587,6 +589,7 @@
                                     const builder = this.sectionBuilders[type]
                                     if (!builder) {
                                         const elm = sectionSample.cloneNode(true)
+                                        elm.navElm = elm.children[0]
                                         elm.rowsElm = elm.children[1]
                                         elm.addRow = _addRow
                                         return elm
@@ -667,7 +670,7 @@
                                 row = section.addRow()
 
                             const timeZoneInputer = TimeZoneInputer.createElement()
-                            row.leftSidebarElm.append(timeZoneInputer)
+                            section.navElm.append(timeZoneInputer)
 
                             row.contentElm.append(contentSample.cloneNode(true))
 
