@@ -390,7 +390,6 @@
                 left: 0;
                 min-height: var(--section-nav-min-height);
                 z-index: 1;
-                background-color: darkred;
             }
 
             /* time-based-section>nav>section-ops */
@@ -399,6 +398,11 @@
             }
 
             /* time-based-section>nav.expand/collapse operations */
+            .time-based-container>div>div:first-child>*:first-child>*:first-child {
+                position: relative;
+                z-index: 0;
+            }
+
             .time-based-container>div>div:first-child>*:first-child>*:first-child>*:first-child {
                 cursor: pointer;
             }
@@ -571,10 +575,10 @@
                                         <input type="button" value="᎒᎒᎒">
                                     </div>
                                     <div>
-                                        <input type="button" value="+">
+                                        <input type="button" value="-">
                                     </div>
                                     <div>
-                                        <input type="button" value="-">
+                                        <input type="button" value="+">
                                     </div>
                                 </div>
                             </div>
@@ -695,11 +699,11 @@
                 <div class="time-ruler">
                     <div class="time-ruler__years">years</div>
                     <div class="time-ruler__months">months</div>
-                    <div class="time-ruler__days">days</div>
+                    <!-- <div class="time-ruler__days">days</div>
                     <div class="time-ruler__hours">hours</div>
                     <div class="time-ruler__minutes">minutes</div>
                     <div class="time-ruler__seconds">seconds</div>
-                    <div class="time-ruler__milliseconds">Milliseconds</div>
+                    <div class="time-ruler__milliseconds">Milliseconds</div> -->
                 </div>
                 <script>
                     {
