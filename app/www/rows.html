@@ -427,6 +427,7 @@
                 position: relative;
                 display: block;
                 width: 100%;
+                overflow: hidden;
                 background: red;
             }
         </style>
@@ -437,6 +438,7 @@
                     const script = document.currentScript,
                         view = script.parentElement,
                         timeHandler = view.timeHandler = Object.assign(new EventTarget(), {
+                            width: 2000,
                             timeFrom: Date.now(),
                             uTime: 1000 * 60 * 60 * 24,
                             uWidth: 14,
@@ -444,7 +446,14 @@
                             assign: function (src) {
                                 const diff = deepAssign(src, this)
                                 if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-                                console.log(diff);
+                            },
+                            toJSON: function () {
+                                return {
+                                    width: this.width,
+                                    timeFrom: this.timeFrom,
+                                    uTime: this.uTime,
+                                    uWidth: this.uWidth
+                                }
                             },
                             xOfTimestamp: function (timestamp) { return (timestamp - this.timeFrom) * this.uWidth / this.uTime },
                             timestampOfX: function (x) { return (x * this.uTime / this.uWidth) + this.from }
@@ -532,8 +541,15 @@
                     <div class="time-based-container" style="width: 2000px;">
                         <script>
                             {
-                                const script = document.currentScript
-                                document.getElementById("time-based-view").container = script.parentElement
+                                const script = document.currentScript,
+                                    view = document.getElementById("time-based-view"),
+                                    container = view.container = script.parentElement
+
+                                view.timeHandler.addEventListener("change", function (event) {
+                                    const width = event.detail.width;
+                                    if (width >= 0) container.style.setProperty("width", width + "px")
+                                })
+
                                 script.remove()
                             }
                         </script>
@@ -594,43 +610,52 @@
                         view = script.parentElement,
                         wrapper = view.wrapper
 
-                    view.loadDeclaration = function (dec) {
+                    view.assign = function (dec) {
                         if (!dec) dec = {}
+                        console.log(dec);
+
                         wrapper.style.setProperty("padding-left", (dec.paddingLeft || 0) + "px")
                         wrapper.style.setProperty("padding-right", (dec.paddingRight || 0) + "px")
+                        if (dec.timeHandler) view.timeHandler.assign(dec.timeHandler)
                     }
-                    view.getDeclaration = function () {
+                    view.toJSON = function () {
                         return {
                             paddingLeft: parseFloat((wrapper.firstElementChild.style.getPropertyValue("padding-left") || window.getComputedStyle(wrapper).getPropertyValue("padding-left")).slice(0, -2)),
-                            paddingRight: parseFloat((wrapper.firstElementChild.style.getPropertyValue("padding-right") || window.getComputedStyle(wrapper).getPropertyValue("padding-right")).slice(0, -2))
+                            paddingRight: parseFloat((wrapper.firstElementChild.style.getPropertyValue("padding-right") || window.getComputedStyle(wrapper).getPropertyValue("padding-right")).slice(0, -2)),
+                            timeHandler: view.timeHandler.toJSON()
                         }
                     }
 
                     const view_key = "time-based-view_dec"
                     window.addEventListener("load", function (event) {
-                        view.loadDeclaration(JSON.parse(localStorage.getItem(view_key)))
+                        view.assign(JSON.parse(localStorage.getItem(view_key)))
                     })
                     window.addEventListener("beforeunload", function (event) {
-                        localStorage.setItem(view_key, JSON.stringify(view.getDeclaration()))
+                        localStorage.setItem(view_key, JSON.stringify(view.toJSON()))
                     })
 
                     script.remove()
                 }
             </script>
-            <!-- time ruler -->
-            <style>
-            </style>
-            <script>
-                {
-                    const script = document.currentScript,
-                        view = script.parentElement,
-                        row = view.container.addSection().addRow()
+            <div>
+                <!-- time ruler -->
+                <style>
+                </style>
+                <script>
+                    {
+                        const script = document.currentScript,
+                            view = document.getElementById("time-based-view"),
+                            row = view.container.addSection().addRow()
 
-                    console.log(row);
+                        const timeZoneInputer = TimeZoneInputer.createElement()
+                        row.leftSidebarElm.append(timeZoneInputer)
 
-                    script.remove()
-                }
-            </script>
+                        console.log(row);
+
+                        script.remove()
+                    }
+                </script>
+            </div>
         </div>
     </div>
 </body>
