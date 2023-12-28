@@ -103,6 +103,19 @@
             }
             return Object.keys(diff).length ? diff : null
         }
+        function deepAssignPre(src, dst, diff = {}, pre = {}) {
+            var k, S, D; for (k in src) {
+                D = dst[k]
+                if (isObject(S = src[k]) && isObject(D)) {
+                    if (!deepAssignPre(S, D, diff[k] = {}, pre[k] = {})) delete diff[k]
+                }
+                else if (D !== S) {
+                    pre[k] = D
+                    diff[k] = dst[k] = S
+                }
+            }
+            return Object.keys(diff).length ? { diff, pre } : null
+        }
     </script>
     <!-- TimeRatioInputer -->
     <style style="display: none;">
