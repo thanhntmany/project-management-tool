@@ -458,7 +458,6 @@
                             xOfTimestamp: function (timestamp) { return (timestamp - this.timeFrom) * this.uWidth / this.uTime },
                             timestampOfX: function (x) { return (x * this.uTime / this.uWidth) + this.from }
                         })
-
                     script.remove()
                 }
             </script>
@@ -539,20 +538,6 @@
                 </div>
                 <div class=" time-based-scroll-box" style="background-color: dimgrey;">
                     <div class="time-based-container" style="width: 2000px;">
-                        <script>
-                            {
-                                const script = document.currentScript,
-                                    view = document.getElementById("time-based-view"),
-                                    container = view.container = script.parentElement
-
-                                view.timeHandler.addEventListener("change", function (event) {
-                                    const width = event.detail.width;
-                                    if (width >= 0) container.style.setProperty("width", width + "px")
-                                })
-
-                                script.remove()
-                            }
-                        </script>
                         <div>
                             <div>
                                 <div>
@@ -583,21 +568,41 @@
                         </div>
                         <script>
                             {
-                                const script = document.currentScript,
-                                    container = script.parentElement,
-                                    sectionSample = script.previousElementSibling
 
+                                const script = document.currentScript,
+                                    view = document.getElementById("time-based-view"),
+                                    container = view.container = script.parentElement
+
+                                view.timeHandler.addEventListener("change", function (event) {
+                                    const width = event.detail.width;
+                                    if (width >= 0) container.style.setProperty("width", width + "px")
+                                })
+
+
+                                const sectionSample = script.previousElementSibling
+                                sectionSample.remove()
                                 function _addRow(row) { this.rowsElm.append(row || (row = container.createRow())); return row }
-                                container.createSection = function () {
-                                    const elm = sectionSample.cloneNode(true)
-                                    elm.rowsElm = elm.children[1]
-                                    elm.addRow = _addRow
-                                    return elm
+                                container.sectionBuilders = {}
+                                container.createSection = function (type) {
+                                    console.trace()
+                                    const builder = this.sectionBuilders[type]
+                                    if (!builder) {
+                                        const elm = sectionSample.cloneNode(true)
+                                        elm.rowsElm = elm.children[1]
+                                        elm.addRow = _addRow
+                                        return elm
+                                    }
+
+                                    return builder()
+                                }
+                                container.addSection = function (section) {
+                                    if (typeof section === 'string' || section instanceof String) section = this.createSection(section)
+                                    if (!section) section = this.createSection()
+
+                                    this.append(section)
+                                    return section
                                 }
 
-                                container.addSection = function (section) { this.append(section || (section = this.createSection())); return section }
-
-                                sectionSample.remove()
                                 script.remove()
                             }
                         </script>
@@ -612,8 +617,6 @@
 
                     view.assign = function (dec) {
                         if (!dec) dec = {}
-                        console.log(dec);
-
                         wrapper.style.setProperty("padding-left", (dec.paddingLeft || 0) + "px")
                         wrapper.style.setProperty("padding-right", (dec.paddingRight || 0) + "px")
                         if (dec.timeHandler) view.timeHandler.assign(dec.timeHandler)
@@ -645,13 +648,23 @@
                     {
                         const script = document.currentScript,
                             view = document.getElementById("time-based-view"),
-                            row = view.container.addSection().addRow()
+                            container = view.container
 
-                        const timeZoneInputer = TimeZoneInputer.createElement()
-                        row.leftSidebarElm.append(timeZoneInputer)
+                        container.sectionBuilders.timeRuler = function () {
+                            const section = container.createSection(),
+                                row = section.addRow()
 
-                        console.log(row);
+                            const timeZoneInputer = TimeZoneInputer.createElement()
+                            row.leftSidebarElm.append(timeZoneInputer)
 
+
+
+                            return section
+                        }
+
+                        container.addSection("timeRuler")
+                        container.addSection("timeRuler")
+                        container.addSection("timeRuler")
                         script.remove()
                     }
                 </script>
