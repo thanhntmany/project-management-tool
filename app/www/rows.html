@@ -106,34 +106,49 @@
             offfsetSpan.append("minutes)")
         }
     </script>
-    <!-- Object Assigner -->
     <script>
-        function isObject(obj) { return obj === Object(obj) }
-        function deepAssign(src, dst, diff = {}) {
-            var k, S, D; for (k in src) {
-                D = dst[k]
-                if (isObject(S = src[k]) && isObject(D)) {
-                    if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+        // StatefulObject
+        {
+            function isObject(obj) { return obj === Object(obj) }
+            function deepAssign(src, dst, diff = {}) {
+                var k, S, D; for (k in src) {
+                    D = dst[k]
+                    if (isObject(S = src[k]) && isObject(D)) {
+                        if (!deepAssign(S, D, diff[k] = {})) delete diff[k]
+                    }
+                    else if (D !== S) diff[k] = dst[k] = S
                 }
-                else if (D !== S) diff[k] = dst[k] = S
+                return Object.keys(diff).length ? diff : null
             }
-            return Object.keys(diff).length ? diff : null
-        }
-        function deepAssignPre(src, dst, diff = {}, pre = {}) {
-            var k, S, D; for (k in src) {
-                D = dst[k]
-                if (isObject(S = src[k]) && isObject(D)) {
-                    if (!deepAssignPre(S, D, diff[k] = {}, pre[k] = {})) {
-                        delete pre[k]
-                        delete diff[k]
+            function deepAssignPre(src, dst, diff = {}, pre = {}) {
+                var k, S, D; for (k in src) {
+                    D = dst[k]
+                    if (isObject(S = src[k]) && isObject(D)) {
+                        if (!deepAssignPre(S, D, diff[k] = {}, pre[k] = {})) {
+                            delete pre[k]
+                            delete diff[k]
+                        }
+                    }
+                    else if (D !== S) {
+                        pre[k] = D
+                        diff[k] = dst[k] = S
                     }
                 }
-                else if (D !== S) {
-                    pre[k] = D
-                    diff[k] = dst[k] = S
-                }
+                return Object.keys(diff).length ? diff : null
             }
-            return Object.keys(diff).length ? diff : null
+
+            const sample = {
+                assignState: function (src) {
+                    const diff = deepAssign(src, this.state)
+                    if (diff) this.dispatchEvent(new CustomEvent("change-state", { detail: diff }))
+                },
+                toJSON: function () { return this.state }
+            }
+
+            window.StatefulObject = {
+                init: function (state = {}, eventTarget = new EventTarget()) { return Object.assign(eventTarget, { state }, sample) }
+            }
+            document.currentScript.remove()
         }
     </script>
     <!-- TimeRatioInputer -->
@@ -487,15 +502,15 @@
                             uTime: 1000 * 60 * 60 * 24,
                             uWidth: 14,
                         }
-                    function assign(src) {
-                        const diff = deepAssign(src, state)
-                        if (diff) this.dispatchEvent(new CustomEvent("change-state", { detail: diff }))
-                    }
-                    function toJSON() { return state }
-                    function xOfTimestamp(timestamp) { return (timestamp - state.timeFrom) * state.uWidth / state.uTime }
-                    function timestampOfX(x) { return (x * state.uTime / state.uWidth) + state.from }
 
-                    script.parentElement.timeHandler = Object.assign(new EventTarget(), { state, assign, toJSON, xOfTimestamp, timestampOfX })
+                    script.parentElement.timeHandler = Object.assign(
+                        StatefulObject.init(state),
+                        {
+                            xOfTimestamp: function (timestamp) { return (timestamp - state.timeFrom) * state.uWidth / state.uTime },
+                            timestampOfX: function (x) { return (x * state.uTime / state.uWidth) + state.from }
+                        }
+                    )
+
                     script.remove()
                 }
             </script>
@@ -566,7 +581,7 @@
                                 if ("uTime" in diff) elm.setValue(diff.uTime)
                             })
                             elm.addEventListener("change", function (event) {
-                                timeHandler.assign({ uTime: this.value })
+                                timeHandler.assignState({ uTime: this.value })
                             })
 
                             document.currentScript.parentElement.insertBefore(elm, document.currentScript)
@@ -688,7 +703,7 @@
                         if (!dec) dec = {}
                         wrapper.style.setProperty("padding-left", (dec.paddingLeft || 0) + "px")
                         wrapper.style.setProperty("padding-right", (dec.paddingRight || 0) + "px")
-                        if (dec.timeHandler) view.timeHandler.assign(dec.timeHandler)
+                        if (dec.timeHandler) view.timeHandler.assignState(dec.timeHandler)
                     }
                     view.toJSON = function () {
                         return {
