@@ -24,6 +24,41 @@
             padding: 0;
         }
     </style>
+    <script>
+        // StatefulObject
+        {
+            function deepAssign(src, dst, pre = {}) {
+                var k, S, D, c; for (k in src)
+                    if ((S = src[k]) !== (D = dst[k]))
+                        if (S !== Object(S) || D !== Object(D)) {
+                            (c = pre)[k] = D
+                            dst[k] = S
+                        }
+                        else if (!deepAssign(S, D, pre[k] = {})) delete pre[k]
+                return c
+            }
+            const proto = {
+                assignState: function (src) {
+                    const pre = deepAssign(src, this.state)
+                    if (pre) this.dispatchEvent(new CustomEvent("change-state", { detail: { state: this.state, pre } }))
+                },
+                toJSON: function () { return this.state }
+            }
+
+            window.StatefulObject = {
+                init: function (eventTarget, state = {}, ...sources) {
+                    return Object.assign(
+                        eventTarget instanceof EventTarget ? eventTarget : new EventTarget(),
+                        { state },
+                        proto,
+                        ...sources
+                    )
+                },
+                deepAssign
+            }
+            document.currentScript.remove()
+        }
+    </script>
     <!-- TimeZoneInputer -->
     <style>
         .time-zone-inputer>*>input[type="number"] {
@@ -36,16 +71,13 @@
             sample: {
                 offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.assignState({ timeOffset: parseFloat(this.value) }) },
                 selectInput_changeEL: function (event) { event.stopPropagation(); this._root.assignState({ timeOffset: parseFloat(this.value) }) },
-                _changeStateEL: function (event) {
-                    const timeOffset = event.detail.timeOffset
-                    if (!isNaN(timeOffset)) this.selectInput.value = this.offfsetInput.value = timeOffset
-                },
+                _changeStateEL: function (event) { this.selectInput.value = this.offfsetInput.value = event.detail.state.timeOffset },
 
                 optionBtn_clickEL: function (event) { const s = this._root.offfsetSpan.style; if (s.getPropertyValue("display") !== "none") { s.setProperty("display", "none") } else s.removeProperty("display") }
             },
             createElement: function (initState = {}) {
                 const sample = this.sample,
-                    elm = StatefulObject.init({}, sample.elm.cloneNode(true)),
+                    elm = StatefulObject.init(sample.elm.cloneNode(true)),
                     selectInput = elm.selectInput = elm.children[0],
                     optionBtn = elm.optionBtn = elm.children[1],
                     offfsetSpan = elm.offfsetSpan = elm.children[2],
@@ -93,41 +125,6 @@
             offfsetSpan.append("(Offfset: ")
             offfsetSpan.append(offfsetInput)
             offfsetSpan.append("minutes)")
-        }
-    </script>
-    <script>
-        // StatefulObject
-        {
-            function deepAssign(src, dst, pre = {}) {
-                var k, S, D, c; for (k in src)
-                    if ((S = src[k]) !== (D = dst[k]))
-                        if (S !== Object(S) || D !== Object(D)) {
-                            (c = pre)[k] = D
-                            dst[k] = S
-                        }
-                        else if (!deepAssign(S, D, pre[k] = {})) delete pre[k]
-                return c
-            }
-            const proto = {
-                assignState: function (src) {
-                    const pre = deepAssign(src, this.state)
-                    if (pre) this.dispatchEvent(new CustomEvent("change-state", { detail: { state: this.state, pre } }))
-                },
-                toJSON: function () { return this.state }
-            }
-
-            window.StatefulObject = {
-                init: function (eventTarget, state = {}, ...sources) {
-                    return Object.assign(
-                        eventTarget instanceof EventTarget ? eventTarget : new EventTarget(),
-                        { state },
-                        proto,
-                        ...sources
-                    )
-                },
-                deepAssign
-            }
-            document.currentScript.remove()
         }
     </script>
     <!-- TimeRatioInputer -->
@@ -296,8 +293,8 @@
             };
 
             (window.CORE = StatefulObject.init(
-                state,
                 null,
+                state,
                 {
                     setTimezoneOffset: function (offfset) {
                         this.assignState({
@@ -308,9 +305,9 @@
                     dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + state._timezoneDeltaMs) },
                 }
             )).addEventListener("change-state", function (event) {
-                const diff = event.detail
-                if ("systemTimezoneOffset" in diff || "timeOffset" in diff)
-                    this.assignState({ _timezoneDeltaMs: (this.state.timeOffset - this.state.systemTimezoneOffset) * 60000 })
+                const { pre, state } = event.detail
+                if (Object.hasOwn(pre, "timeOffset") || Object.hasOwn(pre, "systemTimezoneOffset"))
+                    state._timezoneDeltaMs = (state.timeOffset - state.systemTimezoneOffset) * 60000
             })
 
             window.DatabaseHandler = StatefulObject.init()
@@ -339,8 +336,8 @@
             <script>// CORE: Timezone selector
                 {
                     const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
-                    elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(this.data.timeOffset) })
-                    CORE.addEventListener("change-timezone-offset", function (e) { elm.assignState({ timeOffset: this.timeOffset }) })
+                    elm.addEventListener("change-state", function (event) { CORE.setTimezoneOffset(this.state.timeOffset) })
+                    CORE.addEventListener("change-state", function (event) { if (Object.hasOwn(event.detail.pre, "timeOffset")) elm.assignState({ timeOffset: event.detail.state.timeOffset }) })
                     document.currentScript.remove()
                 }
             </script>
@@ -486,7 +483,7 @@
                             width: 2000,
                         }
 
-                    script.parentElement.timeHandler = StatefulObject.init(state, null, {
+                    script.parentElement.timeHandler = StatefulObject.init(null, state, {
                         xOfTimestamp: function (timestamp) { return (timestamp - state.timeFrom) * state.width / state.duration },
                         timestampOfX: function (x) { return (x * state.duration / state.width) + state.from }
                     })
@@ -558,8 +555,8 @@
 
                             elm.setValue(uWidth * timeHandler.state.duration / timeHandler.state.width)
                             timeHandler.addEventListener("change-state", function (event) {
-                                const diff = event.detail;
-                                if ("uTime" in diff) elm.setValue(uWidth * this.state.duration / this.state.width)
+                                const { pre, state } = event.detail;
+                                if (Object.hasOwn(pre, "uTime")) elm.setValue(uWidth * state.duration / state.width)
                             })
                             elm.addEventListener("change", function (event) {
                                 timeHandler.assignState({ uTime: this.value })
@@ -615,8 +612,8 @@
                                     container = view.container = script.parentElement
 
                                 view.timeHandler.addEventListener("change-state", function (event) {
-                                    const width = event.detail.width;
-                                    if (width >= 0) container.style.setProperty("width", width + "px")
+                                    const { pre, state } = event.detail;
+                                    if (Object.hasOwn(pre, "width")) container.style.setProperty("width", state.width + "px")
                                 })
 
 
@@ -632,7 +629,7 @@
                                 container.createSection = function (type, state = {}, ...sources) {
                                     const builder = this.sectionBuilders[type]
                                     if (!builder) {
-                                        const section = StatefulObject.init(state, sectionSample.cloneNode(true), ...sources),
+                                        const section = StatefulObject.init(sectionSample.cloneNode(true), state, ...sources),
                                             navElm = section.navElm = section.children[0],
                                             opsBtn = navElm.firstElementChild
 
@@ -727,7 +724,7 @@
                             sample = script.previousElementSibling,
                             contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
-                        function timeZoneInputer_changeEL(event) { this._root.assignState({ timeOffset: parseInt(this.state.timeOffset) }) }
+                        function timeZoneInputer_changeEL(event) { this._root.assignState(event.detail.state) }
 
                         function section_refresh() {
                             const { uTime } = timeHandler.state,
