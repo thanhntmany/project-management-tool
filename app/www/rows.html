@@ -481,28 +481,21 @@
             <script>
                 {
                     const script = document.currentScript,
-                        view = script.parentElement,
-                        timeHandler = view.timeHandler = Object.assign(new EventTarget(), {
+                        state = {
                             width: 2000,
                             timeFrom: Date.now(),
                             uTime: 1000 * 60 * 60 * 24,
                             uWidth: 14,
+                        }
+                    function assign(src) {
+                        const diff = deepAssign(src, state)
+                        if (diff) this.dispatchEvent(new CustomEvent("change-state", { detail: diff }))
+                    }
+                    function toJSON() { return state }
+                    function xOfTimestamp(timestamp) { return (timestamp - state.timeFrom) * state.uWidth / state.uTime }
+                    function timestampOfX(x) { return (x * state.uTime / state.uWidth) + state.from }
 
-                            assign: function (src) {
-                                const diff = deepAssign(src, this)
-                                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-                            },
-                            toJSON: function () {
-                                return {
-                                    width: this.width,
-                                    timeFrom: this.timeFrom,
-                                    uTime: this.uTime,
-                                    uWidth: this.uWidth
-                                }
-                            },
-                            xOfTimestamp: function (timestamp) { return (timestamp - this.timeFrom) * this.uWidth / this.uTime },
-                            timestampOfX: function (x) { return (x * this.uTime / this.uWidth) + this.from }
-                        })
+                    script.parentElement.timeHandler = Object.assign(new EventTarget(), { state, assign, toJSON, xOfTimestamp, timestampOfX })
                     script.remove()
                 }
             </script>
@@ -567,8 +560,8 @@
                                 elm = TimeRatioInputer.createElement(),
                                 timeHandler = document.getElementById("time-based-view").timeHandler
 
-                            elm.setValue(timeHandler.uTime)
-                            timeHandler.addEventListener("change", function (event) {
+                            elm.setValue(timeHandler.state.uTime)
+                            timeHandler.addEventListener("change-state", function (event) {
                                 const diff = event.detail;
                                 if ("uTime" in diff) elm.setValue(diff.uTime)
                             })
@@ -625,7 +618,7 @@
                                     view = document.getElementById("time-based-view"),
                                     container = view.container = script.parentElement
 
-                                view.timeHandler.addEventListener("change", function (event) {
+                                view.timeHandler.addEventListener("change-state", function (event) {
                                     const width = event.detail.width;
                                     if (width >= 0) container.style.setProperty("width", width + "px")
                                 })
@@ -648,13 +641,13 @@
                                             opsBtn = navElm.firstElementChild
 
                                         Object.assign(section, {
-                                            data: {},
+                                            state: {},
                                             assign: function (src) {
-                                                const diff = deepAssign(src, this.data)
-                                                if (diff) this.dispatchEvent(new CustomEvent("change-data", { detail: diff }))
+                                                const diff = deepAssign(src, this.state)
+                                                if (diff) this.dispatchEvent(new CustomEvent("change-state", { detail: diff }))
                                             },
                                             toJSON: function () {
-                                                return this.data
+                                                return this.state
                                             }
                                         })
 
@@ -746,12 +739,19 @@
                     {
                         const script = document.currentScript,
                             view = document.getElementById("time-based-view"),
+
                             container = view.container,
                             sample = script.previousElementSibling,
                             leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild,
                             contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
+                        // console.log(view);
+
                         function timeZoneInputer_changeEL(event) { this._root.assign({ timeOffset: parseInt(this.data.timeOffset) }) }
+
+                        function section_refresh() {
+
+                        }
 
                         container.sectionBuilders.timeRuler = function () {
                             const section = container.createSection(), row = section.addRow()
@@ -761,7 +761,11 @@
                             timeZoneInputer.addEventListener("change", timeZoneInputer_changeEL)
                             row.leftSidebar.append(timeZoneInputer)
 
-                            row.content.append(contentSample.cloneNode(true))
+                            const content = contentSample.cloneNode(true)
+                            row.content.append(content)
+
+                            section.refresh = section_refresh
+                            section.addEventListener("change-state", section_refresh)
                             return section
                         }
 
