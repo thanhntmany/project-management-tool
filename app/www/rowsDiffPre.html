@@ -183,102 +183,103 @@
         }
     </style>
     <script>
-        const TimeRatioInputer = {
-            sample: {
-                setValue: function (value) {
-                    if (this.value === value) return;
-                    this.value = this.numberInputer.value = value;
-                    this.timeRangeRuler.style.setProperty("margin-left", -(Math.log(value) * this.XPLogR) + "px")
-                    this.dispatchEvent(new Event("change"));
-                },
-                changeX: function (delta) {
-                    var x = (Math.log(this.value) * this.XPLogR) + delta
-                    const X = this.X, R = this.R
-                    if (x < 0) x = 0
-                    if (x > X) x = X
-                    this.setValue(Math.pow(R, x / X))
-                },
-                wheelEL: function (event) { this.changeX(event.deltaY / 20) },
-                mousedownEL: function (event) {
-                    const abortController = new AbortController()
-                    window.addEventListener("mousemove", event => this.changeX(-event.movementX), { signal: abortController.signal })
-                    window.addEventListener("mouseup", () => abortController.abort(), { once: true })
-                },
-                optionBtn_clickEL: function () { this._root.classList.toggle("show-number-input") },
-                numberInputer_changeEL: function (event) { this._root.setValue(parseFloat(this.value)) },
-                numberInputer_mousedownEL: function (event) { event.stopPropagation() }
-            },
-            createElement: function () {
-                const sample = this.sample,
-                    elm = this.sample.elm.cloneNode(true),
+        const TimeRatioInputer = {}
+        {
+            const timeRatios = [
+                [1, "Milliseconds"],
+                [1000, "Seconds"],
+                [60000, "Minutes"],
+                [3600000, "Hours"],
+                [86400000, "Days"],
+                [2592000000, "Months"],
+                [31104000000, "Years"]],
+                timeRatios_r = timeRatios.map(e => e[0]),
+                timeRatios_name = timeRatios.map(e => e[1]),
+                R = Math.max.apply(null, timeRatios_r),
+                X = 600,
+                XPLogR = X / Math.log(R)
+
+            // Build sample dom
+            const sampleElm = document.createElement("span")
+            sampleElm.classList.add("time-ratio-input")
+
+            const optionBtn = document.createElement("div")
+            sampleElm.append(optionBtn)
+            optionBtn.classList.add("option-btn")
+            optionBtn.innerText = "🔍 "
+
+            const numberInputer = document.createElement("input")
+            sampleElm.append(numberInputer)
+            numberInputer.type = "number"
+            numberInputer.min = "1"
+
+            const timeRange = document.createElement("div")
+            sampleElm.append(timeRange)
+            timeRange.classList.add("time-range")
+
+            const timeRangeRuler = document.createElement("div")
+            timeRange.append(timeRangeRuler)
+            timeRatios.forEach(function ([r, name]) {
+                const e = document.createElement("div")
+                e.dataset.ratio = r
+                e.style.setProperty("margin-left", (Math.log(r) * XPLogR) + "px")
+                e.innerText = name
+                this.append(e)
+            }, timeRangeRuler)
+
+            const space = document.createElement("div"); space.innerHTML = "&nbsp;"
+            timeRange.appendChild(space)
+
+            // sample functions
+            function setValue(value) {
+                this.assignState({ timeRatio: value })
+            }
+            function changeX(delta) {
+                var x = (Math.log(this.state.timeRatio) * XPLogR) + delta
+                if (x < 0) x = 0
+                if (x > X) x = X
+                this.setValue(Math.pow(R, x / X))
+            }
+            function changeStateEL(event) {
+                const { timeRatio } = this.state
+                this.numberInputer.value = timeRatio
+                this.timeRangeRuler.style.setProperty("margin-left", -(Math.log(timeRatio) * XPLogR) + "px")
+            }
+            function wheelEL(event) { this.changeX(event.deltaY / 20) }
+            const EL_once = { once: true }
+            function mousedownEL(event) {
+                const abortController = new AbortController()
+                window.addEventListener("mousemove", event => this.changeX(-event.movementX), { signal: abortController.signal })
+                window.addEventListener("mouseup", () => abortController.abort(), EL_once)
+            }
+            function optionBtn_clickEL() { this._root.classList.toggle("show-number-input") }
+            function numberInputer_changeEL(event) { this._root.setValue(parseFloat(this.value)) }
+            function numberInputer_mousedownEL(event) { event.stopPropagation() }
+
+            // createElement
+            TimeRatioInputer.createElement = function () {
+                const elm = StatefulObject.init(sampleElm.cloneNode(true), { timeRatio: 1 }),
                     optionBtn = elm.optionBtn = elm.children[0],
                     numberInputer = elm.numberInputer = elm.children[1],
                     timeRange = elm.timeRange = elm.children[2],
                     timeRangeRuler = elm.timeRangeRuler = timeRange.firstElementChild
 
-                elm.R = sample.R
-                elm.X = sample.X
-                elm.XPLogR = sample.XPLogR
-                elm.setValue = sample.setValue
-                elm.changeX = sample.changeX
-
-                elm.addEventListener("wheel", sample.wheelEL)
-                elm.addEventListener("mousedown", sample.mousedownEL)
+                elm.setValue = setValue
+                elm.changeX = changeX
+                elm.addEventListener("change-state", changeStateEL)
+                elm.addEventListener("wheel", wheelEL)
+                elm.addEventListener("mousedown", mousedownEL)
 
                 optionBtn._root = elm
-                optionBtn.addEventListener("click", sample.optionBtn_clickEL)
+                optionBtn.addEventListener("click", optionBtn_clickEL)
 
                 numberInputer._root = elm
-                numberInputer.addEventListener("change", sample.numberInputer_changeEL)
-                numberInputer.addEventListener("mousedown", sample.numberInputer_mousedownEL)
+                numberInputer.addEventListener("change", numberInputer_changeEL)
+                numberInputer.addEventListener("mousedown", numberInputer_mousedownEL)
 
-                elm.setValue(1)
                 return elm
             }
-        }
-        {
-            const sample = TimeRatioInputer.sample,
-                elm = sample.elm = document.createElement("span")
-            elm.classList.add("time-ratio-input")
 
-            const optionBtn = document.createElement("div")
-            optionBtn.classList.add("option-btn")
-            optionBtn.innerText = "🔍 "
-
-            const numberInputer = document.createElement("input")
-            numberInputer.type = "number"
-            numberInputer.min = "1"
-
-            const timeRange = document.createElement("div")
-            timeRange.classList.add("time-range")
-
-            const timeRangeRuler = document.createElement("div"),
-                Ratios = TimeRatioInputer.Ratios = [
-                    [1, "Milliseconds"],
-                    [1000, "Seconds"],
-                    [60000, "Minutes"],
-                    [3600000, "Hours"],
-                    [86400000, "Days"],
-                    [2592000000, "Months"],
-                    [31104000000, "Years"]],
-                R = sample.R = Math.max.apply(null, Ratios.map(e => e[0])),
-                X = sample.X = 900,
-                XPLogR = sample.XPLogR = X / Math.log(R)
-
-            Ratios.forEach(function ([r, name]) {
-                const e = document.createElement("div")
-                e.setAttribute("data-ratio", r)
-                e.style.setProperty("margin-left", (Math.log(r) * XPLogR) + "px")
-                e.innerText = name
-                timeRangeRuler.append(e)
-            })
-
-            elm.append(optionBtn)
-            elm.append(numberInputer)
-            elm.append(timeRange)
-            timeRange.append(timeRangeRuler)
-            const space = document.createElement("div"); space.innerHTML = "&nbsp;"
-            timeRange.appendChild(space)
         }
     </script>
 </head>
@@ -479,13 +480,21 @@
                     const script = document.currentScript,
                         state = {
                             timeFrom: Date.now(),
-                            duration: 1000 * 60 * 60 * 24 * 30,
-                            width: 2000,
+                            duration: 1000 * 60 * 60 * 24 * 30 * 12,
+                            uTime: 1000 * 60 * 60,
+                            uWidth: 14,
+                            width: 2000 // = uWidth * duration / uTime
                         }
 
-                    script.parentElement.timeHandler = StatefulObject.init(null, state, {
+                    const timeHandler = script.parentElement.timeHandler = StatefulObject.init(null, state, {
                         xOfTimestamp: function (timestamp) { return (timestamp - state.timeFrom) * state.width / state.duration },
                         timestampOfX: function (x) { return (x * state.duration / state.width) + state.from }
+                    })
+
+                    timeHandler.addEventListener("change-state", function (event) {
+                        const { pre, state } = event.detail
+                        if (Object.hasOwn(pre, "uWidth") || Object.hasOwn(pre, "duration") || Object.hasOwn(pre, "uTime"))
+                            this.assignState({ width: state.uWidth * state.duration / state.uTime })
                     })
 
                     script.remove()
@@ -550,16 +559,16 @@
                         {
                             const script = document.currentScript,
                                 elm = TimeRatioInputer.createElement(),
-                                timeHandler = document.getElementById("time-based-view").timeHandler,
-                                uWidth = 14
+                                timeHandler = document.getElementById("time-based-view").timeHandler
 
-                            elm.setValue(uWidth * timeHandler.state.duration / timeHandler.state.width)
                             timeHandler.addEventListener("change-state", function (event) {
-                                const { pre, state } = event.detail;
-                                if (Object.hasOwn(pre, "uTime")) elm.setValue(uWidth * state.duration / state.width)
+                                const { pre, state } = event.detail
+                                if (Object.hasOwn(pre, "uTime")) elm.assignState({ timeRatio: state.uTime })
                             })
-                            elm.addEventListener("change", function (event) {
-                                timeHandler.assignState({ uTime: this.value })
+
+                            elm.addEventListener("change-state", function (event) {
+                                const { pre, state } = event.detail
+                                if (Object.hasOwn(pre, "timeRatio")) timeHandler.assignState({ uTime: state.timeRatio })
                             })
 
                             document.currentScript.parentElement.insertBefore(elm, document.currentScript)
