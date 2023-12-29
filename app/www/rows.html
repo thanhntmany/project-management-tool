@@ -647,6 +647,17 @@
                                             navElm = section.navElm = section.children[0],
                                             opsBtn = navElm.firstElementChild
 
+                                        Object.assign(section, {
+                                            data: {},
+                                            assign: function (src) {
+                                                const diff = deepAssign(src, this.data)
+                                                if (diff) this.dispatchEvent(new CustomEvent("change-data", { detail: diff }))
+                                            },
+                                            toJSON: function () {
+                                                return this.data
+                                            }
+                                        })
+
                                         section.navOps = section.children[0].children[1].children[1]
                                         navElm.toggleExpandCollapse = navElm_toggleExpandCollapse
                                         opsBtn.addEventListener("click", opsBtn_clickEl)
@@ -740,30 +751,17 @@
                             leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild,
                             contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
-                        function timeZoneInputer_changeEL(event) { this._root.assign({ timeOffset: parseInt(this.value) }) }
+                        function timeZoneInputer_changeEL(event) { this._root.assign({ timeOffset: parseInt(this.data.timeOffset) }) }
 
                         container.sectionBuilders.timeRuler = function () {
                             const section = container.createSection(), row = section.addRow()
 
                             const timeZoneInputer = TimeZoneInputer.createElement()
-                            row.leftSidebar.append(timeZoneInputer)
-                            row.content.append(contentSample.cloneNode(true))
-
-                            Object.assign(section, {
-                                data: {
-                                    timeOffset: timeZoneInputer.value
-                                },
-                                assign: function (src) {
-                                    const diff = deepAssign(src, this.data)
-                                    if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-                                },
-                                toJSON: function () {
-                                    return this.data
-                                }
-                            })
-
                             timeZoneInputer._root = section
                             timeZoneInputer.addEventListener("change", timeZoneInputer_changeEL)
+                            row.leftSidebar.append(timeZoneInputer)
+
+                            row.content.append(contentSample.cloneNode(true))
                             return section
                         }
 
