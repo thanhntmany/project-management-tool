@@ -43,9 +43,9 @@
 
                 optionBtn_clickEL: function (event) { const s = this._root.offfsetSpan.style; if (s.getPropertyValue("display") !== "none") { s.setProperty("display", "none") } else s.removeProperty("display") }
             },
-            createElement: function () {
+            createElement: function (initState = {}) {
                 const sample = this.sample,
-                    elm = StatefulObject.init({ timeOffset: new Date().getTimezoneOffset() }, sample.elm.cloneNode(true)),
+                    elm = StatefulObject.init({}, sample.elm.cloneNode(true)),
                     selectInput = elm.selectInput = elm.children[0],
                     optionBtn = elm.optionBtn = elm.children[1],
                     offfsetSpan = elm.offfsetSpan = elm.children[2],
@@ -56,6 +56,8 @@
                 offfsetInput.addEventListener("change", sample.offfsetInput_changeEL)
                 optionBtn.addEventListener("click", sample.optionBtn_clickEL)
                 elm.addEventListener("change-state", sample._changeStateEL)
+
+                elm.assignState({ timeOffset: initState.timeOffset || new Date().getTimezoneOffset() })
 
                 return elm
             }
@@ -304,40 +306,51 @@
 
 <body>
     <script>
-        const systemTimezoneOffset = -new Date().getTimezoneOffset(),
-            CORE = Object.assign(new EventTarget(), {
-                systemTimezoneOffset: systemTimezoneOffset,
+        {
+            const state = {
+                systemTimezoneOffset: new Date().getTimezoneOffset(),
                 timeOffset: undefined,
-                _timezoneDelta: undefined,
+                _timezoneDeltaMs: undefined
+            };
 
-                setTimezoneOffset: function (offfset) {
-                    if (this.timeOffset === offfset) return
-                    this.timeOffset = offfset
-                    this._timezoneDelta = (this.timeOffset - this.systemTimezoneOffset) * 60000
-                    this.dispatchEvent(new Event("change-timezone-offset"))
-                },
-
-                timestampOfDateoffset: function (date) { return date.getTime() - this._timezoneDelta },
-                dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + this._timezoneDelta) },
-            })
-
-        const DatabaseHandler = StatefulObject.init()
-
-        window.addEventListener("load", function (e) {
-            DatabaseHandler.assignState({
-                tasks: {
-                    "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
-                    "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
-                    "3": { name: "Research", assigned: "Pete S", progress: Math.round(Math.random() * 100) },
-                    "4": { name: "Projections", assigned: "Steve L", progress: Math.round(Math.random() * 100) },
-                    "5": { name: "Stakeholders", assigned: "Allen W", progress: Math.round(Math.random() * 100) },
-                    "6": { name: "Guidelines", assigned: "Malik M", progress: Math.round(Math.random() * 100) },
-                    "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
+            (window.CORE = StatefulObject.init(
+                state,
+                null,
+                {
+                    setTimezoneOffset: function (offfset) {
+                        this.assignState({
+                            timeOffset: offfset
+                        })
+                    },
+                    timestampOfDateoffset: function (date) { return date.getTime() - state._timezoneDeltaMs },
+                    dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + state._timezoneDeltaMs) },
                 }
+            )).addEventListener("change-state", function (event) {
+                const diff = event.detail
+                if ("systemTimezoneOffset" in diff || "timeOffset" in diff)
+                    this.assignState({ _timezoneDeltaMs: (this.state.timeOffset - this.state.systemTimezoneOffset) * 60000 })
             })
 
-            CORE.setTimezoneOffset(systemTimezoneOffset)
-        }, { once: true })
+            window.DatabaseHandler = StatefulObject.init()
+
+            window.addEventListener("load", function (e) {
+                DatabaseHandler.assignState({
+                    tasks: {
+                        "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
+                        "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
+                        "3": { name: "Research", assigned: "Pete S", progress: Math.round(Math.random() * 100) },
+                        "4": { name: "Projections", assigned: "Steve L", progress: Math.round(Math.random() * 100) },
+                        "5": { name: "Stakeholders", assigned: "Allen W", progress: Math.round(Math.random() * 100) },
+                        "6": { name: "Guidelines", assigned: "Malik M", progress: Math.round(Math.random() * 100) },
+                        "7": { name: "Project Initiation", assigned: "Malik M", progress: Math.round(Math.random() * 100) }
+                    }
+                })
+
+                CORE.setTimezoneOffset(new Date().getTimezoneOffset())
+            }, { once: true })
+
+            document.currentScript.remove()
+        }
     </script>
     <div>
         <div> Timezone:
@@ -634,10 +647,10 @@
                                 }
 
                                 container.sectionBuilders = {}
-                                container.createSection = function (type) {
+                                container.createSection = function (type, state = {}, ...sources) {
                                     const builder = this.sectionBuilders[type]
                                     if (!builder) {
-                                        const section = StatefulObject.init({}, sectionSample.cloneNode(true)),
+                                        const section = StatefulObject.init(state, sectionSample.cloneNode(true), ...sources),
                                             navElm = section.navElm = section.children[0],
                                             opsBtn = navElm.firstElementChild
 
@@ -706,7 +719,6 @@
                         background-color: chocolate;
                     }
                 </style>
-                <!-- sample -->
                 <div>
                     <div name="leftSidebar">
                         <div>
@@ -734,20 +746,20 @@
                             leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild,
                             contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
-                        // console.log(view);
-
-                        function timeZoneInputer_changeEL(event) { this._root.assignState({ timeOffset: parseInt(this.data.timeOffset) }) }
+                        function timeZoneInputer_changeEL(event) { this._root.assignState({ timeOffset: parseInt(this.state.timeOffset) }) }
 
                         function section_refresh() {
                             console.log(this.state);
+                            console.log(timeHandler.state);
                         }
 
                         container.sectionBuilders.timeRuler = function () {
-                            const section = container.createSection(), row = section.addRow()
+                            const timeZoneInputer = TimeZoneInputer.createElement({ timeOffset: CORE.state.timeOffset }),
+                                section = container.createSection(null, { timeOffset: timeZoneInputer.state.timeOffset }),
+                                row = section.addRow()
 
-                            const timeZoneInputer = TimeZoneInputer.createElement()
                             timeZoneInputer._root = section
-                            timeZoneInputer.addEventListener("change", timeZoneInputer_changeEL)
+                            timeZoneInputer.addEventListener("change-state", timeZoneInputer_changeEL)
                             row.leftSidebar.append(timeZoneInputer)
 
                             const content = contentSample.cloneNode(true)
@@ -755,13 +767,12 @@
 
                             section.refresh = section_refresh
                             section.addEventListener("change-state", section_refresh)
+                            timeHandler.addEventListener("change-state", function () { section.refresh() })
 
-
-                            section.refresh()
                             return section
                         }
 
-                        contentSample.remove()
+                        sample.remove()
                         script.remove()
 
                         container.addSection("timeRuler")
