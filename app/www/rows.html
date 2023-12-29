@@ -739,8 +739,7 @@
                     {
                         const script = document.currentScript,
                             view = document.getElementById("time-based-view"),
-
-                            container = view.container,
+                            { timeHandler, container } = view,
                             sample = script.previousElementSibling,
                             leftSidebarSample = sample.querySelector(`[name="leftSidebar"]`).firstElementChild,
                             contentSample = sample.querySelector(`[name="content"]`).firstElementChild
@@ -750,7 +749,7 @@
                         function timeZoneInputer_changeEL(event) { this._root.assign({ timeOffset: parseInt(this.data.timeOffset) }) }
 
                         function section_refresh() {
-
+                            console.log(this.state);
                         }
 
                         container.sectionBuilders.timeRuler = function () {
@@ -766,6 +765,9 @@
 
                             section.refresh = section_refresh
                             section.addEventListener("change-state", section_refresh)
+
+
+                            section.refresh()
                             return section
                         }
 
