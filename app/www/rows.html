@@ -34,8 +34,8 @@
     <script>
         const TimeZoneInputer = {
             sample: {
-                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) })},
-                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) })},
+                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) }) },
+                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) }) },
                 _changeEL: function (event) {
                     const timeOffset = event.detail.timeOffset
                     if (!isNaN(timeOffset)) this.selectInput.value = this.offfsetInput.value = timeOffset
@@ -756,18 +756,19 @@
                                 assign: function (src) {
                                     const diff = deepAssign(src, this.data)
                                     if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
+                                },
+                                toJSON: function () {
+                                    return this.data
                                 }
                             })
 
                             timeZoneInputer._root = section
                             timeZoneInputer.addEventListener("change", timeZoneInputer_changeEL)
-
                             return section
                         }
 
                         contentSample.remove()
                         script.remove()
-
 
                         container.addSection("timeRuler")
                         container.addSection("timeRuler")
