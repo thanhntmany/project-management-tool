@@ -34,9 +34,9 @@
     <script>
         const TimeZoneInputer = {
             sample: {
-                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) }) },
-                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.assign({ timeOffset: parseFloat(this.value) }) },
-                _changeEL: function (event) {
+                offfsetInput_changeEL: function (event) { event.stopPropagation(); this._root.assignState({ timeOffset: parseFloat(this.value) }) },
+                selectInput_changeEL: function (event) { event.stopPropagation(); this._root.assignState({ timeOffset: parseFloat(this.value) }) },
+                _changeStateEL: function (event) {
                     const timeOffset = event.detail.timeOffset
                     if (!isNaN(timeOffset)) this.selectInput.value = this.offfsetInput.value = timeOffset
                 },
@@ -45,30 +45,17 @@
             },
             createElement: function () {
                 const sample = this.sample,
-                    elm = sample.elm.cloneNode(true),
+                    elm = StatefulObject.init({ timeOffset: new Date().getTimezoneOffset() }, sample.elm.cloneNode(true)),
                     selectInput = elm.selectInput = elm.children[0],
                     optionBtn = elm.optionBtn = elm.children[1],
                     offfsetSpan = elm.offfsetSpan = elm.children[2],
                     offfsetInput = elm.offfsetInput = offfsetSpan.children[0]
 
-                Object.assign(elm, {
-                    data: {
-                        timeOffset: new Date().getTimezoneOffset()
-                    },
-                    assign: function (src) {
-                        const diff = deepAssign(src, this.data)
-                        if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-                    },
-                    toJSON: function () {
-                        return this.data
-                    }
-                })
-
                 selectInput._root = offfsetInput._root = optionBtn._root = elm
                 selectInput.addEventListener("change", sample.selectInput_changeEL)
                 offfsetInput.addEventListener("change", sample.offfsetInput_changeEL)
                 optionBtn.addEventListener("click", sample.optionBtn_clickEL)
-                elm.addEventListener("change", sample._changeEL)
+                elm.addEventListener("change-state", sample._changeStateEL)
 
                 return elm
             }
@@ -146,7 +133,15 @@
             }
 
             window.StatefulObject = {
-                init: function (state = {}, eventTarget = new EventTarget()) { return Object.assign(eventTarget, { state }, sample) }
+                init: function (state = {}, eventTarget, ...sources) {
+                    return Object.assign(
+                        eventTarget instanceof EventTarget ? eventTarget : new EventTarget(),
+                        { state },
+                        sample,
+                        ...sources
+                    )
+                },
+                isObject, deepAssign, deepAssignPre
             }
             document.currentScript.remove()
         }
@@ -326,16 +321,10 @@
                 dateoffsetOfTimestamp: function (Timestamp) { return new Date(Timestamp + this._timezoneDelta) },
             })
 
-        const DatabaseHandler = Object.assign(new EventTarget(), {
-            data: {},
-            assign: function (src) {
-                const diff = deepAssign(src, this.data)
-                if (diff) this.dispatchEvent(new CustomEvent("change", { detail: diff }))
-            }
-        })
+        const DatabaseHandler = StatefulObject.init()
 
         window.addEventListener("load", function (e) {
-            DatabaseHandler.assign({
+            DatabaseHandler.assignState({
                 tasks: {
                     "1": { name: "Project Charter", assigned: "Leon W", progress: Math.round(Math.random() * 100), plan: { from: 1702031000017, to: 1703240600017 }, track: { from: 1702031000017, to: 1703240600017 } },
                     "2": { name: "Project Charter Revisions", assigned: "Kylie R", progress: Math.round(Math.random() * 100) },
@@ -356,7 +345,7 @@
                 {
                     const elm = TimeZoneInputer.createElement(); document.currentScript.parentElement.insertBefore(elm, document.currentScript)
                     elm.addEventListener("change", function (event) { CORE.setTimezoneOffset(this.data.timeOffset) })
-                    CORE.addEventListener("change-timezone-offset", function (e) { elm.assign({ timeOffset: this.timeOffset }) })
+                    CORE.addEventListener("change-timezone-offset", function (e) { elm.assignState({ timeOffset: this.timeOffset }) })
                     document.currentScript.remove()
                 }
             </script>
@@ -503,13 +492,10 @@
                             uWidth: 14,
                         }
 
-                    script.parentElement.timeHandler = Object.assign(
-                        StatefulObject.init(state),
-                        {
-                            xOfTimestamp: function (timestamp) { return (timestamp - state.timeFrom) * state.uWidth / state.uTime },
-                            timestampOfX: function (x) { return (x * state.uTime / state.uWidth) + state.from }
-                        }
-                    )
+                    script.parentElement.timeHandler = StatefulObject.init(state, null, {
+                        xOfTimestamp: function (timestamp) { return (timestamp - state.timeFrom) * state.uWidth / state.uTime },
+                        timestampOfX: function (x) { return (x * state.uTime / state.uWidth) + state.from }
+                    })
 
                     script.remove()
                 }
@@ -651,20 +637,9 @@
                                 container.createSection = function (type) {
                                     const builder = this.sectionBuilders[type]
                                     if (!builder) {
-                                        const section = sectionSample.cloneNode(true),
+                                        const section = StatefulObject.init({}, sectionSample.cloneNode(true)),
                                             navElm = section.navElm = section.children[0],
                                             opsBtn = navElm.firstElementChild
-
-                                        Object.assign(section, {
-                                            state: {},
-                                            assign: function (src) {
-                                                const diff = deepAssign(src, this.state)
-                                                if (diff) this.dispatchEvent(new CustomEvent("change-state", { detail: diff }))
-                                            },
-                                            toJSON: function () {
-                                                return this.state
-                                            }
-                                        })
 
                                         section.navOps = section.children[0].children[1].children[1]
                                         navElm.toggleExpandCollapse = navElm_toggleExpandCollapse
@@ -761,7 +736,7 @@
 
                         // console.log(view);
 
-                        function timeZoneInputer_changeEL(event) { this._root.assign({ timeOffset: parseInt(this.data.timeOffset) }) }
+                        function timeZoneInputer_changeEL(event) { this._root.assignState({ timeOffset: parseInt(this.data.timeOffset) }) }
 
                         function section_refresh() {
                             console.log(this.state);
