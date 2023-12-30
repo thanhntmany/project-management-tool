@@ -703,8 +703,23 @@
             <div>
                 <!-- time ruler -->
                 <style>
-                    .time-ruler>.time-ruler__years {
-                        background-color: chocolate;
+                    .time-ruler {
+                        height: 10em;
+                    }
+
+                    .time-ruler>* {
+                        position: relative;
+                        display: block;
+                        white-space: nowrap;
+                    }
+
+                    .time-ruler>*::after {
+                        content: "\00a0";
+                    }
+
+                    .time-ruler>* {
+                        background-color: blueviolet;
+                        transition: width 100ms;
                     }
                 </style>
                 <div>
@@ -715,13 +730,18 @@
                     </div>
                     <div name="content">
                         <div class="time-ruler">
-                            <div class="time-ruler__years">years</div>
-                            <div class="time-ruler__months">months</div>
-                            <div class="time-ruler__days">days</div>
-                            <div class="time-ruler__hours">hours</div>
-                            <div class="time-ruler__minutes">minutes</div>
-                            <div class="time-ruler__seconds">seconds</div>
-                            <div class="time-ruler__milliseconds">Milliseconds</div>
+                            <div>xx</div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div style="display: none;">
+                                <span>2023-</span><span>12-</span><span>29 </span><span>10:</span><span>20</span>
+                            </div>
+                            <div>
+                                <span>2023-</span><span>12-</span><span>29 </span><span>10:</span><span>20</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -733,19 +753,27 @@
                             sample = script.previousElementSibling,
                             contentSample = sample.querySelector(`[name="content"]`).firstElementChild
 
-                        function timeZoneInputer_changeEL(event) { this._root.assignState(event.detail.state) }
+                        function timeZoneInputer_changeEL(event) { this._root.assignState({ timeOffsetMs: event.detail.state.timeOffset * 60000 }) }
 
+                        function section_xOfTimestamp(timestamp) { return timeHandler.xOfTimestamp(timestamp + this.state.timeOffsetMs) }
                         function section_refresh() {
-                            const { uTime } = timeHandler.state,
-                                timeLevel = uTime >= 31104000000 ? "ye" : uTime >= 2592000000 ? "mo" : uTime >= 86400000 ? "da" : uTime >= 3600000 ? "ho" : uTime >= 60000 ? "mi" : uTime >= 1000 ? "se" : "ms"
+                            const { xOfTimestamp, timeRuler } = this,
+                                { timeFrom, duration, uTime } = timeHandler.state,
+                                { timeOffsetMs } = this.state,
+                                oFrom = timeFrom + timeOffsetMs,
+                                oTo = oFrom + duration,
+                                oDateFrom = new Date(oFrom),
+                                oDateTo = new Date(oTo),
+                                timeLevel = uTime >= 31104000000 ? "ye" : uTime >= 2592000000 ? "mo" : uTime >= 86400000 ? "da" : uTime >= 3600000 ? "ho" : uTime >= 60000 ? "mi" : "se"
 
-                            console.log(uTime);
-                            console.log(timeLevel);
+
+
+                            console.log(oDateFrom.toISOString());
                         }
 
                         container.sectionBuilders.timeRuler = function () {
                             const timeZoneInputer = TimeZoneInputer.createElement({ timeOffset: CORE.state.timeOffset }),
-                                section = container.createSection(null, { timeOffset: timeZoneInputer.state.timeOffset }),
+                                section = container.createSection(null, { timeOffsetMs: timeZoneInputer.state.timeOffset * 60000 }),
                                 row = section.addRow()
 
                             timeZoneInputer._root = section
@@ -755,6 +783,8 @@
                             const content = contentSample.cloneNode(true)
                             row.content.append(content)
 
+                            section.timeRuler = content
+                            section.xOfTimestamp = section_xOfTimestamp
                             section.refresh = section_refresh
                             section.addEventListener("change-state", section_refresh)
                             timeHandler.addEventListener("change-state", function () { section.refresh() })
