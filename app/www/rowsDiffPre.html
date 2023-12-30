@@ -158,6 +158,10 @@
             overflow-x: hidden;
         }
 
+        .time-ratio-input .time-range::after {
+            content: "\00a0";
+        }
+
         .time-ratio-input .time-range>* {
             position: relative;
             transition: margin-left 100ms;
@@ -226,9 +230,6 @@
                 e.innerText = name
                 this.append(e)
             }, timeRangeRuler)
-
-            const space = document.createElement("div"); space.innerHTML = "&nbsp;"
-            timeRange.appendChild(space)
 
             // sample functions
             function setValue(value) {
